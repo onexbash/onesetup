@@ -61,8 +61,6 @@
     - { role: nvim, tags: ["nvim"] }
     - { role: starship, tags: ["starship"] }
     - { role: fonts, tags: ["fonts"] }
-    - { role: browser, tags: ["browser"] }
     - { role: twm, tags: ["twm"] }
     - { role: settings, tags: ["settings"] }
-    - { role: languages, tags: ["languages"] }
     - { role: karabiner, tags: ["karabiner"] }
