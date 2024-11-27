@@ -1,5 +1,7 @@
 # ONESETUP
 
+automated workstation setup playbook using ansible, shell scripts & some magic
+
 ## Supported Platforms
 
 - MacOS M1, M2, M3
