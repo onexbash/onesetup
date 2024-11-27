@@ -1,4 +1,9 @@
 ---
+- name: "accept xcode license"
+  shell:
+    cmd: "sudo xcodebuild -license accept"
+  become: true
+
 - name: "ensure bash (brew version) is installed"
   homebrew:
     name: bash
