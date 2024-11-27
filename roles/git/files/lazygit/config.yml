@@ -1,4 +1,19 @@
 gui:
+  # commit:
+  #   icons:
+  #     - name: "✨"
+  #       description: "New feature"
+  #     - name: "🐛"
+  #       description: "Bug fix"
+  #     - name: "🎨"
+  #       description: "Code style"
+  #     - name: "🔧"
+  #       description: "Maintenance"
+  #     - name: "📝"
+  #       description: "Documentation"
+  #     - name: "🚀"
+  #       description: "Deployment"
+  nerdFontsVersion: "3"
   # -- COLORSCHEME -- #
   theme:
     activeBorderColor:
@@ -37,18 +52,20 @@ gui:
   skipRewordInEditorWarning: true
   showListFooter: false
   showRandomTip: false
-  experimentalShowBranchHeads: true
+  # experimentalShowBranchHeads: true
   showBottomLine: false
   commandLogSize: 8
   splitDiff: "always" # always, auto
   border: "rounded" # single, double, rounded, hidden
   mouseEvents: false # disable mouse
+
 git:
   paging:
-    useConfig: true
+    pager: delta --dark --paging=never
+    # useConfig: true
   commit:
     signOff: false
-    verbose: "always" # default, always, never
+    # verbose: "always" # default, always, never
   merging:
     manualCommit: false
     args: ""
@@ -63,17 +80,22 @@ git:
   allBranchesLogCmd: "git log --graph --all --color=always --abbrev-commit --decorate --date=relative  --pretty=medium"
   disableForcePushing: true
   parseEmoji: true
-  diffContextSize: 3 # how many lines of context shown around a change in diffs
+  # diffContextSize: 3 # how many lines of context shown around a change in diffs
+
 os:
   editPreset: "nvim"
+
 refresher:
   refreshInterval: 10
   fetchInterval: 60
+
 update:
   method: "background" # prompt, background, never
   days: 1 # how often to check for updates
+
 disableStartupPopups: false
 notARepository: "skip" # behavior when lazygit runs outside of a repo (prompt, create, skip, quit)
+
 # -- KEYMAPS -- #
 keybinding:
   universal:

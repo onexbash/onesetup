@@ -1,5 +1,15 @@
+[include]
+  path = /opt/onesetup/roles/themes/files/delta/catppuccin.gitconfig
+[core]
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true # use n & N to move between diff sections
+  dark = true
+  features = catppuccin-mocha
 [user]
-  name = fschlegelone
+  name = onexbash
   email = fabian@schlegel.one
 [init]
   defaultBranch = main
@@ -16,10 +26,6 @@
 [diff]
   compactionHeuristic = true
   colorMoved = default
-[color]
-	pager = no # disable pager colors to use nvim colors
-# [url "git@github.com:"]
-# 	insteadOf = https://github.com/
 [credential]
 	helper = /usr/local/share/gcm-core/git-credential-manager
 [filter "lfs"]
@@ -29,3 +35,5 @@
 	required = true
 [credential "https://dev.azure.com"]
 	useHttpPath = true
+[commit]
+	template = /Users/fschlegelone/.config/git/gitmessage
