@@ -1,4 +1,15 @@
 ---
+# -- APPSTORE -- #
+# update all appstore apps
+- name: "appstore | update all apps"
+  community.general.mas:
+    upgrade_all: true
+# install xcode from appstore
+- name: "appstore | install xcode"
+  community.general.mas:
+    id: "497799835" # xcode identifier
+    state: "latest"
+
 # -- TAPS -- #
 - name: "tap repositories"
   community.general.homebrew_tap:
@@ -17,7 +28,7 @@
     state: latest
     force_formula: true # avoids conflicts where a package has both cask and formulae
     update_homebrew: false # should be disabled(!) updates of the homebrew package manager itself are handled by a pre_task
-    upgrade_all: false # should be disabled(!) upgrades of all brew packages are handled by a post_task (formulaes, casks & taps) 
+    upgrade_all: false # should be disabled(!) upgrades of all brew packages are handled by a post_task (formulaes, casks & taps)
     install_options:
       - quiet # reduce output
   loop: "{{ brew_formulaes }}"
