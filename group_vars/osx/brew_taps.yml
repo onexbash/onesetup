@@ -5,3 +5,4 @@ brew_taps:
   - FelixKratz/formulae
   - koekeishiya/formulae # yabai & skhd
   - hashicorp/tap # terraform
+  - sdkman/tap # java version manager
