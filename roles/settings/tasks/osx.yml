@@ -38,6 +38,12 @@
     key: AppleDictationAutoEnable
     type: int
     value: 0
+- name: "disable window opening animation"
+  osx_defaults:
+    domain: "-g"
+    key: NSAutomaticWindowAnimationsEnabled
+    type: bool
+    value: false
 
 # -- UPDATES -- #
 # appstore updates
