@@ -25,29 +25,35 @@ return {
 			})
 			-- setup mason-lspconfig
 			mason_lspconfig.setup({
-				-- install language servers
+				-- language server
 				ensure_installed = {
 					"tsserver", -- typescript
 					"terraformls", -- terraform
-					"tflint", -- terraform linter
 					"lua_ls", -- lua
 					"ansiblels", -- ansible
+					"ruff_lsp", -- python
 					"bashls", -- bash
 					"cssls", -- css
-					"docker_compose_language_service", -- docker-compose
-					"dockerls", -- docker
 					"eslint", -- eslint
 					"graphql", -- graphql
 					"html", -- html
 					"jsonls", -- json
+					"taplo", -- toml
 					"marksman", -- markdown
 					"powershell_es", -- powershell
 				},
 			})
 			mason_tool_installer.setup({
-				-- install formatters & linters
+				-- linter & formatter
 				ensure_installed = {
-					"prettier",
+					"prettier", -- html, css & javascript formatter
+					"shfmt", -- shell formatter
+					"hadolint", -- docker linter
+					"eslint_d", -- eslint daemon
+					"ruff", -- python linter & formatter
+					"tflint", -- terraform linter
+					"tfsec", -- terraform security scanner
+					--  "ansible-lint", -- ansible
 				},
 			})
 		end,

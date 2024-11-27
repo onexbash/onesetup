@@ -12,6 +12,8 @@ return {
 			"                                                  ",
 			"                                                  ",
 			"                                                  ",
+			"                                                  ",
+			"                                                  ",
 			"⠤⣤⣤⣤⣄⣀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣠⣤⠤⠤⠴⠶⠶⠶⠶",
 			"⢠⣤⣤⡄⣤⣤⣤⠄⣀⠉⣉⣙⠒⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠴⠘⣉⢡⣤⡤⠐⣶⡆⢶⠀⣶⣶⡦",
 			"⣄⢻⣿⣧⠻⠇⠋⠀⠋⠀⢘⣿⢳⣦⣌⠳⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠞⣡⣴⣧⠻⣄⢸⣿⣿⡟⢁⡻⣸⣿⡿⠁",
@@ -33,6 +35,7 @@ return {
 			dashboard.button("e", " explorer", "<cmd>Oil<CR>"),
 			dashboard.button("f", " fuzzyfind", "<cmd>Telescope find_files<CR>"),
 			dashboard.button("l", "󱐌 lazy", "<cmd>Lazy<CR>"),
+			dashboard.button("h", " checkhealth", "<cmd>checkhealth<CR>"),
 			dashboard.button("g", "󰊢 git", "<cmd>LazyGit<CR>"),
 			dashboard.button("c", " config", "<cmd>cd ~/.config | Neotree toggle<CR>"),
 			dashboard.button(

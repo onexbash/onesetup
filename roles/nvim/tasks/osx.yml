@@ -1,4 +1,10 @@
 ---
+# -- INSTALLATION -- #
+- name: "install neovim node.js package"
+  community.general.pnpm:
+    name: "neovim"
+    global: true
+
 # -- CLEANUP -- #
 - name: "cleanup config directory (avoids conflicts)"
   ansible.builtin.file:

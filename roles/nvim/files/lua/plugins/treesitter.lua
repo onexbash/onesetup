@@ -34,9 +34,10 @@ return {
 			-- install parsers
 			ensure_installed = {
 				"angular", -- angular
+				"norg", -- neorg
 				-- "asm", -- assembly
 				-- "astro", -- astro
-				-- "awk", -- awk
+				"awk", -- awk
 				"bash", -- bash
 				"c", -- C
 				"c_sharp", -- C#
@@ -59,7 +60,7 @@ return {
 				"ini", -- ini config files
 				"java", -- java
 				"javascript", -- javascript
-				-- "jq", -- jq json parser
+				"jq", -- jq json parser
 				"lua", -- lua
 				"markdown", -- markdown
 				"markdown_inline", -- inline markdown
@@ -74,7 +75,7 @@ return {
 				"requirements", -- python requirements.txt files
 				"ruby", -- ruby
 				"rust", -- rust
-				-- "scss", -- sassy css
+				"scss", -- sassy css
 				"sql", -- sql
 				"ssh_config", -- ssh config files
 				"styled", -- react: styled components for css-in-js

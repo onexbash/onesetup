@@ -1,14 +1,23 @@
 return {
 	"stevearc/oil.nvim",
 	event = "VimEnter", -- lazy load after vim startup
-	dependencies = { "nvim-tree/nvim-web-devicons" },
+	dependencies = { { "echasnovski/mini.icons", opts = {} } },
 	config = function()
 		local oil = require("oil")
 		oil.setup({
 			default_file_explorer = true, -- replace netrw with oil
 			delete_to_trash = true, -- use the macos trash dir instead of completely removing the files
-			columns = {
-				"icon",
+			columns = { "icon" }, -- icon, permissions, size, mtime
+			watch_for_changes = true, -- reload on file change
+			view_options = {
+				show_hidden = true,
+				is_hidden_file = function(name, bufnr)
+					return vim.startswith(name, ".")
+				end,
+				-- always hide ../ directory
+				is_always_hidden = function(name, bufnr)
+					return vim.startswith(name, "..")
+				end,
 			},
 			-- KEYMAPS
 			keymaps = {
@@ -25,6 +34,6 @@ return {
 				["H"] = "actions.toggle_hidden", -- show/hide hidden files
 			},
 		})
-		KEYMAP("n", "<leader>e", "<CMD>Oil<CR>", keymap_opts("oil: open file explorer"))
+		vim.api.nvim_set_keymap("n", "<leader>e", "<CMD>Oil<CR>", { noremap = true, silent = true })
 	end,
 }

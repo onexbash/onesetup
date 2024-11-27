@@ -5,5 +5,20 @@ return {
 		vim.o.timeout = true
 		vim.o.timeoutlen = 500
 	end,
-	opts = {}, -- config options
+	-- config options
+	opts = {
+		triggers = {
+			"<leader>",
+			mode = { "n", "v" },
+		},
+	},
+	keys = {
+		{
+			"<leader>?",
+			function()
+				require("which-key").show({ global = false })
+			end,
+			desc = "Buffer Local Keymaps (which-key)",
+		},
+	},
 }
