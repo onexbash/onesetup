@@ -3,7 +3,6 @@
 # -- SOURCE SHELL CONFIG FILES -- #
 function src_zdotdir(){
   source "${ZDOTDIR:-$HOME/.config/zsh}/variables.zsh" # variables
-  source "${ZDOTDIR:-$HOME/.config/zsh}/secrets.zsh" # secrets
   source "${ZDOTDIR:-$HOME/.config/zsh}/functions.zsh" # functions
   source "${ZDOTDIR:-$HOME/.config/zsh}/aliases.zsh" # aliases
   source "${ZDOTDIR:-$HOME/.config/zsh}/options.zsh" # options
