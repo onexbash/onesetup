@@ -1,12 +1,12 @@
-#!/bin/bash 
-LOGGED_USER=`/usr/bin/stat -f%Su /dev/console` 
-sudo su $LOGGED_USER -c 'defaults delete com.apple.dock persistent-apps' 
+#!/bin/bash
+LOGGED_USER=$(/usr/bin/stat -f%Su /dev/console)
+sudo su "$LOGGED_USER" -c 'defaults delete com.apple.dock persistent-apps'
 
-dock_item() { 
+dock_item() {
 
-    printf '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>%s</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>', "$1" 
+  printf '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>%s</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>', "$1"
 
-} 
+}
 
 firefox=$(dock_item '/Applications/Firefox Developer Edition.app')
 alacritty=$(dock_item '/Applications/Alacritty.app')
@@ -25,5 +25,5 @@ sublime=$(dock_item '/Applications/Sublime Text.app')
 docker=$(dock_item '/Applications/Docker.app')
 messages=$(dock_item '/System/Applications/Messages.app')
 
-sudo su $LOGGED_USER -c "defaults write com.apple.dock persistent-apps -array '$firefox' '$alacritty' '$chatgpt' '$outline' '$discord' '$spotify' '$proton_mail' '$authenticator' '$ms_outlook' '$ms_teams' '$keepassxc' '$sublime' '$docker' '$messages' "
-killall Dock 
+sudo su "$LOGGED_USER" -c "defaults write com.apple.dock persistent-apps -array '$firefox' '$alacritty' '$chatgpt' '$outline' '$discord' '$spotify' '$proton_mail' '$authenticator' '$ms_outlook' '$ms_teams' '$keepassxc' '$sublime' '$docker' '$messages' "
+killall Dock
