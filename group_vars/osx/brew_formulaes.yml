@@ -81,6 +81,8 @@ brew_formulaes:
   - sdkman-cli # java version manager
   # -- TOOLS -- #
   - exiftool # tool for exif metadata
+  - git-filter-repo # git tool for rewriting git commit history
+  - infisical/get-cli/infisical # secret manager
   - nvm # node version manager
   - fontforge # font patcher / editor
   - unzip # extraction tool
