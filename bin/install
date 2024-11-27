@@ -1,47 +1,12 @@
 #!/usr/bin/env bash
-set -euo pipefail # exit on error, undefined variables and failed commands in pipes
-
-# -- VARIABLES -- #
-# colors
-C_BLACK='\033[1;30m'
-C_RED='\033[1;31m'
-C_GREEN='\033[1;32m'
-C_YELLOW='\033[1;33m'
-C_BLUE='\033[1;34m'
-C_PURPLE='\033[1;35m'
-C_CYAN='\033[1;36m'
-C_WHITE='\033[1;37m'
-C_GRAY='\033[1;34m'
-C_RESET='\033[0m'
-# prompts
-I_SKIP="${C_BLACK}[${C_CYAN} SKIP ${C_BLACK}] ${C_RESET}"   # skipped
-I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"    # ok
-I_DONE="${C_BLACK}[${C_GREEN} DONE ${C_BLACK}] ${C_RESET}"  # success
-I_IMP="${C_BLACK}[${C_RED}  !!  ${C_BLACK}] ${C_RESET}"     # important
-I_ERR="${C_BLACK}[${C_RED} ERR! ${C_BLACK}] ${C_RESET}"     # error
-I_EX="${C_BLACK}[${C_RED} EXIT ${C_BLACK}] ${C_RESET}"      # script exit
-I_WAR="${C_BLACK}[${C_YELLOW} WARN ${C_BLACK}] ${C_RESET}"  # warning
-I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}" # information
-I_GO="${C_BLACK}[${C_CYAN}  GO  ${C_BLACK}] ${C_RESET}"     # starting
-I_ASK="${C_BLACK}[${C_BLUE}  ?  ${C_BLACK}] ${C_RESET}"     # ask user for input
-I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"      # ask user for yes/no
-# directories, files
-ONESETUP="/opt/onesetup"
-ONESETUP_BAK="/opt/.onesetup.BAK"
-ONEVAULT="/opt/onevault"
-ONETEMP="/tmp/onetemp"
-ONESETUP_SECRET_FILE="$ONEVAULT/onesetup.secret"
-# github repository
-GH_USER="fschlegelone"
-GH_REPO="onesetup"
-GH_URL="https://github.com/$GH_USER/$GH_REPO"
-GH_HTTPS="https://github.com/$GH_USER/$GH_REPO.git"
-GH_SSH="git@github.com:$GH_USER/$GH_REPO.git"
-GH_RAW="https://raw.githubusercontent.com/$GH_USER/$GH_REPO/main"
+# exit on error, undefined variables and failed commands in pipes
+set -euo pipefail 
+# load variables
+source "./env.bash" 
 
 # -- KEEP SUDO ALIVE -- #
-echo -e "${I_IMP}This script requires sudo privileges. You will be asked for your password."
-echo -e "${I_IMP}DO NOT TRUST ME! This project is open source & you can review the code to see what it does (https://github.com/fschlegelone/onesetup)"
+echo -e "${I_WARN}This script requires sudo privileges. You will be asked for your password."
+echo -e "${I_WARN}DO NOT TRUST ME! This project is open source & you can review the code to see what it does (https://github.com/fschlegelone/onesetup)"
 sudo -v # ask for sudo password up-front
 (while true; do
   sudo -v
@@ -50,7 +15,6 @@ done) &
 
 # ensure dependencies before installation starts
 function dependencies() {
-
   # ensure xcode cli tools are installed
   if ! xcode-select -p &>/dev/null; then
     echo -e "${I_GO}xcode-commandline-tools ==> installing"
@@ -58,7 +22,7 @@ function dependencies() {
     XCT=$(softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | sed 's/^[^C]* //') # find latest xct version
     softwareupdate -i "$XCT" --verbose                                                 # install xct
   else
-    echo -e "${I_DONE}xcode-commandline-tools ==> installed"
+    echo -e "${I_OK}xcode-commandline-tools ==> installed"
   fi
 
   # TODO: backup and remove gitconfig - restore after installation finished (not sure if thats necessary)
@@ -67,15 +31,14 @@ function dependencies() {
   export HOMEBREW_SUDO_THROUGH_SUDO_USER=1 # use sudo user context (instead of root) for installing homebrew
   export NONINTERACTIVE=1
   export HOMEBREW_NO_ANALYTICS=1
-  export HOMEBREW_LOGS="$ONETEMP/onesetup_homebrew.log"
   # ensure homebrew is installed
   [ -d "/opt/homebrew" ] && echo -e "${I_OK}homebrew ==> already installed" || {
     echo -e "${I_ERR}homebrew ==> not installed"
-    HOMEBREW_NO_ENV_HINTS=1 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && echo -e "${I_DONE}installed ==> homebrew"
+    HOMEBREW_NO_ENV_HINTS=1 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && echo -e "${I_OK}installed ==> homebrew"
   }
   # ensure homebrew is in path
   command -v brew &>/dev/null && echo -e "${I_OK}is in PATH ==> homebrew" || {
-    echo -e "${I_WAR}not in PATH ==> homebrew"
+    echo -e "${I_WARN}not in PATH ==> homebrew"
     echo -e "${I_INFO}the script can still run, because its temporary initializing homebrew. TEMPORARY!"
     echo -e "${I_INFO}check out the homebrew installation guide to see how to permanently add brew to your PATH (https://docs.brew.sh/Installation)"
     echo -e "${I_INFO}${C_GREEN}SPOILER${C_RESET} ==> you need to add the following line to your shell config file (~/.zprofile for zsh, ~/.bash_profile for bash)"
@@ -85,29 +48,29 @@ function dependencies() {
   eval "$(/opt/homebrew/bin/brew shellenv)" && brew update --force --quiet
 
   # ensure grep is installed (gnu version)
-  command -v ggrep &>/dev/null && echo -e "${I_OK}already installed ==> grep (gnu version)" || (brew install --quiet grep && echo -e "${I_DONE}installed ==> grep (gnu version)")
+  command -v ggrep &>/dev/null && echo -e "${I_OK}already installed ==> grep (gnu version)" || (brew install --quiet grep && echo -e "${I_OK}installed ==> grep (gnu version)")
   # ensure zsh is installed (brew version)
-  command -v zsh &>/dev/null && echo -e "${I_OK}already installed ==> zsh" || (brew install --quiet zsh && echo -e "${I_DONE}installed ==> zsh")
-  [ -n "$(brew ls --formulae | ggrep "^zsh$")" ] && echo -e "${I_OK}already installed ==> zsh (brew version)" || (brew install --quiet zsh && echo -e "${I_DONE}installed ==> zsh (brew version)")
+  command -v zsh &>/dev/null && echo -e "${I_OK}already installed ==> zsh" || (brew install --quiet zsh && echo -e "${I_OK}installed ==> zsh")
+  [ -n "$(brew ls --formulae | ggrep "^zsh$")" ] && echo -e "${I_OK}already installed ==> zsh (brew version)" || (brew install --quiet zsh && echo -e "${I_OK}installed ==> zsh (brew version)")
   # ensure bash is installed (brew version)
-  command -v bash &>/dev/null && echo -e "${I_OK}already installed ==> bash" || (brew install --quiet bash && echo -e "${I_DONE}installed ==> bash")
-  [ -n "$(brew ls --formulae | ggrep "^bash$")" ] && echo -e "${I_OK}already installed ==> bash (brew version)" || (brew install --quiet bash && echo -e "${I_DONE}installed ==> bash (brew version)")
+  command -v bash &>/dev/null && echo -e "${I_OK}already installed ==> bash" || (brew install --quiet bash && echo -e "${I_OK}installed ==> bash")
+  [ -n "$(brew ls --formulae | ggrep "^bash$")" ] && echo -e "${I_OK}already installed ==> bash (brew version)" || (brew install --quiet bash && echo -e "${I_OK}installed ==> bash (brew version)")
   # ensure git is installed
-  command -v git &>/dev/null && echo -e "${I_OK}already installed ==> git" || (brew install --quiet git && echo -e "${I_DONE}installed ==> git (brew version)")
+  command -v git &>/dev/null && echo -e "${I_OK}already installed ==> git" || (brew install --quiet git && echo -e "${I_OK}installed ==> git (brew version)")
   # ensure gnu chmod & chown (coreutils) is installed
-  [ -d "/opt/homebrew/opt/coreutils" ] && echo -e "${I_OK}already installed ==> gnu coreutils" || (brew install --quiet coreutils && echo -e "${I_DONE}gnu coreutils")
+  [ -d "/opt/homebrew/opt/coreutils" ] && echo -e "${I_OK}already installed ==> gnu coreutils" || (brew install --quiet coreutils && echo -e "${I_OK}gnu coreutils")
   # ensure github cli is installed
-  command -v gh &>/dev/null && echo -e "${I_OK}already installed ==> github cli" || (brew install --quiet gh && echo -e "${I_DONE}installed ==> github cli")
+  command -v gh &>/dev/null && echo -e "${I_OK}already installed ==> github cli" || (brew install --quiet gh && echo -e "${I_OK}installed ==> github cli")
   # ensure ansible is installed
-  command -v ansible &>/dev/null && echo -e "${I_OK}already installed ==> ansible" || (brew install --quiet ansible && echo -e "${I_DONE}installed ==> ansible")
+  command -v ansible &>/dev/null && echo -e "${I_OK}already installed ==> ansible" || (brew install --quiet ansible && echo -e "${I_OK}installed ==> ansible")
 }
 
 # -- PREPARE INSTALLATION -- #
 function pre_install() {
   # -- ENSURE REQUIRED FILES & DIRECTORIES -- #
   # ensure ~/.config directory exists
-  if [ ! -d "${HOME}/.config" ]; then
-    sudo mkdir "${HOME}/.config" && echo -e "${I_OK} ~/.config ==> directory created"
+  if [ ! -d "${XDG_CONFIG_HOME:-$HOME/.config}" ]; then
+    sudo mkdir "${XDG_CONFIG_HOME:-$HOME/.config}" && echo -e "${I_OK} ~/.config ==> directory created"
   fi
 
   # ensure ~/.ssh directory exists
@@ -116,57 +79,52 @@ function pre_install() {
   fi
   # ensure onevault directory exists
   if [ ! -d "$ONEVAULT" ]; then
-    sudo mkdir "$ONEVAULT" && echo -e "${I_OK}$ONEVAULT ==> directory created"
+    sudo mkdir "$ONESETUP_SECRET" && echo -e "${I_OK}$ONEVAULT ==> directory created"
   fi
   # ensure onetemp directory exists
-  if [ ! -d "$ONETEMP" ]; then
-    sudo mkdir "$ONETEMP" && echo -e "${I_OK}$ONETEMP ==> directory created"
-  fi
   # ensure vault password file exists
   if [[ -f "$ONEVAULT/onesetup.secret" ]]; then
-    echo -e "${I_OK}onesetup.secret file exists." && echo -e "${I_IMP}make sure it contains the correct ansible vault password or onesetup will fail."
+    echo -e "${I_OK}onesetup.secret file exists." && echo -e "${I_WARN}make sure it contains the correct ansible vault password or onesetup will fail."
   else
     sudo touch "$ONEVAULT/onesetup.secret"
-    echo -e "${I_DONE}$ONEVAULT/onesetup.secret ==> file created"
+    echo -e "${I_OK}$ONEVAULT/onesetup.secret ==> file created"
     # prompt user for vault password
     echo -e "${I_ASK}Enter your ansible vault password: "
-    read -s vault_password
+    read -rs vault_password
     echo -e "${I_ASK}Confirm password: "
-    read -s vault_password_confirm
+    read -rs vault_password_confirm
     if [ "$vault_password" != "$vault_password_confirm" ]; then
       echo -e "${I_ERR}passwords dont match. please try again."
     else
-      break
+      return
     fi
     # write vault password into secret file
     echo "$vault_password" | sudo tee "$ONEVAULT/onesetup.secret" >/dev/null
     sudo chown "$USER" "$ONEVAULT/onesetup.secret"
     sudo chmod 600 "$ONEVAULT/onesetup.secret"
-    echo -e "${I_DONE}vault password stored in $ONEVAULT/onesetup.secret"
-    echo -e "${I_IMP}!!do not share this file!!"
+    echo -e "${I_OK}vault password stored in $ONEVAULT/onesetup.secret"
+    echo -e "${I_WARN}!!do not share this file!!"
   fi
   # backup & cleanup onesetup installation
   if [ -d "$ONESETUP" ]; then
     if [ -d "$ONESETUP_BAK" ]; then
       sudo rm -rf "$ONESETUP_BAK"
     fi
-    sudo cp -r "$ONESETUP" "$ONESETUP_BAK" && sudo rm -rf "$ONESETUP" && echo -e "${I_DONE}$ONESETUP_BAK ==> backup existing installation"
+    sudo cp -r "$ONESETUP" "$ONESETUP_BAK" && sudo rm -rf "$ONESETUP" && echo -e "${I_OK}$ONESETUP_BAK ==> backup existing installation"
   fi
 }
 
 function install() {
   # -- INSTALLATION -- #
-  echo -e "${I_GO}installing ==> onesetup" && sleep 1
-  echo -e "${I_GO}installing ==> onesetup" && sleep 1
-  echo -e "${I_GO}installing ==> onesetup" && sleep 1
   # clone repository from github
-  sudo git clone --quiet "https://github.com/onetoolkit/onesetup.git" "$ONESETUP" && echo -e "${I_DONE} onesetup ==> repository cloned" || { echo -e "${I_ERR}onesetup ==> failed to clone repository" && exit 1; }
+  sudo git clone --quiet "https://github.com/onetoolkit/onesetup.git" "$ONESETUP" && echo -e "${I_OK} onesetup ==> repository cloned" || { echo -e "${I_ERR}onesetup ==> failed to clone repository" && exit 1; }
 
+  echo -e "${I_LOAD}installing ==> onesetup" && sleep 1
   # -- PERMISSIONS & OWNERSHIP -- #
   # set ownership
-  sudo gchown -R "$USER" "$ONESETUP" && echo -e "${I_DONE}$ONESETUP ==> ownership set to $USER" || { echo -e "${I_ERR}$ONESETUP ==> failed to set ownership to $USER" && exit 1; }
-  sudo gchown -R "$USER" "$ONEVAULT" && echo -e "${I_DONE}$ONEVAULT ==> ownership set to $USER" || { echo -e "${I_ERR}$ONEVAULT ==> failed to set ownership to $USER" && exit 1; }
-  sudo gchown "$USER" "$HOME" && echo -e "${I_DONE}$HOME ==> ownership set to $USER" || { echo -e "${I_ERR}$HOME ==> failed to set ownership to $USER" && exit 1; }
+  sudo gchown -R "$USER" "$ONESETUP" && echo -e "${I_OK}$ONESETUP ==> ownership set to $USER" || { echo -e "${I_ERR}$ONESETUP ==> failed to set ownership to $USER" && exit 1; }
+  sudo gchown -R "$USER" "$ONEVAULT" && echo -e "${I_OK}$ONEVAULT ==> ownership set to $USER" || { echo -e "${I_ERR}$ONEVAULT ==> failed to set ownership to $USER" && exit 1; }
+  sudo gchown "$USER" "$HOME" && echo -e "${I_OK}$HOME ==> ownership set to $USER" || { echo -e "${I_ERR}$HOME ==> failed to set ownership to $USER" && exit 1; }
   # set permissions
   sudo gchmod -R 700 "${ONESETUP}/bin"
   sudo gchmod 644 "${ONESETUP}/ansible.cfg"
@@ -180,17 +138,17 @@ function install() {
   find "$ONESETUP/group_vars" -type f -name "*.yml" -exec sudo gchmod 644 {} \; &&
     find "$ONESETUP/pre_tasks" -type f -name "*.yml" -exec sudo gchmod 644 {} \; &&
     find "$ONESETUP/roles" -type f -name "*.yml" -exec sudo gchmod 644 {} \; &&
-    echo -e "${I_DONE}onesetup ==> permissions set" || { echo -e "${I_ERR}onesetup ==> failed to set permissions" && exit 1; }
+    echo -e "${I_OK}onesetup ==> permissions set" || { echo -e "${I_ERR}onesetup ==> failed to set permissions" && exit 1; }
 
   # -- ONESETUP BINARY -- #
   # remove onesetup binary if exists
-  [ -f "/usr/local/bin/onesetup" ] && sudo rm -f "/usr/local/bin/onesetup" && echo -e "${I_DONE}onesetup ==> binary cleanup"
+  [ -f "/usr/local/bin/onesetup" ] && sudo rm -f "/usr/local/bin/onesetup" && echo -e "${I_OK}onesetup ==> binary cleanup"
   # check if source binary exists
   [ -f "${ONESETUP}/bin/onesetup" ] || { echo -e "${I_ERR}onesetup ==> binary not found, please re-run the onesetup installation script" && exit 1; }
   # ensure target bin directory exists (/usr/local/bin)
-  [ -d "/usr/local/bin" ] && echo -e "${I_OK} /usr/local/bin ==> exists" || { echo -e "${I_ERR} /usr/local/bin ==> doesn't exist" && sudo mkdir -p "/usr/local/bin" && echo -e "${I_DONE} /usr/local/bin ==> created"; }
+  [ -d "/usr/local/bin" ] && echo -e "${I_OK} /usr/local/bin ==> exists" || { echo -e "${I_ERR} /usr/local/bin ==> doesn't exist" && sudo mkdir -p "/usr/local/bin" && echo -e "${I_OK} /usr/local/bin ==> created"; }
   # copy onesetup binary to /usr/local/bin
-  sudo cp "${ONESETUP}/bin/onesetup" "/usr/local/bin/onesetup" && sudo gchown "$USER" "/usr/local/bin/onesetup" && sudo gchmod 755 "/usr/local/bin/onesetup" && echo -e "${I_DONE}onesetup ==> binary installed" || { echo -e "${I_ERR}onesetup ==> failed to install binary" && exit 1; }
+  sudo cp "${ONESETUP}/bin/onesetup" "/usr/local/bin/onesetup" && sudo gchown "$USER" "/usr/local/bin/onesetup" && sudo gchmod 755 "/usr/local/bin/onesetup" && echo -e "${I_OK}onesetup ==> binary installed" || { echo -e "${I_ERR}onesetup ==> failed to install binary" && exit 1; }
 }
 
 dependencies && pre_install && install

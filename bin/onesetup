@@ -1,36 +1,23 @@
 #!/usr/bin/env bash
-set -euo pipefail # exit on error, undefined variables, and failed commands in pipes
 
-# -- VARIABLES -- #
-# colors
-C_BLACK='\033[1;30m'
-C_RED='\033[1;31m'
-C_GREEN='\033[1;32m'
-C_YELLOW='\033[1;33m'
-C_BLUE='\033[1;34m'
-C_PURPLE='\033[1;35m'
-C_CYAN='\033[1;36m'
-C_WHITE='\033[1;37m'
-C_GRAY='\033[1;34m'
-C_RESET='\033[0m'
-# prompts
-I_SKIP="${C_BLACK}[${C_CYAN} SKIP ${C_BLACK}] ${C_RESET}"   # skipped
-I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"    # ok
-I_DONE="${C_BLACK}[${C_GREEN} DONE ${C_BLACK}] ${C_RESET}"  # success
-I_IMP="${C_BLACK}[${C_RED}  !!  ${C_BLACK}] ${C_RESET}"     # important
-I_ERR="${C_BLACK}[${C_RED} ERR! ${C_BLACK}] ${C_RESET}"     # error
-I_EX="${C_BLACK}[${C_RED} EXIT ${C_BLACK}] ${C_RESET}"      # script exit
-I_WAR="${C_BLACK}[${C_YELLOW} WARN ${C_BLACK}] ${C_RESET}"  # warning
-I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}" # information
-I_GO="${C_BLACK}[${C_CYAN}  GO  ${C_BLACK}] ${C_RESET}"     # starting
-I_ASK="${C_BLACK}[${C_BLUE}  ?  ${C_BLACK}] ${C_RESET}"     # ask user for input
-I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"      # ask user for yes/no
-# directories
-export ONESETUP="/opt/onesetup"
-export ONEVAULT="/opt/onevault"
-# ansible environment variables
-export ANSIBLE_INVENTORY="${ONESETUP}/inventory.ini"
-export ANSIBLE_CONFIG="${ONESETUP}/ansible.cfg"
+# exit on error, undefined variables, and failed commands in pipes
+set -euo pipefail 
+# load variables
+source "./env.bash" 
+
+# -- USER GUIDE -- #
+# get path to onesetup.secret file
+if [[ -z $ONESETUP_SECRET ]]; then
+  echo -e "${I_INFO} \$ONESETUP_SECRET environment variable not set >>> using default"
+else
+  echo -e "${I_INFO} \$ONESETUP_SECRET environment variable set >>> overwriting default"
+fi
+# user instructions (explained in README.md more detailed)
+echo -e "${I_INFO}onesetup allows you to securely store secrets by using ansible vault:"
+echo -e "${I_INFO}STEP 1: Generate the onesetup.secret file that only contains the ansible-vault master-password and nothing else. no whitespaces, no line breaks, !only the password!"
+echo -e "${I_INFO}STEP 2: Set environment variable \$ONESETUP_SECRET to the path where you store onesetup.secret"
+echo -e "${I_INFO}\$ONESETUP_SECRET >>> ${C_CYAN}$ONESETUP_SECRET ${C_RESET}(see README.md if you're confused)"
+echo -e "${I_WARNING}This is your master secret file. Store it in a secure place and additionally save the secret string in a password manager. If you loose the file and the password, you are fucked."
 
 # -- FUNCTIONS -- #
 run_playbook() {
@@ -40,10 +27,10 @@ run_playbook() {
   eval "$(/opt/homebrew/bin/brew shellenv)"
   # run ansible playbook with optional --skip-tags
   if [ -n "$skip_tags" ]; then
-    ansible-playbook "${ONESETUP}/main.yml" --ask-become-pass --vault-password-file="${ONEVAULT}/onesetup.secret" --skip-tags "$skip_tags" &&
+    ansible-playbook "${ONESETUP}/main.yml" --ask-become-pass --vault-password-file="${ONESETUP_SECRET}" --skip-tags "$skip_tags" &&
       echo -e "${I_DONE} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
   else
-    ansible-playbook "${ONESETUP}/main.yml" --ask-become-pass --vault-password-file="${ONEVAULT}/onesetup.secret" &&
+    ansible-playbook "${ONESETUP}/main.yml" --ask-become-pass --vault-password-file="${ONESETUP_SECRET}" &&
       echo -e "${I_DONE} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
   fi
 }
