@@ -16,13 +16,20 @@
                         {
                             "from": { "key_code": "left_option" },
                             "to": [{ "key_code": "left_command" }]
+                        },
+                        {
+                            "from": { "key_code": "non_us_backslash" },
+                            "to": [{ "key_code": "close_bracket" }]
+                        },
+                        {
+                            "from": { "key_code": "close_bracket" },
+                            "to": [{ "key_code": "non_us_backslash" }]
                         }
                     ]
                 }
             ],
             "name": "Default profile",
-            "selected": true,
-            "virtual_hid_keyboard": { "keyboard_type_v2": "iso" }
+            "selected": true
         }
     ]
 }
