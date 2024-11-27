@@ -64,4 +64,5 @@
     - { role: browser, tags: ["browser"] }
     - { role: twm, tags: ["twm"] }
     - { role: settings, tags: ["settings"] }
+    - { role: languages, tags: ["languages"] }
     - { role: karabiner, tags: ["karabiner"] }
