@@ -15,28 +15,3 @@ fi
 # essentials
 export XDG_CONFIG_HOME="${HOME}/.config"
 export ZDOTDIR="${XDG_CONFIG_HOME}/zsh"
-# terminal colors
-export C_BLACK='\033[1;30m'
-export C_RED='\033[1;31m'
-export C_GREEN='\033[1;32m'
-export C_YELLOW='\033[1;33m'
-export C_BLUE='\033[1;34m'
-export C_PURPLE='\033[1;35m'
-export C_CYAN='\033[1;36m'
-export C_WHITE='\033[1;37m'
-export C_GRAY='\033[1;34m'
-export C_RESET='\033[0m'
-# icons
-export G_BORDER="${C_BLACK}󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜󰇜${C_RESET} "
-# prompts
-export I_SKIP="${C_BLACK}[${C_CYAN} SKIP ${C_BLACK}] ${C_RESET}" # skipped
-export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}" # ok
-export I_DONE="${C_BLACK}[${C_GREEN} DONE ${C_BLACK}] ${C_RESET}" # success
-export I_IMP="${C_BLACK}[${C_RED}  !!  ${C_BLACK}] ${C_RESET}" # important
-export I_ERR="${C_BLACK}[${C_RED} ERR! ${C_BLACK}] ${C_RESET}" # error
-export I_EX="${C_BLACK}[${C_RED} EXIT ${C_BLACK}] ${C_RESET}" # script exit
-export I_WAR="${C_BLACK}[${C_YELLOW} WARN ${C_BLACK}] ${C_RESET}" # warning
-export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}" # information
-export I_GO="${C_BLACK}[${C_CYAN}  GO  ${C_BLACK}] ${C_RESET}" # starting
-export I_ASK="${C_BLACK}[${C_BLUE}  ?  ${C_BLACK}] ${C_RESET}" # ask user for input
-export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}" # ask user for yes/no

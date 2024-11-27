@@ -1,0 +1,1005 @@
+ls ..
+cl
+ls .. | gr "plugins"
+git clone git@github.com:catppuccin/insomnia.git theme-catppuccin
+ls
+ls insomnia-plugin-catppuccin-mocha
+cl
+cd theme-catppuccin
+ls
+nv package
+nv package.json
+nv package-lock.json
+mv package-lock.json ~/BAK.package-lock.json
+ls
+ls themes
+cl
+pnpm install
+ls
+pnpm i
+ls
+cd ..
+ls
+touch test.gitignore
+rm test.gitignore
+ls -a
+touch .gitignore
+nv .gitignore
+mv .gitignore test.conf
+nv test.conf
+mv test.conf test.zsh
+nv test.zsh
+nv test.bash
+mv test.zsh test.bash
+nv test.bash
+rm test.bash
+CL
+cl
+ls
+cd
+ls
+touch test.sh
+chmod 700 test.sh
+nv test.sh
+mv test.sh test.ps1
+nv test.ps1
+pwsh test.ps1
+pwsh
+touch test.bash
+nv test.bash
+touch test.zsh
+nv test.zsh
+nv test.bash
+cd /opt/onesetup
+nv main.yml
+cd
+cd /opt/onesetup
+ls
+nv ansible.cfg
+cd /opt/onesetup
+nv
+nv main.yml
+cd .config/starship
+nv starship.toml
+nv starship.toml
+nv
+nv
+nv
+nv
+nv
+cd
+cd /opt/onesetup
+nv main.yml
+touch test.avanterules
+nv test.avanterules
+nv test.avanterules
+chmod 700 test.avanterules
+nv test.avanterules
+rm test.avanterules
+cd $DEV
+ls
+cd clones
+ls
+git clone git@github.com:yetone/avante.nvim.git
+cd avante.nvim
+ls
+nv
+nv
+nv
+nv
+cd 
+cd .config/nvim
+ls
+ls -a
+touch README.md
+nv README.md
+nv
+nv
+nv
+nv
+curl -s github.com/onetoolkit/onesetup
+export onesetup_content="$(curl -s github.com/onetoolkit/onesetup)"
+echo $onesetup_content
+curl github.com/onetoolkit/onesetup
+ls
+curl https://github.com/onetoolkit/onesetup
+wget https://github.com/onexbash/PORTFOLIO/archive/refs/heads/main.zip
+ls
+unzip main.zip
+ls
+ls PORTFOLIO-main
+rm main.zip
+rm -rf PORTFOLIO-main
+cd /opt
+ls
+rm test.touch
+cd
+cd .config/nvim
+nv init.lua
+nv
+chinfo /tmp
+cd
+cd /tmp
+ls
+touch test.txt
+rm test.txt
+cd ..
+chinfo tmp
+cd
+cd /opt
+ls
+chinfo onesetup
+chinfo /opt
+nv
+nvim --version
+cd
+cd $DEV
+ls
+cd projects
+ls
+mkdir github.nvim
+cd github.nvim
+mkdir lua
+mkdir plugin
+ls
+cl
+ls
+tree
+touch stylua.toml
+nv stylua.toml
+ls lua
+ls
+cd ..
+rm -rf github.nvim
+git clone git@github.com:m4xshen/example.nvim.git github.nvim
+cd github.nvim
+ls
+cl
+ls
+rm LICENSE
+rm README.md
+ls -a
+rm -rf .git
+cl
+ls
+ls -a
+touch .gitignore
+nv .gitignore
+ls
+nv
+git init
+cl
+git checkout -b dev
+git checkout -b feat_fabian
+cd ..
+mv github.nvim origin.nvim
+ls
+cd origin.nvim
+ls
+cd plugin
+ls
+mv github.lua origin.lua
+nv origin.lua
+cd ..
+nv lua/github
+cd lua
+ls
+mv github origin
+ls
+cd origin
+ls
+nv init.lua
+cd ..
+cd ..
+cl
+cd ..
+cd origin.nvim
+cl
+git remote add origin git@github.com:onexbash/origin.nvim.git
+lg
+git branch -vv
+git branch -v
+pwd
+cl
+lg
+git checkout -M main
+git checkout -b main
+lg
+git branch -M main
+cl
+lg
+git checkout -b dev
+lg
+git diff dev main
+git diff dev origin/main 
+lg
+git fetch origin
+lg
+git diff origin/main origin/dev 
+git diff dev origin/dev 
+git diff main origin/main 
+cl
+cl
+nv
+nv
+nv
+nv
+nv
+nv
+cd
+cd /tmp/onetmp
+ls
+which unzip
+/usr/bin/unzip --help
+br ls | gr "unzip"
+cl
+nv /opt/onesetup/group_vars/osx/brew_formulaes.yml
+brew install unzip
+cd /opt/homebrew/opt/unzip/bin
+ls
+which unzip
+br ls | gr "unzip"
+brew install unzip
+brew reinstall unzip
+cd
+cd .config/zsh
+ls
+nv path.zsh
+which unzip
+unzip --help
+cd /opt/onesetup
+nv main.yml
+nv
+cd
+cd .config/nvim/
+cl
+cd /tmp/onetmp
+ls
+nv
+cd /tmp/onetmp
+ls
+cd
+cd $DEV
+cd projects/origin.nvim
+ls
+nv
+cl
+nv
+nv
+nv
+cd /tmp/onetmp
+ls
+unzip -o
+which tar
+/usr/bin/tar --help
+tar --help
+lg
+cd /tmp/onetmp
+sl
+ls
+cd ..
+rm -rf onetmp
+ls
+cl
+ls
+cd onetmp
+ls
+cl
+ls
+cd PORTFOLIO-main
+ls
+lg
+ls -a 
+ls -a | gr ".git"
+cd ..
+cl
+ls
+nv
+nv
+nv
+cd
+cd .config/nvim
+nv
+nv
+nv
+cd
+cd .config/nvim
+nv lua/plugins/i
+nv lua/plugins/init.lua
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+rm -rf /tmp/onetmp/origin.nvim.zip
+ls -a /tmp/onetmp
+cl
+nv
+nv
+nv
+nv
+cl
+nv
+nv
+ls
+cd
+cd /tmp/onetmp
+ls
+cd /tmp/onetmp
+ls
+rm -rf PORTFOLIO
+ls
+rm -rf PORTFOLIO-main
+rm -rf PORTFOLIO.zip
+ls
+ls
+ls
+ls
+ls
+cd ..
+cd onetmp
+ls
+cd /tmp/onetmp
+ls
+unzip -o "/tmp/onetmp/" "PORTFOLIO.zip" -d "/tmp/onetmp"
+unzip -o "/tmp/onetmp/PORTFOLIO.zip" -d "/tmp/onetmp"
+ls
+rm -rf PORTFOLIO-main
+unzip -o "/tmp/onetmp/PORTFOLIO.zip" -d "/tmp/onetmp"
+ls
+cl
+man unzip
+cd
+nv
+nv
+cd /opt/onetmp
+ls
+rm -rf f.zip PORTFOLIO.zip PORTFOLIO PORTFOLIO-main
+ls
+ls -a
+ls
+ls
+ls origin.nvim
+cd
+cd .config/nvim
+nv
+nv
+cd
+cd .config/nvim
+nv
+nv
+nv
+cd /opt/onetmp
+ls
+ls
+ls
+ls PORTFOLIO-main
+ls PORTFOLIO
+rm -rf PORTFOLIO
+cl
+cd ..
+rm -rf onetmp
+ls
+cd onetmp
+ls
+cd /opt/onetmp
+ls
+nv
+nv
+nv
+nv
+nv
+cd
+cd $DEV
+cd projects/origin.nvim
+ls
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+cd
+cd .config/nvim
+nv
+pwd
+nv
+cd
+cd /Users/fschlegelone/one-cloud/dev/projects/origin.nvim
+nv
+nv
+nv
+nv
+cd
+lg
+cd /opt/onetmp
+ls
+ls
+ls
+rm -rf fireswag-main
+rm -rf origin.nvim-main
+rm -rf origin.nvim.zip
+ls
+rm fireswag.zip
+ls
+cl
+ls -a
+ls
+ls
+ls -a
+ls
+rm -rf fireswag-main
+ls
+ls fireswag-main
+ls
+ls
+ls
+ls PORTFOLIO-main
+cl
+ls
+unzip -o -j "/opt/onetmp/PORTFOLIO.zip" -d "/opt/onetmp/PORTFOLIO"
+ls
+cd PORTFOLIO
+ls
+cd ..
+cl
+unzip -o "/tmp/onetmp/PORTFOLIO.zip" -d "/tmp/onetmp"
+unzip -o "/opt/onetmp/PORTFOLIO.zip" -d "/opt/onetmp"
+ls
+rm -rf PORTFOLIO
+rm -rf PORTFOLIO-main
+cl
+unzip -o -j "/tmp/onetmp/PORTFOLIO.zip" -d "/tmp/onetmp"
+unzip -o "/opt/onetmp/PORTFOLIO.zip" -d "/opt/onetmp"
+ls
+rm -rf PORTFOLIO-main
+cl
+unzip -o "/opt/onetmp/PORTFOLIO.zip" -d "/opt/onetmp"
+ls
+git clone https://github.com/onexbash/PORTFOLIO.git
+ls
+ls PORTFOLIO
+ls
+ls
+unzip -o "/opt/onetmp/origin.nvim.zip" -d "/opt/onetmp"
+ls
+ls
+cd ..
+rm -rf onetmp
+ls
+cd onetmp
+ls
+ls -a
+ls
+ls -a
+ls
+ls -a
+ls
+ls origin.nvim
+man git clone
+ls
+rm -rf origin.nvim
+ls
+ls origin.nvim
+ls
+rm -rf origin.nvim
+ls
+ls origin.nvim
+ls
+rm -rf origin.nvim
+ls
+ls
+ls origin.nvim
+ls
+ls
+rm -rf origin.nvim
+ls
+ls
+ls
+cl
+cd
+nv
+cd .config/nvim
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+cd
+rm -rf ~/.local/state/nvim
+rm -rf ~/.local/share/nvim
+rm -rf ~/.cache/nvim
+cl
+nv
+nv
+nv
+nv
+nv
+cd $DEV
+cd projects/cratos/recyba
+ls
+cd recyba-
+nv
+cd $DEV
+cd projects
+ls
+cd origin.nvim
+lg
+git diff dev main
+git diff dev origin/dev 
+git diff main origin/main 
+cl
+cd $DEv
+cd $DEV
+cd scripts/autostart
+cr run
+pc ssh_keys/neuronet_devops
+nv
+nv
+pnpm -v
+lg
+cd ..
+rm -rf recyba-fe
+git clone git@ssh.dev.azure.com:v3/neuro-net/RECYBA/reactcyba
+rm -rf reactcyba
+git clone git@ssh.dev.azure.com:v3/neuro-net/RECYBA/reactcyba recyba-fe
+ls 
+cd recyba-fe
+cl
+lg
+git fetch origin 
+git fetch origin
+git checkout -b dev origin/dev 
+git checkout -b timo origin/timo 
+git checkout -b niels origin/niels 
+cd $DEV
+cd projects/cratos/recyba/recyba-
+cl
+pnpm -v
+git fetch origi
+git fetch origin
+ssh-add ~/.ssh/neuronet_devops
+git diff dev origin/dev 
+git fetch origin
+cl
+git fetch origin
+git diff fabian dev 
+git fetch origin
+git checkout -b fabian origin/fabian 
+cl
+git diff fabian dev 
+git diff fabian niels 
+nv
+git diff origin/dev origin/main 
+cl
+git status
+git diff fabian origin/dev 
+git diff origin/fabian origin/dev 
+git diff origin/main origin/dev 
+cl
+cd
+cd .config/nvim
+nv
+which prettier
+cl
+nv .editorconfig
+nv .prettierrc
+cl
+lg
+nv
+pnpm install
+pnpm dev
+pnpm dlx shadcn@latest add slider\
+
+lg
+git checkout .
+nv
+nv
+nv
+cd $DEV
+cd projects/cratos/recyba/
+nv
+nv
+nv
+nv
+rm -rf ~/.local/state/nvim
+rm -rf ~/.local/share/nvim
+rm -rf ~/.cache/nvim
+cd
+cd
+cd .config/zsh/
+ls
+ls a
+ls atuin
+nv environment.zsh
+cd
+cd .config/nvim
+cl
+cd lua/utils
+ls
+go mod init prerequesites
+ls
+rm go.mod
+ls
+ls -a
+go mod init prerequesites/executables
+ls
+nv go.mod
+ls
+cl
+ls
+nv init.lua
+rm init.lua
+rm go.mod
+rm executables.go
+cl
+ls
+mkdir prerequesites
+ls
+mkdir prerequisites
+ls
+rm -rf prerequesites
+ls
+rm -rf prerequisites
+cl
+mkdir prerequisites
+ls
+cd prerequisites
+PWD
+go mod init "$(PWD)"
+go --help
+cl
+go mod init ~/.config/nvim/lua/utils/prerequisites
+go mod init ~/.config/nvim/lua/utils/prerequisites/test
+echo $GOPATH
+cd
+ls | gr "go"
+cd go
+ls
+export GOPATH="${XDG_CONFIG_HOME:-$HOME/.config}/go"\
+
+echo $GOPATH
+cd
+cd .config
+chinfo go
+cd
+rm -rf go
+echo $NVIM
+echo $NVIM_CONFIG_DIR
+cd ~/.local/state/nvim
+echo $VIM
+echo $VIMRC
+echo $NVIM
+echo $NVIM
+echo $NVIM_CONFIG_DIR
+echo $XDG_STATE_HOME
+echo $NVIM_DATA_DIR
+echo $NVIM_STATE_DIR
+echo $NVIM_CACHE_DIR
+echo $XDG_STATE_HOME
+echo $XDG_DATA_HOME
+echo $XDG_CACHE_HOME
+echo $XDG_CACHE_HOME
+echo $NVIM_CACHE_DIR
+cd .config/nvim
+nv
+nv
+cd
+cd .config
+ls
+ls | gr "go"
+cl
+mkdir go
+cd zsh
+nv modules.zsh
+cd $NVIM_CONFIG_DIR
+ls
+echo $NVIM_PLUGINS
+echo $NVIM_UTILS
+echo $NVIM_CORE
+ls
+cd lua
+ls
+cd ..
+ls
+echo $NVIM_INIT
+sudo rm -rf go
+ls | gr "go"
+cd $NVIM
+cd ..
+nv zsh/environment.zsh
+nv zsh/variables.zsh
+nv zsh/modules.zsh
+cd $NVIM_UTILS
+ls
+cd prerequisites
+go mod init executables
+ls
+touch main.go
+ls
+nv main.go
+go run main.go
+nv main.go
+nv main.go
+cd /opt/onesetup/roles/nvim/files
+nv lua/plugins/
+node
+cd
+cd $DEV
+cd projects/cratos/recyba/recyba-fe
+nv
+ls
+go run main.go
+go run main.go
+cd utils/prerequisites
+ls
+cd /Users/fschlegelone/.config/nvim/lua/utils/prerequesites
+cd utils/prerequisites
+cd /Users/fschlegelone/.config/nvim/lua/utils/prerequisites\
+
+pwd
+ls
+cd /Users/fschlegelone/.config/nvim/lua/utils/prerequisites\
+
+pwd
+ls
+cd utils/prerequisites
+pwd
+nv
+go run main.go
+go run main.go
+go run main.go
+go run main.go
+go run main.go
+go tool dist list
+go tool arch list
+cl
+go run main.go
+go run main.go
+cd ..
+cd ..
+nv plugins/image.lua
+nv plugins/i
+nv plugins/image.lua
+nv
+nv
+cd utils/prerequisites
+go main.go
+go run main.go
+cd ..
+cd ..
+nv
+nv
+nv
+nv
+nv
+nv ~/.config/nvim/lua/plugins
+nv
+nv
+nv
+nv
+nv
+nv
+cd utils
+ls
+touch init.lua
+nv init.lua
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+lua -v
+lua --version
+br ls | gr "lua"
+which lua
+cd 
+cd .config
+ls | gr "asdf"
+cd asdf
+ls
+echo $ASDF_CONFIG_FILE
+cd ..
+cd zsh
+nv
+cd
+cd .config
+rm -rf asdf
+cd
+tree | grep "asdf"
+br ls | gr "asdf"
+br rm --zap asdf
+cd .config/zsh
+ls
+ls -a
+nv .zshrc
+which as
+lua -v
+nv
+cd
+find ~ -name "*asdf*"
+sudo find ~ -name "*asdf*"
+cd Library/Caches
+ls
+cd Homebrew
+ls
+cl
+ls | gr "asdf"
+cat downloads/4e18161a32651a6ee628500c9d36e550f051d75246648faaeb68fe8c1b2df728--asdf--0.14.1.all.bottle.tar.gz
+cl
+rm downloads/4e18161a32651a6ee628500c9d36e550f051d75246648faaeb68fe8c1b2df728--asdf--0.14.1.all.bottle.tar.gz
+ls
+ls | gr "asdf"
+rm downloads/4e18161a32651a6ee628500c9d36e550f051d75246648faaeb68fe8c1b2df728--asdf--0.14.1.all.bottle.tar.gz
+rm downloads/349eb1427548e164bcb3a943b868d4d387326ee7743016c0629806dff71c3f81--asdf-0.14.1.bottle_manifest.json
+rm asdf--0.14.1
+rm asdf_bottle_manifest--0.14.1
+sl
+ls
+cl
+ls | gr "asdf"
+cd
+nvim -v
+lua -v
+luajit -v
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+cd utils/prerequisites
+go run main.go
+ls
+ls
+nv main.go
+nv
+nv
+nv
+nv
+nv
+ls
+touch go.sh
+nv go.sh
+chmod 700 go.sh
+./go.sh
+go run main.go
+go run main.go
+go run main.go
+sudo go run main.go
+go run main.go
+nv
+nv
+nv
+nv
+br ls | gr "pngpaste"
+nv
+nv
+nv
+nv
+nv
+nv
+which pngpaste
+br ls | gr "pngpaste"
+nv
+nv
+go run /Users/fschlegelone/.config/nvim/lua/utils/prerequisites/main.go\
+
+cd /Users/fschlegelone/.config/nvim/lua/utils/prerequisites/
+ls
+go run /Users/fschlegelone/.config/nvim/lua/utils/prerequisites/main.go
+which pngpaste
+nv main.go
+nv main.go
+nv
+br ls | gr "fish"
+br rm --zap "fish"
+rm -rf /opt/homebrew/etc/fish
+rm -rf /opt/homebrew/etc/fish/config.fish
+br ls | gr "fish"
+br ls | gr "pngpaste"
+br install fish
+br ls | gr "fish"
+nv
+nv
+br rm --zap pngpaste
+nv
+nv
+br ls | gr "fish"
+nv
+br rm --zap fish
+br rm --zap pngpaste
+rm -rf /opt/homebrew/etc/fish 
+nv
+br ls | gr "treesitter"
+br ls | gr "tree"
+br rm --zap tree-sitter
+nv
+nv
+nv
+nv
+nv
+nv ~/.config/nvim/lua/plugins/image.lua
+nv
+nv
+br rm --zap pngpaste
+nv
+nv
+cd
+cd .config/nvim
+cd lua/utils/prerequisites
+nv main.go
+br rm --zap pngpaste
+nv
+br rm --zap pngpaste
+nv
+nv
+nv
+cargo
+gem
+nv
+nv
+nv
+nv
+nv
+nv lua/core/globals.lua
+nv
+cd $DEV
+cd projects/cratos/recyba/recyba-fe
+nv
+cd $DEV
+cd projects/cratos/recyba
+echo $RECYBA
+nv ~/.config/zsh/environment.zsh
+nv ~/.config/zsh/variables.zsh
+cd
+cd $RECYBA
+ls
+cd recyba-fe
+nv
+cl
+nv
+pn dev
+cl
+lg
+git fetch origin
+lg
+cl
+lg

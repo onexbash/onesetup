@@ -3,6 +3,8 @@
 # -- PATH -- #
 # gnu coreutils
 export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+# binutils
+export PATH="/opt/homebrew/opt/binutils/bin:$PATH"
 # gnu grep
 export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"
 # gnu sed
@@ -15,4 +17,12 @@ export PATH="/opt/homebrew/opt/gnu-tar/libexec/gnubin:$PATH"
 export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
 # ruby
 export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+# pyenv
+export PATH="$PYENV_ROOT/bin:$PATH" # add pyenv to path
+# zip
+export PATH="/opt/homebrew/opt/zip/bin:$PATH"
+# gcc
+export PATH="/opt/homebrew/opt/gcc:$PATH"
+# unzip
+export PATH="/opt/homebrew/opt/unzip/bin:$PATH"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
