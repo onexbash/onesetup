@@ -1,2 +1,0 @@
-psutil==6.0.0
-appscript==1.2.5

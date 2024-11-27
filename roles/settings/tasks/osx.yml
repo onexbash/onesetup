@@ -91,6 +91,11 @@
     type: string
     value: none
 
+
+# -- BROWSER -- #
+- name: "set firefox as default browser"
+  command: defaultbrowser firefox
+
 # -- DOCK -- #
 - name: "dock | position"
   osx_defaults:

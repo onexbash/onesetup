@@ -26,7 +26,3 @@
     mode: 0700
     owner: "{{ H_USER }}"
   become: true
-
-# -- RUN SCRIPTS -- #
-- name: "install all nerd fonts"
-  command: "brew search '/font-.*-nerd-font/' | awk '{ print $1 }' | xargs -I{} brew install --cask {} || true"
