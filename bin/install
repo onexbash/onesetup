@@ -97,38 +97,9 @@ function pre_install() {
   if [ ! -d "${XDG_CONFIG_HOME:-$HOME/.config}" ]; then
     sudo mkdir "${XDG_CONFIG_HOME:-$HOME/.config}" && echo -e "${I_OK} ~/.config ==> directory created"
   fi
-
   # ensure ~/.ssh directory exists
   if [ ! -d "${HOME}/.ssh" ]; then
     sudo mkdir "${HOME}/.ssh" && echo -e "${I_OK} ~/.ssh ==> directory created"
-  fi
-  # ensure onevault directory exists
-  if [ ! -d "$ONEVAULT" ]; then
-    sudo mkdir "$ONEVAULT" && echo -e "${I_OK}$ONEVAULT ==> directory created"
-  fi
-  # ensure onetemp directory exists
-  # ensure vault password file exists
-  if [[ -f "$ONEVAULT/onesetup.secret" ]]; then
-    echo -e "${I_OK}onesetup.secret file exists." && echo -e "${I_WARN}make sure it contains the correct ansible vault password or onesetup will fail."
-  else
-    sudo touch "$ONEVAULT/onesetup.secret"
-    echo -e "${I_OK}$ONEVAULT/onesetup.secret ==> file created"
-    # prompt user for vault password
-    echo -e "${I_ASK}Enter your ansible vault password: "
-    read -rs vault_password
-    echo -e "${I_ASK}Confirm password: "
-    read -rs vault_password_confirm
-    if [ "$vault_password" != "$vault_password_confirm" ]; then
-      echo -e "${I_ERR}passwords dont match. please try again."
-    else
-      return
-    fi
-    # write vault password into secret file
-    echo "$vault_password" | sudo tee "$ONEVAULT/onesetup.secret" >/dev/null
-    sudo chown "$USER" "$ONEVAULT/onesetup.secret"
-    sudo chmod 600 "$ONEVAULT/onesetup.secret"
-    echo -e "${I_OK}vault password stored in $ONEVAULT/onesetup.secret"
-    echo -e "${I_WARN}!!do not share this file!!"
   fi
   # backup & cleanup onesetup installation
   if [ -d "$ONESETUP" ]; then
