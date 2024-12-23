@@ -104,7 +104,7 @@ function pre_install() {
   fi
   # ensure onevault directory exists
   if [ ! -d "$ONEVAULT" ]; then
-    sudo mkdir "$ONESETUP_SECRET" && echo -e "${I_OK}$ONEVAULT ==> directory created"
+    sudo mkdir "$ONEVAULT" && echo -e "${I_OK}$ONEVAULT ==> directory created"
   fi
   # ensure onetemp directory exists
   # ensure vault password file exists
