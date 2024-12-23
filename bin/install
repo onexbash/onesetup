@@ -42,7 +42,7 @@ done) &
 function dependencies() {
   # ensure xcode cli tools are installed
   if ! xcode-select -p &>/dev/null; then
-    echo -e "${OK}xcode-commandline-tools ==> installing"
+    echo -e "${I_OK}xcode-commandline-tools ==> installing"
     touch "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"            # create temp file prompting 'softwareupdate' to list xct
     XCT=$(softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | sed 's/^[^C]* //') # find latest xct version
     softwareupdate -i "$XCT" --verbose                                                 # install xct
