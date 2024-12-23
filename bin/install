@@ -31,7 +31,7 @@ export ONESETUP_BAK="/opt/.onesetup.BAK" && echo -e "${I_INFO} \$ONESETUP_BAK >>
 
 # -- KEEP SUDO ALIVE -- #
 echo -e "${I_WARN}This script requires sudo privileges. You will be asked for your password."
-echo -e "${I_WARN}DO NOT TRUST ME! This project is open source & you can review the code to see what it does (https://github.com/fschlegelone/onesetup)"
+echo -e "${I_WARN}DO NOT TRUST ME! This project is open source & you can review the code to see what it does (https://github.com/onexbash/onesetup)"
 sudo -v # ask for sudo password up-front
 (while true; do
   sudo -v
