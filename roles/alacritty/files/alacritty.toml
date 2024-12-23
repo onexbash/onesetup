@@ -1,0 +1,43 @@
+# -- GENERAL -- #
+[general]
+# import config files 
+import = [
+  "~/.config/alacritty/onetheme_alacritty.toml",
+  "~/.config/alacritty/styling.toml",
+]
+
+# working_directory = ""
+
+[env]
+# environment variables
+SHELL = "/opt/homebrew/bin/zsh" # setting this envvar avoids conflicts with the shell program setting
+TERM = "xterm-256color"
+
+[terminal]
+# shell options
+# program = "/opt/homebrew/bin/zsh" # shell program to run (set to avoid conflicts with the SHELL envvar)
+# args = ["--login", "-i"]           # -i: interactive --login: login shell
+# args = ["-i"]                    # -i: interactive
+
+# -- USER INTERFACE -- #
+
+[window]
+# window appearance
+startup_mode = "Windowed"  # "Windowed" | "Maximized" | "Fullscreen"
+decorations = "Buttonless" # "Buttonless" | "Full" | "None"
+padding.x = 20
+padding.y = 10
+opacity = 0.7              # transparency
+blur = true                # background blur
+# option / alt key
+option_as_alt = "OnlyRight" # "No" | "OnlyRight" | "OnlyLeft" | "Yes"
+
+[font]
+normal = { family = "ShureTechMono Nerd Font Mono", style = "Regular" }
+bold = { family = "ShureTechMono Nerd Font Mono", style = "Bold" }
+italic = { family = "ShureTechMono Nerd Font Mono", style = "Italic" }
+size = 20
+
+# -- KEYBINDINGS -- #
+[keyboard]
+bindings = []

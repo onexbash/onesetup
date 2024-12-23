@@ -1,0 +1,12 @@
+# -- -- -- -- -- -- -- -- -- -- -- #
+# -- (!) GLOBAL ZSHENV FILE (!) -- #
+# -- -- -- -- -- -- -- -- -- -- -- #
+
+# -- ENVIRONMENT VARIABLES -- #
+
+# HO
+# XDG_CONFIG_HOME
+export XDG_CONFIG_HOME="${HOME:-/Users/$(whoami)}/.config"
+
+# ZDOTDIR - changes the directory where zsh sources config files (.zshrc, .zshenv, .zprofile, .zlogin, .zlogout)
+export ZDOTDIR="$XDG_CONFIG_HOME/zsh"

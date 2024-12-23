@@ -1,0 +1,16 @@
+# cleanup karabiner config dir
+- name: "ensure config dir exists"
+  ansible.builtin.file:
+    path: "{{ H_XDG_CONFIG_HOME }}/karabiner"
+    state: absent
+    force: true
+  become: true
+
+# symlink karabiner config dir
+- name: "symlink karabiner dir"
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: "{{ H_XDG_CONFIG_HOME }}/karabiner"
+    state: link
+    force: true
+  become: true

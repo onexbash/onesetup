@@ -1,0 +1,60 @@
+---
+brew_casks:
+  - unity # game development
+  - java@beta # early access jdk
+  - prisma-studio # SQL ORM
+  - cloudflare-warp # cloudflare zero trust client
+  - zen-browser
+  - fontforge # font patcher / editor
+  - alacritty # terminal emulator
+  - kitty # terminal emulator
+  - alt-tab # alt-tab replacement
+  - appcleaner # app uninstaller
+  - chatgpt
+  - miro # collaborative whiteboard
+  - inkscape # vector graphic editor
+  - nvidia-geforce-now # nvidia cloud gaming
+  - github # github desktop app
+  - cleanshot # screenshot tool (paid)
+  - deepl
+  - discord
+  - session # onion routed messenger
+  - tor-browser
+  - firefox # firefox default
+  - firefox@developer-edition # firefox developer edition
+  - firefox@nightly # firefox pre-release version (daily updates)
+  - gimp # image editor
+  - git-credential-manager # required by git for https auth.
+  - keepassxc # password manager (.kdbx based)
+  - paintbrush # paint
+  - pdfelement # pdf editor (paid)
+  - postman
+  - insomnia # HTTP & GraphQL Client (similar to postman)
+  - hoppscotch # HTTP & GraphQL Client (similar to postman)
+  - proton-drive
+  - proton-mail
+  - protonvpn
+  - proton-pass # password manager
+  - raycast # spotlight replacement
+  - spotify
+  - utm # virtual machine manager
+  - visual-studio-code
+  - zed # IDE similar to vscode
+  - sublime-text # light weight text editor
+  - league-of-legends
+  - wireshark
+  - canva
+  - figma
+  - ugg # league of legends champion analysis
+  - getoutline # knowledge management
+  - balenaetcher # os image writer
+  - obs # streaming software
+  - fedora-media-writer # prepare bootable usb drives for fedora linux
+  - keka # compression tool
+  - kekaexternalhelper # helper utility for keka compression tool
+  - whatsapp # whatsapp desktop client
+  - slack # collaboration tool
+  - docker # docker desktop
+  - karabiner-elements # keyboard remapping tool
+  - wezterm # terminal emulator
+  - blitz-gg # league of legends analytics

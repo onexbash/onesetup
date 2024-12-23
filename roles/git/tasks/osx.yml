@@ -1,0 +1,38 @@
+---
+# -- CLEANUP -- #
+# lazygit config dir
+- name: "cleanup lazygit config"
+  ansible.builtin.file:
+    path: "{{ H_XDG_CONFIG_HOME }}/lazygit"
+    state: absent
+    force: true
+  become: true
+# gitconfig
+- name: "cleanup gitconfig"
+  ansible.builtin.file:
+    path: "{{ H_HOME }}/.gitconfig"
+    state: absent
+    force: true
+  become: true
+
+# -- SYMLINK -- #
+# gitconfig
+- name: "symlink gitconfig"
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/gitconfig"
+    dest: "{{ H_HOME }}/.gitconfig"
+    state: link
+    follow: false
+    force: true
+    mode: "0644"
+    owner: "{{ H_USER }}"
+# lazygit config dir
+- name: "symlink lazygit config"
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/lazygit"
+    dest: "{{ H_XDG_CONFIG_HOME }}/lazygit"
+    state: link
+    follow: false
+    force: true
+    mode: "0600"
+    owner: "{{ H_USER }}"

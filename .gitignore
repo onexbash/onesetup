@@ -1,0 +1,7 @@
+.DS_Store
+.env
+.nvimlog
+zhistory
+.zsh_history
+"
+lazy-lock.json

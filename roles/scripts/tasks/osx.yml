@@ -1,0 +1,28 @@
+---
+# -- CLEANUP -- #
+# cleanup scripts directory
+- name: "cleanup scripts dir"
+  ansible.builtin.file:
+    path: "{{ H_XDG_CONFIG_HOME }}/scripts"
+    state: absent
+    force: true
+  become: true
+
+# -- SYMLINK -- #
+# symlink scripts directory
+- name: "symlink scripts dir"
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: "{{ H_XDG_CONFIG_HOME }}/scripts"
+    state: link
+    force: true
+  become: true
+
+# -- PERMISSIONS -- #
+- name: "set permissions - scripts dir"
+  ansible.builtin.file:
+    path: "{{ H_XDG_CONFIG_HOME }}/scripts"
+    state: directory
+    mode: 0700
+    owner: "{{ H_USER }}"
+  become: true

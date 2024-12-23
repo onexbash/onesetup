@@ -1,0 +1,31 @@
+---
+# accept xcode license
+- name: "accept xcode license"
+  shell:
+    cmd: "sudo xcodebuild -license accept"
+  become: true
+# rosetta2
+- name: "ensure rosetta2 is installed"
+  shell:
+    cmd: "softwareupdate --install-rosetta --agree-to-license"
+  become: true
+  ignore_errors: true
+# bash
+- name: "ensure bash (brew version) is installed"
+  homebrew:
+    name: bash
+    state: latest
+  become: false
+# zsh
+- name: "ensure zsh (brew version) is installed"
+  homebrew:
+    name: zsh
+    state: latest
+  become: false
+# openssh
+- name: "ensure openssh (brew version) is installed"
+  homebrew:
+    name: openssh
+    state: latest
+  become: false
+

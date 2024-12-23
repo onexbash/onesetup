@@ -1,0 +1,21 @@
+---
+# ensure alacritty config directory
+- name: "cleanup config directory (avoid conflicts)"
+  ansible.builtin.file:
+    path: "{{ H_XDG_CONFIG_HOME }}/alacritty"
+    state: absent
+    mode: "0700"
+    owner: "{{ H_USER }}"
+    force: true
+  become: true
+
+# symlink alacritty config files
+- name: "symlink configuration"
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: "{{ H_XDG_CONFIG_HOME }}/alacritty"
+    state: link
+    mode: "0700"
+    owner: "{{ H_USER }}"
+    force: true
+  become: true

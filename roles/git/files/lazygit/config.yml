@@ -1,0 +1,105 @@
+gui:
+  # commit:
+  #   icons:
+  #     - name: "✨"
+  #       description: "New feature"
+  #     - name: "🐛"
+  #       description: "Bug fix"
+  #     - name: "🎨"
+  #       description: "Code style"
+  #     - name: "🔧"
+  #       description: "Maintenance"
+  #     - name: "📝"
+  #       description: "Documentation"
+  #     - name: "🚀"
+  #       description: "Deployment"
+  nerdFontsVersion: "3"
+  # -- COLORSCHEME -- #
+  theme:
+    activeBorderColor:
+      - "#89dceb"
+      - bold
+    inactiveBorderColor:
+      - "#a6adc8"
+    optionsTextColor:
+      - "#89b4fa"
+    selectedLineBgColor:
+      - "#313244"
+    cherryPickedCommitBgColor:
+      - "#45475a"
+    cherryPickedCommitFgColor:
+      - "#89dceb"
+    unstagedChangesColor:
+      - "#f38ba8"
+    defaultFgColor:
+      - "#cdd6f4"
+    searchingActiveBorderColor:
+      - "#f9e2af"
+  authorColors:
+    "*": "#b4befe"
+  # -- LAYOUT -- #
+  windowSize: "normal" # normal, half, full
+  sidePanelWidth: 0.3 # 0 - 1
+  expandFocusedSidePanel: true
+  language: "en"
+  timeFormat: "02/01 - 15/04"
+  # -- GIT -- #
+  commitLength:
+    show: true
+  # skip warnings
+  skipDiscardChangeWarning: true
+  skipStashWarning: true
+  skipRewordInEditorWarning: true
+  showListFooter: false
+  showRandomTip: false
+  # experimentalShowBranchHeads: true
+  showBottomLine: false
+  commandLogSize: 8
+  splitDiff: "always" # always, auto
+  border: "rounded" # single, double, rounded, hidden
+  mouseEvents: false # disable mouse
+
+git:
+  paging:
+    pager: delta --dark --paging=never
+    # useConfig: true
+  commit:
+    signOff: false
+    # verbose: "always" # default, always, never
+  merging:
+    manualCommit: false
+    args: ""
+  log:
+    order: "topo-order" # default, date-order, autor-date-order, topo-order
+    showGraph: "always" # always, never, when-maximised
+    showWholeGraph: true
+  mainBranches: [master, main]
+  autoFetch: true
+  autoRefresh: true
+  branchLogCmd: "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --"
+  allBranchesLogCmd: "git log --graph --all --color=always --abbrev-commit --decorate --date=relative  --pretty=medium"
+  disableForcePushing: true
+  parseEmoji: true
+  # diffContextSize: 3 # how many lines of context shown around a change in diffs
+
+os:
+  editPreset: "nvim"
+
+refresher:
+  refreshInterval: 10
+  fetchInterval: 60
+
+update:
+  method: "background" # prompt, background, never
+  days: 1 # how often to check for updates
+
+disableStartupPopups: false
+notARepository: "skip" # behavior when lazygit runs outside of a repo (prompt, create, skip, quit)
+
+# -- KEYMAPS -- #
+keybinding:
+  universal:
+    prevItem: "k"
+    nextItem: "j"
+    gotoTop: "<c-g>"
+    gotoBottom: "G"

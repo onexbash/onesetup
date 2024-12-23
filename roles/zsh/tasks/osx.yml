@@ -1,0 +1,116 @@
+---
+# -- SET DEFAULT SHELL -- #
+- name: "set default shell to zsh"
+  ansible.builtin.user:
+    name: "{{ H_USER }}"
+    shell: "/opt/homebrew/bin/zsh"
+  become: true
+
+# -- CLEANUP -- #
+# global profile
+- name: "cleanup global profile"
+  ansible.builtin.file:
+    state: absent
+    path: "/etc/profile"
+    force: true
+  become: true
+# global zshenv
+- name: "cleanup global zshenv"
+  ansible.builtin.file:
+    state: absent
+    path: "/etc/zshenv"
+    force: true
+  become: true
+# global zprofile
+- name: "cleanup global zprofile"
+  ansible.builtin.file:
+    state: absent
+    path: "/etc/zprofile"
+    force: true
+  become: true
+# global zshrc
+- name: "cleanup global zshrc"
+  ansible.builtin.file:
+    state: absent
+    path: "/etc/zshrc"
+    force: true
+  become: true
+# ~/.zshenv
+- name: "cleanup ~/.zshenv"
+  ansible.builtin.file:
+    state: absent
+    path: "{{ H_HOME }}/.zshenv"
+    force: true
+# ~/.zprofile
+- name: "cleanup ~/.zprofile"
+  ansible.builtin.file:
+    state: absent
+    path: "{{ H_HOME }}/.zprofile"
+    force: true
+# ~/.zshrc
+- name: "cleanup ~/.zshrc"
+  ansible.builtin.file:
+    state: absent
+    path: "{{ H_HOME }}/.zshrc"
+    force: true
+  become: true
+# zdotdir
+- name: "cleanup zsh_config_dir"
+  ansible.builtin.file:
+    state: absent
+    path: "{{ H_ZDOTDIR }}"
+    force: true
+  become: true
+
+# -- SYMLINK -- #
+# global profile
+- name: "symlink global profile"
+  ansible.builtin.file:
+    state: link
+    src: "{{ role_path }}/files/global_config/profile"
+    dest: "/etc/profile"
+    force: true
+  become: true
+# global zshenv
+- name: "symlink global zshenv"
+  ansible.builtin.file:
+    state: link
+    src: "{{ role_path }}/files/global_config/zshenv"
+    dest: "/etc/zshenv"
+    force: true
+  become: true
+# global zprofile
+- name: "symlink global zprofile"
+  ansible.builtin.file:
+    state: link
+    src: "{{ role_path }}/files/global_config/zprofile"
+    dest: "/etc/zprofile"
+    force: true
+  become: true
+# global zshrc
+- name: "symlink global zshrc"
+  ansible.builtin.file:
+    state: link
+    src: "{{ role_path }}/files/global_config/zshrc"
+    dest: "/etc/zshrc"
+    force: true
+  become: true
+# zdotdir
+- name: "symlik zsh user config"
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/user_config"
+    dest: "{{ H_HOME }}/.config/zsh"
+    state: link
+    follow: false
+    force: true
+  become: true
+
+# -- PERMISSIONS -- #
+- name: "permissions - zsh user config"
+  ansible.builtin.file:
+    path: "{{ H_XDG_CONFIG_HOME }}/zsh"
+    state: directory
+    mode: 0744
+    owner: "{{ H_USER }}"
+    recurse: true
+  become: true

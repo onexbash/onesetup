@@ -1,0 +1,39 @@
+[include]
+  path = /opt/onesetup/roles/themes/files/delta/catppuccin.gitconfig
+[core]
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true # use n & N to move between diff sections
+  dark = true
+  features = catppuccin-mocha
+[user]
+  name = onexbash
+  email = fabian@schlegel.one
+[init]
+  defaultBranch = main
+[push]
+  default = simple
+  autoSetupRemote = true
+[git]
+	autoRefresh = true
+	autoFetch = true
+	refreshInterval = 10
+  fetchInterval = 60
+[merge]
+  conflictstyle = diff3
+[diff]
+  compactionHeuristic = true
+  colorMoved = default
+[credential]
+	helper = /usr/local/share/gcm-core/git-credential-manager
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[credential "https://dev.azure.com"]
+	useHttpPath = true
+[commit]
+	template = /Users/fschlegelone/.config/git/gitmessage

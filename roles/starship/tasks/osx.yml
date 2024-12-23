@@ -1,0 +1,17 @@
+---
+# CLEANUP
+- name: "cleanup starship directory"
+  ansible.builtin.file:
+    state: absent
+    force: true
+    path: "{{ H_XDG_CONFIG_HOME }}/starship"
+  become: true
+
+# SYMLINK
+- name: "symlink starship directory"
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: "{{ H_XDG_CONFIG_HOME }}/starship"
+    state: link
+    force: true
+  become: true

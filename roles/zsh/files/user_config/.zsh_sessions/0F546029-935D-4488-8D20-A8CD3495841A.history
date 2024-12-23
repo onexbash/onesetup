@@ -1,0 +1,1014 @@
+cd
+cd .config/zsh
+nv functions.zsh
+touch docker-compose.yml
+nv docker-compose.yml
+rm docker-compose.yml
+ls
+rm test.conf
+nv lazy-lock.json
+npx pnpm run build
+ls
+rm -rf out
+rm pnpm-lock.yaml
+rm -rf node_modules
+cl
+npx pnpm install
+node -v
+nv package.json
+ls
+nv main.go
+ls
+nv go.sum
+nv go.mod
+ls
+cd ..
+nv package.json
+nv scripts/main.go
+qr2otp
+qr2otp
+cd .ssh
+cat id_ed25519.pub
+cat id_ed25519.pub | pbcopy
+cd
+cd .config/nvim
+nv
+cd $DEV
+cd repos/
+ls
+cd cratosde
+ls
+mkdir whiteboard
+rm -rf whiteboard
+mkdir workhub
+cd workhub
+ls
+git init
+touch LICENSE
+nv LICENSE
+nv LICENSE
+nv LICENSE
+git remote add origin git@github.com:cratosde/workhub.git
+cl
+lg
+touch README.md
+nv README.md
+nv
+nv README.md
+nv
+nv README.md
+touch test.txt
+nv test.txt
+nv test2.txt
+rm test2.txt
+rm test.txt
+nv init.lua
+touch test.txt
+nv test.txt
+touch test.txt
+nv test.txt
+nv
+nv
+nv
+nv
+cd ~/.local/share/nvim/mason/packages
+rm -rf onelsp-env
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+touch docker-compose.yml
+nv docker-compose.yml
+rm docker-compose.yml
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv
+nv README.md
+nv README.md
+node -v
+node -v
+nv README.md
+br ls | gr "nvm"
+nv /opt/onesetup/group_vars/osx/brew_formulaes.yml
+br rm --zap node
+br rm --zap --ignore-dependencies node
+br rm --zap --ignore-dependencies node@18
+br rm --zap --ignore-dependencies node@16
+br rm --zap --ignore-dependencies node@20
+br rm --zap --ignore-dependencies node@22
+br rm --zap --ignore-dependencies node@23
+br rm --zap --ignore-dependencies node@24
+cl
+cl
+br ls | gr "node"
+br ls | gr "nvm"
+br rm --zap nvm
+nv /opt/onesetup/group_vars/osx/brew_formulaes.yml
+br search fnm
+br install fnm
+echo $FNM_ARCH
+echo $FNM_COREPACK_ENABLED
+echo $FNM_ARCH
+fnm completions --shell zsh
+cl
+fnm env
+cd
+cd .config/zsh
+nv modules.zsh
+install_node
+install_node
+install_node
+install_node
+install_node
+fnm env
+nv modules.zsh
+nv
+nv
+nv
+nv
+fnm list-remote
+fnm list-remote
+  local latest=$(fnm list-remote | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)\
+
+echo $latest
+fnm list-remote
+local latest=$(fnm list-remote | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | tail -n1)\
+
+echo $latest
+fnm install v23.3.0
+fnm uninstall v23.3.0
+fnm list
+fnm ls
+bundleid /Applications/Firefox.app
+nv /etc/zshenv
+nv ~/.config/zsh/variables.zsh
+install_node
+fnm ls
+install_node
+fnm rm 
+fnm ls
+fnm rm 23.3.90
+fnm rm 23.3.0
+fnm uninstall 23.3.0
+nv /opt/onesetup/group_vars/osx/brew_casks.yml
+cd $DEV
+cd $DEV
+cd scripts/autostart
+cr run
+speedtest
+cd
+cl
+cd
+cd .config/nvim
+nv
+cd
+cd .config/nvim
+nv
+br ls | gr "ansible"
+nv
+br rm --zap ansible-lint
+cd
+cd /opt/onesetup
+nv group_vars/osx/brew_
+nv group_vars/osx/brew_formulaes.yml
+nv group_vars/osx/brew_formulaes.yml
+nv group_vars/osx/brew_formulaes.yml
+cd
+cd .config/nvim
+nv
+nv
+ansible-lint
+ansible-lint .
+br ls | gr "perl"
+nv group_vars/osx/brew_formulaes.yml
+nv group_vars/osx/brew_casks.yml
+cd
+cd .config/zsh
+nv path.zsh
+cd
+cd /opt/onesetup
+nv main.yml
+cl
+install_node
+fnm list-remote
+uniq
+which uniq
+br search uniq
+br install --cask unity
+cd
+cd /opt/onesetup
+nv
+cd 
+cd .config
+echo $profile
+notepad $profile
+fnm --node-dist-mirror https://nodejs.org/download/nightly/ ls-remote
+fnm ls
+cl
+echo $FNM_DIR
+echo $FNM_NODE_DIST_MIRROR
+fnm list-remote
+fnm install v23.3.0
+fnm ls
+cd zsh
+nv modules.zsh
+nv functions.zsh
+nv lua/utils/languages.lua
+nv
+nv
+nv
+nv
+cd $RECYBA
+cd recyba-fe
+nv
+cd /opt/onesetup
+nv group_vars/osx/brew_formulaes.yml
+cd
+cd .config/nvim
+nv
+cd
+cd .config/nvim
+nv lua/utils/languages.lua
+ls ~/.local/share/nvim/mason/bin/ansible-lint
+cd ~/.local/share/nvim/mason
+ls
+cd packages
+ls
+cd ..
+ls
+ls bin
+cd
+cd .config/nvim
+nv
+nv
+ppath
+ppath | gr "masoN"
+ppath | gr "mason"
+cd $XDG_DATA_HOME
+cd nvim/mason/bin
+ls
+ls -a | gr "ansible"
+nv
+luarocks
+luarocks --version
+br ls | gr "luarocks"
+luarocks --version | grep -oP '([0-9]+\.[0-9]+\.[0-9]+)'
+cd
+rm -rf ~/.local/state/nvim
+rm -rf ~/.local/share/nvim
+rm -rf ~/.cache/n
+rm -rf ~/.cache/nvim
+nv
+nv
+nv
+cd .config/nvim
+nv
+nv
+nv
+nv lua/utils/parsers.lua
+nv
+nv
+nv
+cd /opt/onesetup
+nv
+cd $RECYBA
+cd recyba-fe
+nv
+nv
+nv
+nv
+nv
+pc ssh_keys/neuronet_devops
+nv ~/.config/zsh/aliases.zsh
+cd
+pnpm -v
+g diff fabian origin/dev 
+cl
+g diff fabian origin/main 
+cl
+g diff origin/fabian origin/main 
+cl
+g diff dev main 
+cl
+g diff dev main 
+g diff main dev
+cl
+g diff main dev
+g diff main dev
+git status
+cd ..
+cd recyba-strapi
+lg
+cd ..
+cd recyba-fe
+cl
+g diff main dev
+cl
+g diff origin/main origin/dev 
+g diff fabian origin/f
+g diff fabian origin/fabian 
+g diff fabian main 
+g diff fabian main 
+cl
+g diff origin/fabian origin/main 
+g diff origin/fabian origin/dev 
+cl
+git checkout -b niels origin/niels
+g diff niels origin/main 
+g diff origin/niels origin/main 
+g diff origin/niels origin/fabian 
+g diff origin/niels origin/fix-strapi-uri 
+cl
+cd ..
+cd recyba-strapi
+nv backend/package.json
+pnpm add -D prettier-plugin-packagejson
+cd ..
+cd recyba-fe
+pnpm add -D prettier-plugin-packagejson
+clcl
+cl
+nv .prettierrc
+cd ..
+cd recyba-strapi
+nv package.json
+rm package.json
+cd backend
+nv package.json
+nv package.json
+pnpm install
+pnpm -v
+pnpm install
+pnpm -v
+cl
+nv package.json
+pnpm add -D prettier-plugin-packagejson
+nv package.json
+ls -a
+nv package.json
+pnpm add -D prettier
+nv package.json
+touch .prettierrc
+nv .prettierrc
+nv .prettierrc
+nv package.json
+cd
+cd $RECYBA
+cd recyba-fe
+git fetch origin
+ssh-add ~/.ssh/neuronet_devops
+lg
+git fetch origin
+lg
+nv package.json
+cp package.json ../
+ls
+cd ..
+ls
+mv package.json BAK.package.json-recyba-fe
+ls
+cd recyba-fe
+cl
+lg
+nv ../BAK.package.json-recyba-fe
+nv package.json
+nv package.json
+nv .prettierrc
+nv package.json
+lg
+touch LICENSE
+nv LICENSE
+nv package.json
+cd ..
+cd recyba-strapi
+g diff fabian origin/dev 
+cl
+g diff origin/fabian origin/dev 
+nv /opt/onesetup/group_vars/osx/brew_casks.yml
+nv /opt/onesetup/group_vars/osx/brew_casks.yml
+cd /etc/
+ls
+ls -a | gr "xdg"
+cd /usr/local/share
+ls
+cd
+cd /usr/share/
+ls -a | gr "nvim"
+cd ..
+cd local
+cd share
+ls -a | gr "nvim"
+nv
+nv
+cd
+cd .config
+cp -R nvim onevim
+ls
+rm -rf onevim
+nv
+lg
+g diff origin/fabian origin/main 
+cl
+g diff origin/fabian origin/dev 
+cl
+g diff origin/dev origin/main 
+cl
+nv
+lg
+cd ..
+cd recyba-fe
+echo $NVIM_APPNAME
+cd 
+cd .config/nvim
+cd ../zsh
+nv modules.zsh
+cd ../recyba-strapi
+which dc
+which do
+docker
+cl
+br ls | gr "shadow"
+br rm --zap shadow
+pc ssh_keys/id_ed25519
+nv
+git remote -v
+git status
+ls -a
+rm -rf .git
+cl
+cd ..
+rm -rf scripts
+git clone git@github.com:cratosde/scripts.git scripts
+ls -a
+git clone git@github.com:cratosde/scripts.git
+ls
+cd scripts
+touch README.md
+nv README.md
+cd
+cd $RECYBA
+cd recyba-fe
+nv package.json
+nv ../recyba-strapi/backend/package.json
+git fetch origin 
+git diff origin/fabian origin/dev 
+cd $RECYBA
+cd recyba-fe
+nv
+lg
+cd ..
+cd recyba-strapi
+nv backend/package.json
+lg
+nv /opt/onesetup/group_vars/osx/brew_formulaes.yml
+nv /opt/onesetup/group_vars/osx/brew_formulaes.yml
+br install scc
+cd
+cd .config/nvim
+nv
+nv
+cd
+cd $DEV
+cd repos/cratosde
+cd ..
+cd $RECYBA+
+cd $RECYBA
+cd recyba-fe
+scc 
+git auth
+git status
+cd
+git auth
+github
+which github
+github --help
+which gh
+gh auth status
+gh api user 
+gh api user | jq '.login'
+cd $DEV
+cd repos/cratosde/scripts
+    export GH_USERNAME="$(gh api user | jq '.login')" && git submodule add git@github.com:cratosde/scripts.${GH_USERNAME}.git\
+
+ls
+    export GH_USERNAME="$(gh api user | jq -r '.login')" && git submodule add git@github.com:cratosde/scripts.${GH_USERNAME}.git\
+
+ls
+cd ..
+rm -rf scripts
+    git clone git@github.com:cratosde/scripts.git\
+
+cd scripts
+lg
+ls -a
+cd ..
+ls -a
+cd 
+cd .local/share/nvim/
+ls
+cd ..
+ls
+extundelete
+br search extundelete
+cd 
+cd .config/nvim
+ls -a
+ls backup
+cd
+cd .local/state/nvim/s
+cd .local/state/nvim/
+ls
+ls undo
+nv log
+ls -a
+cd undo
+ls
+open .
+nv %Users%fschlegelone%one-cloud%dev%repos%cratosde%scripts%README.md
+cd
+cd $DEV
+cd repos/cratosde/scripts
+ls
+nv README.md
+cl
+lg
+nv README.md
+cd ..
+touch README.md
+nv README.md
+ls
+rm -rf scripts
+git clone git@github.com:cratosde/scripts.git && cd scripts
+cat README.md
+mv ../README.md .
+ls
+nv README.md
+lg
+cd ..
+rm -rf scripts
+cl
+ls
+git clone git@github.com:cratosde/scripts.git && cd scripts
+ls
+cat README.md
+cl
+export GH_USERNAME="$(gh api user | jq -r '.login')" && git submodule add git@github.com:cratosde/scripts.${GH_USERNAME}.git
+ls
+ls scripts.onexbash
+git submodule update --init --recursive
+nv README.md
+lg
+echo $GH_USERNAME
+ls -a
+ls -a
+git submodule update --init --recursive
+ls -a scripts.onexbash
+ls -a
+ls -a .git
+git submodule status
+cd ..
+cd scripts
+git submodule status
+ls -a
+git submodule add git@github.com:cratosde/scripts.${GH_USERNAME}.git
+lg
+cd ..
+rm -rf scripts
+cl
+git clone git@github.com:cratosde/scripts.git && cd scripts
+ls
+    export GH_USERNAME="$(gh api user | jq -r '.login')" && git submodule add git@github.com:cratosde/scripts.${GH_USERNAME}.git
+ls
+ls -a scripts.onexbash
+git submodule status
+ls -a
+git submodule update --init --recursive
+git add .gitmodules scripts.${GH_USERNAME}
+lg
+git commit -m "Add submodule scripts.${GH_USERNAME}"
+lg
+git push
+nv README.md
+ssh -T git@github.com:cratosde/scripts
+ssh -T git@github.com
+which ssh
+which ssh -A
+/opt/homebrew/bin/ssh -T git@github.com
+/usr/bin/ssh -T git@github.com
+cl
+ls
+touch init.sh
+chmod 777 init.sh
+nv init.sh
+cd ..
+cp -R scripts BAK.scripts
+cd BAK.scripts
+cd ..
+cd BAK.scripts
+rm -rf .git
+cd ..
+cd scripts
+cl
+./init.sh
+ls
+nv init.sh
+cd
+cd $DEV
+cd repos/cratosde/
+mkdir scripts
+cd scripts
+ls
+git init
+ls
+cd
+cd $DEV
+cd repos/cratosde/scripts
+ls
+    export GH_USERNAME="$(gh api user | jq -r '.login')" && \\
+    if [ ! -d "scripts.${GH_USERNAME}" ]; then\
+        git submodule add git@github.com:cratosde/scripts.${GH_USERNAME}.git\
+    else\
+        echo "Submodule scripts.${GH_USERNAME} already exists."\
+    fi\
+
+git submodule status
+./init.sh
+nv ~/.config/zsh/variables.zsh
+cd 
+cd $DEV
+cd repos/cratosde/scripts
+nv init.sh
+./init.sh
+gh auth status
+./init.sh
+cl
+cd
+cl
+nv /opt/onesetup
+cd /opt/onesetup/
+ls
+nv pre_tasks/osx/prerequisites.yml
+br search visual 
+cl
+cd
+cd .config/zsh
+cd
+nv /opt/onesetup/group_vars/osx/brew_formulaes.yml
+cl
+cd
+cd .config/alacritty
+ls
+open .
+nv alacritty.toml
+nv styling.toml
+ls
+nv alacritty.toml
+nv styling.toml
+nv onetheme_alacritty.toml
+ss
+cd
+cd $DEV
+cd 
+cd one-cloud/dev/repos/cratosde/
+ls
+cd scripts
+./init.sh
+cl
+./init.sh
+cl
+ls
+cl
+cd
+cd .config/zsh
+nv functions.zsh
+nv
+nv
+pn run dev
+cp -R ~/Downloads/recyba_legacy_landingpage.html ~/Downloads/recyba_legacy_landingpage_files/ .
+ls
+ls recyba_legacy_landingpage.html
+ls ~/Downloads | gr "recyba"
+ls -a | gr "recyba"
+mv ~/Downloads/recyba_legacy_landingpage
+mv ~/Downloads/recyba_legacy_landingpage .
+cd
+cd Downloads
+cd recyba_legacy_landingpage_files
+ls
+cd ..
+mv recyba_legacy_landingpage_files $RECYBA
+cd $RECYBA
+ls
+mv recyba_legacy_landingpage_files/ recyba-fe/public
+cd recyba-
+ls public
+cd public
+ls recyba_legacy_landingpage_files
+cd ..
+ls
+lg
+git diff fabian origin/f
+git diff fabian origin/fabian 
+ls ~/Downloads | gr "recyba"
+mv public/recyba_legacy_landingpage_files ~/Downloads
+ls ~/Downloads | gr "recyba"
+cd ..
+rm -rf recyba-fe
+git clone git@ssh.dev.azure.com:v3/neuro-net/RECYBA/reactcyba recyba-fe
+rm -rf recyba-fe
+git clone git@ssh.dev.azure.com:v3/neuro-net/RECYBA/reactcyba
+cd reactcyba
+ls
+cd
+cd $RECYBA
+ls
+rm BAK.package.json-recyba-fe
+rm -rf reactcyba
+cd
+find ~ -type f -o -type d | fzf --filter "recyba"
+cl
+ls -a | gr "recyba"
+cd .config/
+ls -a | gr "recyba"
+cd 
+cd one-cloud
+ls -a | gr "recyba"
+ls
+cd backup
+ls
+cd ..
+cd dev
+ls
+cd projects
+ls
+cd cratos
+ls
+cd recyba
+ls
+cd ..
+ls
+cd ..
+ls
+rm -rf onesetup.BAK/
+cd cratos
+ls
+cd ..
+ls
+cd ..
+ls
+ls repos
+ls repos/neuronet_devops
+ls clones
+cd
+cd $RECYBA
+git clone git@ssh.dev.azure.com:v3/neuro-net/RECYBA/reactcyba
+cd reactcyba
+cl
+git checkout -b fabian origin/fabian 
+git checkout -b dev origin/dev 
+git checkout -b niels origin/niels 
+cl
+cd $RECYBA
+cd recyba-fe
+lg
+git diff origin/fabian origin/main 
+git diff origin/fabian origin/main 
+cl
+lg
+git diff origin/main origin/dev 
+cl
+cd ..
+pc ssh_keys/neuronet_devops
+cd $DEV
+cd scripts/autostart
+cr run
+pass 
+pass api_keys/recyba/strapi
+nv
+cl
+cl
+git diff origin/fabian origin/niels 
+nv
+lg
+nv
+lg
+cl
+lg
+lg
+git diff fabian origin/niels 
+git diff fabian origin/dev 
+cl
+git diff origin/fabian origin/main 
+git diff origin/fabian origin/dev 
+git diff origin/niels origin/dev 
+cl
+lg
+git diff fabian origin/dev 
+cl
+lg
+git diff fabian dev 
+cl
+git diff fabian origin/dev 
+cl
+git fetch origin
+lg
+git diff fabian main 
+lg
+git diff origin/niels origin/main 
+cl
+nv .env.template
+nv .env.template
+touch .env
+nv .env
+nv
+cl
+nv
+nv
+nv
+nv
+nv
+nv
+cd
+cd .config/nvim
+nv
+nv
+nv
+cd ../recyba-strapi
+nv README.md
+docker compose --env-file ".env.development" -f "docker-compose.yml" up\
+
+docker ps
+cl
+nv README.md
+openssl genrsa -out private-key.pem 2048
+ls
+rm private-key.pem
+cd
+ls cert
+ls -a | gr "cert"
+mkdir .cert
+cd .cert
+openssl genrsa -out privkey_entra_docusign.pem 2048
+ls
+openssl req -new -key privkey_entra_docusign.pem -out request.csr -subj "/CN=DocuSign"
+openssl x509 -req -in request.csr -signkey privkey_entra_docusign.pem -out certificate.pem -days 365
+ls
+open .
+ls
+lg
+git fetch origin
+lg
+cl
+docker compose --env-file ".env.development" -f "docker-compose.yml" up\
+
+cd $DEV
+ls
+cd projects/cratos/recyba/reactcyba
+cl
+pn dev
+pn run dev
+ssh-add ~/.ssh/neuronet_devops
+cl
+git fetch origin
+git diff dev origin/dev 
+git diff main origin/main 
+git diff fabian origin/f
+cl
+git diff fabian origin/fabian 
+git diff niels origin/niels 
+git diff origin/dev origin/fabian 
+git diff origin/fabian origin/niels 
+cl
+git diff niels origin/niels 
+cl
+pn run dev
+cl
+cl
+pn dev
+pn run dev
+cl
+pn add @azure/identity
+cl
+pn run dev
+pn add @azure/keyvault-secrets
+pn run dev
+cl
+pn run dev
+pn add @azure/keyvault-secrets @azure/identity
+pn run dev
+pn run dev
+cl
+pn run dev
+cl
+pn run dev
+cd $DEV
+cd $RECYBA
+cd reactcyba
+cl
+cl
+nv
+cl
+nv .env
+nv
+nv
+nv
+lg
+pn install
+lg
+cl
+nv .env.template
+nv .env
+nv .env.template
+lg
+cd $DEV
+cd scripts/autostart
+cr run
+cd $DEV
+cd scripts/autostart
+cr run
+cd $RECYBA
+cd reactcyba
+cl
+pn run dev
+cl
+pn run dev
+cl
+pn run dev
+pn run dev
+pc ssh_keys/neuronet_devops
+pn run dev
+ssh-add ~/.ssh/neuronet_devops
+cl
+cl
+pn run lint
+pn run build
+pn install
+pn install
+pn run dev
+cd ../recyba-strapi
+nv .env.development
+nv docker-compose.yml
+cd reactcyba
+cl
+lg
+lg
+cd reactcyba
+cl
+n
+nv
+nv
+git diff origin/fabian origin/main 
+cl
+cl
+cl
+nv
+nv
+ls
+ls -a
+nv pnpm-lock.yaml
+nv pnpm-lock.yaml
+nv
+nv package.json
+nv
+nv
+nv
+nv
+cd ../recyba-strapi
+docker ps
+nv README.md
+docker compose --env-file ".env.development" -f "docker-compose.yml" up\
+
+nvim +8 /Users/fschlegelone/one-cloud/dev/projects/cratos/recyba/reactcyba/lib/strapi/get-links.ts

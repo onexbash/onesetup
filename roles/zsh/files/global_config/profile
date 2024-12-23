@@ -1,0 +1,17 @@
+# -- -- -- -- -- -- -- -- -- -- -- --  #
+# -- (!) GLOBAL PROFILE FILE (!) -- -- #
+# -- -- -- -- -- -- -- -- -- -- -- --  #
+# since this is sourced first, the user can override any of these settings
+
+# initialize the macos path helper utility
+if [ -x /usr/libexec/path_helper ]; then
+	eval `/usr/libexec/path_helper -s`
+fi
+# source /etc/bashrc if running bash
+if [ "${BASH-no}" != "no" ]; then
+	[ -r /etc/bashrc ] && . /etc/bashrc
+fi
+# -- ENVIRONMENT VARIABLES -- #
+# essentials
+export XDG_CONFIG_HOME="${HOME}/.config"
+export ZDOTDIR="${XDG_CONFIG_HOME}/zsh"

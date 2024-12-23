@@ -1,0 +1,126 @@
+# -- PROMPT SETTINGS -- #
+command_timeout = 200
+
+# -- COLOR PALETTE -- #
+palette = "mocha"
+[palettes.mocha]
+pink = "#f5c2e7"
+mauve = "#cba6f7"
+red = "#f38ba8"
+maroon = "#eba0ac"
+yellow = "#f9e2af"
+green = "#a6e3a1"
+sky = "#89dceb"
+blue = "#89b4fa"
+lavender = "#b4befe"
+text = "#cdd6f4"
+base = "#1e1e2e"
+
+# -- STYLE -- #
+[character]
+success_symbol = " [╰─](#cba6f7)"
+error_symbol = " [╰─](#cba6f7)"
+
+# -- SYSTEM INFO -- #
+[username]
+format = " [╭─$user]($style)@"
+style_user = "#cba6f7"         # mauve
+style_root = "#cba6f7"         # mauve
+show_always = true
+
+[hostname]
+format = "[$hostname]($style)"
+style = "#cba6f7"              # mauve
+trim_at = "-"
+ssh_only = false
+disabled = false
+
+[directory]
+style = "#89b4fa"                                                                                 # blue
+truncation_length = 3
+truncate_to_repo = false
+read_only = " "
+read_only_style = "#f38ba8"                                                                       # red
+home_symbol = "~"
+truncation_symbol = "../"
+format = "  [$truncation_symbol]($repo_root_style)[$path]($style)[$read_only]($read_only_style)"
+
+[cmd_duration]
+disabled = true
+
+# -- GIT -- #
+[git_branch]
+style = "#eba0ac"                                       # maroon
+symbol = " "
+format = "  [$symbol$branch(:$remote_branch)]($style)"
+
+# -- DISABLED MODULES -- #
+[git_commit]
+disabled = true
+[git_state]
+disabled = true
+[git_metrics]
+disabled = true
+[git_status]
+disabled = true
+
+# -- TECHNOLOGIES -- #
+[docker_context]
+symbol = ""
+format = " [$symbol]($style) "
+style = "#a6e3a1"                                                          # green
+only_with_files = true
+detect_files = ["docker-compose.yml", "docker-compose.yaml", "Dockerfile"]
+detect_folders = []
+disabled = true
+
+[aws]
+style = "#cba6f7"                          # mauve
+symbol = "  "
+format = "  [$symbol($version )]($style)"
+
+[lua]
+symbol = " "
+style = "#cba6f7"                          # mauve
+format = "  [$symbol($version )]($style)"
+
+[golang]
+style = "#cba6f7"                          # mauve
+symbol = " "
+format = "  [$symbol($version )]($style)"
+
+[java]
+style = "#cba6f7"                          # mauve
+symbol = " "
+format = "  [$symbol($version )]($style)"
+
+[python]
+symbol = " "
+format = '  [${symbol}(${version} )(\($virtualenv\) )]($style)'
+style = "#cba6f7"                                                # mauve
+pyenv_prefix = "venv "
+python_binary = ["./venv/bin/python", "python", "python3"]
+detect_extensions = ["py"]
+version_format = "v${raw}"
+
+[php]
+symbol = " "
+format = " [$symbol($version )]($style)"
+
+[rust]
+style = "#cba6f7" # mauve
+symbol = " "
+
+[shlvl]
+style = "#cba6f7" # mauve
+symbol = " "
+
+[swift]
+style = "#cba6f7" # mauve
+symbol = "ﯣ "
+
+[nodejs]
+style = "#cba6f7"                                # mauve
+format = "  [ Node.js $version](#a6e3a1) "     # green
+detect_files = ["package.json", ".node-version"]
+detect_folders = ["node_modules"]

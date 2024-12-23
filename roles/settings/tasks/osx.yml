@@ -1,0 +1,490 @@
+# -- DOCK ITEMS -- #
+- name: "execute dock setup script"
+  ansible.builtin.command:
+    cmd: "{{ H_XDG_CONFIG_HOME }}/scripts/set_dock_items.sh"
+# -- -- -- -- -- -- -- -- -- -- #
+# --  MACOS SYSTEM SETTINGS  -- #
+# -- -- -- -- -- -- -- -- -- -- #
+- name: "set measurement units to centimeters"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleMeasurementUnits
+    type: string
+    value: Centimeters
+    state: present
+- name: "enable auto software updates"
+  osx_defaults:
+    domain: /Library/Preferences/com.apple.SoftwareUpdate
+    key: AutomaticCheckEnabled
+    type: int
+    value: 1
+  become: true
+- name: "Set language to english(primary) and german(secondary)"
+  osx_defaults:
+    key: AppleLanguages
+    type: array
+    value:
+      - en
+      - de
+- name: "disable app open confirmation"
+  osx_defaults:
+    domain: com.apple.LaunchServices
+    key: LSQuarantine
+    type: bool
+    value: false
+- name: "disable dictation prompt"
+  osx_defaults:
+    domain: com.apple.HIToolbox
+    key: AppleDictationAutoEnable
+    type: int
+    value: 0
+- name: "disable window opening animation"
+  osx_defaults:
+    domain: "-g"
+    key: NSAutomaticWindowAnimationsEnabled
+    type: bool
+    value: false
+
+# -- UPDATES -- #
+# appstore updates
+- name: "appstore | enable automatic updates"
+  osx_defaults:
+    domain: com.apple.commerce
+    key: AutoUpdate
+    type: bool
+    value: true
+- name: "appstore | enable automatic downloads"
+  osx_defaults:
+    domain: com.apple.commerce
+    key: AutoUpdateRestartRequired
+    type: bool
+    value: true
+
+# -- UI -- #
+- name: "set highlight color"
+  osx_defaults:
+    key: AppleHighlightColor
+    type: string
+    value: "0.952900 0.545100 0.658800"
+- name: "set accent color"
+  osx_defaults:
+    key: AppleAccentColor
+    type: int
+    value: 1
+- name: "always show scrollbars"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleShowScrollBars
+    type: string
+    value: Always
+- name: "set sidebar icon size to medium"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: NSTableViewDefaultSizeMode
+    type: int
+    value: 2
+
+- name: "disable apple crash reports"
+  osx_defaults:
+    domain: com.apple.CrashReporter
+    key: DialogType
+    type: string
+    value: none
+
+
+# -- BROWSER -- #
+- name: "set firefox as default browser"
+  command: defaultbrowser firefox
+
+# -- DOCK -- #
+- name: "dock | position"
+  osx_defaults:
+    domain: com.apple.dock
+    key: orientation
+    type: string
+    value: bottom
+- name: "dock | size"
+  osx_defaults:
+    domain: com.apple.dock
+    key: tilesize
+    type: float
+    value: 50
+- name: "dock | show recents"
+  osx_defaults:
+    domain: com.apple.dock
+    key: show-recents
+    type: bool
+    value: false
+- name: "dock | autohide"
+  osx_defaults:
+    domain: com.apple.dock
+    key: show-autohide
+    type: bool
+    value: true
+- name: "dock | autohide animation duration"
+  osx_defaults:
+    domain: com.apple.dock
+    key: autohide-time-modifier
+    type: float
+    value: 0.7
+- name: "dock | autohide delay"
+  osx_defaults:
+    domain: com.apple.dock
+    key: autohide-delay
+    type: float
+    value: 0
+- name: "dock | hide animation"
+  osx_defaults:
+    domain: com.apple.dock
+    key: mineffect
+    type: string
+    value: suck
+- name: "dock | show pinned apps"
+  osx_defaults:
+    domain: com.apple.dock
+    key: static-only
+    type: bool
+    value: false
+- name: "dock | show spaces when scrolling up on a dock item"
+  osx_defaults:
+    domain: com.apple.dock
+    key: scroll-to-open
+    type: bool
+    value: true
+- name: "dock | enable spring loading"
+  osx_defaults:
+    domain: com.apple.dock
+    key: enable-spring-load-actions-on-all-items
+    type: bool
+    value: true
+
+# -- FINDER -- #
+- name: "finder | show quit option"
+  osx_defaults:
+    domain: com.apple.finder
+    key: QuitMenuItem
+    type: bool
+    value: false
+- name: "finder | show extensions"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleShowAllExtensions
+    type: bool
+    value: true
+- name: "finder | show hidden files"
+  osx_defaults:
+    domain: com.apple.finder
+    key: AppleShowAllFiles
+    type: bool
+    value: true
+- name: "finder | show path bar"
+  osx_defaults:
+    domain: com.apple.finder
+    key: ShowPathbar
+    type: bool
+    value: true
+- name: "finder | view style"
+  osx_defaults:
+    domain: com.apple.finder
+    key: FXPreferredViewStyle
+    type: string
+    value: Nlsv # list: Nlsv | colum: clmv | gallery: glyv | icon: icnv
+- name: "finder | keep folders on top"
+  osx_defaults:
+    domain: com.apple.finder
+    key: _FXSortFoldersFirst
+    type: bool
+    value: true
+- name: "finder | search scope"
+  osx_defaults:
+    domain: com.apple.finder
+    key: FXDefaultSearchScope
+    type: string
+    value: SCcf # SCcf = current folder | SCsp = previous scope | SCev = entire volume
+- name: "finder | empty bin after 30days"
+  osx_defaults:
+    domain: com.apple.finder
+    key: FXRemoveOldTrashItems
+    type: bool
+    value: true
+- name: "finder | change file extension warning"
+  osx_defaults:
+    domain: com.apple.finder
+    key: FXEnableExtensionChangeWarning
+    type: bool
+    value: false
+- name: "finder | save to icloud by default"
+  osx_defaults:
+    domain: com.apple.finder
+    key: NSDocumentSaveNewDocumentsToCloud
+    type: bool
+    value: false
+- name: "finder | show titlebar icon"
+  osx_defaults:
+    domain: com.apple.universalaccess
+    key: showWindowTitlebarIcons
+    type: bool
+    value: false
+- name: "finder | titlebar hover delay"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: NSToolbarTitleViewRolloverDelay
+    type: float
+    value: 0
+- name: "finder | sidebar icon size"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: NSTableViewDefaultSizeMode
+    type: int
+    value: 2 # 1: small | 2: medium | 3: large
+
+# -- DESKTOP -- #
+- name: "desktop | keep folders on top"
+  osx_defaults:
+    domain: com.apple.finder
+    key: _FXSortFoldersFirstOnDesktop
+    type: bool
+    value: true
+- name: "desktop | show desktop items"
+  osx_defaults:
+    domain: com.apple.finder
+    key: CreateDesktop
+    type: bool
+    value: false
+- name: "desktop | show volumes"
+  osx_defaults:
+    domain: com.apple.finder
+    key: ShowHardDrivesOnDesktop
+    type: bool
+    value: false
+- name: "desktop | show external volumes"
+  osx_defaults:
+    domain: com.apple.finder
+    key: ShowExternalHardDrivesOnDesktop
+    type: bool
+    value: false
+- name: "desktop | show removable volumes"
+  osx_defaults:
+    domain: com.apple.finder
+    key: ShowRemovableMediaOnDesktop
+    type: bool
+    value: false
+- name: "desktop | show connected servers"
+  osx_defaults:
+    domain: com.apple.finder
+    key: ShowMountedServersOnDesktop
+    type: bool
+    value: false
+
+# -- MENUBAR -- #
+- name: "menubar | blink clock separator"
+  osx_defaults:
+    domain: com.apple.menuextra.clock
+    key: FlashDateSeparators
+    type: bool
+    value: false
+- name: "menubar | clock date format"
+  osx_defaults:
+    domain: com.apple.menuextra.clock
+    key: DateFormat
+    type: string
+    value: "EEE HH:mm"
+# -- MOUSE -- #
+- name: "mouse | acceleration"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: com.apple.mouse.linear
+    type: bool
+    value: true
+- name: "mouse | speed"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: com.apple.mouse.scaling
+    type: float
+    value: 2
+# -- TERMINAL -- #
+- name: "terminal | focus follows mouse"
+  osx_defaults:
+    domain: com.apple.Terminal
+    key: FocusFollowsMouse
+    type: bool
+    value: true
+
+# -- TRACKPAD -- #
+- name: "trackpad | click weight"
+  osx_defaults:
+    domain: com.apple.AppleMultitouchTrackpad
+    key: FirstClickThreshold
+    type: int
+    value: 0 # light: 0 | medium: 1 | firm: 2
+- name: "trackpad | dragging with drag lock"
+  osx_defaults:
+    domain: com.apple.AppleMultitouchTrackpad
+    key: DragLock
+    type: int
+    value: 0
+- name: "trackpad | dragging without drag lock"
+  osx_defaults:
+    domain: com.apple.AppleMultitouchTrackpad
+    key: Dragging
+    type: int
+    value: 0
+- name: "trackpad | 3 finger drag"
+  osx_defaults:
+    domain: com.apple.AppleMultitouchTrackpad
+    key: TrackpadThreeFingerDrag
+    type: bool
+    value: false
+# -- KEYBOARD -- #
+- name: "keyboard | key hold behaviour"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: ApplePressAndHoldEnabled
+    type: bool
+    value: false
+- name: "keyboard | 🌐︎ key behaviour"
+  osx_defaults:
+    domain: com.apple.HIToolbox
+    key: AppleFnUsageType
+    type: int
+    value: 0 # 0: do nothing | 1: change input source | 2: show emojis & symbols | 3: start dication
+- name: "keyboard | drag on gesture"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: NSWindowShouldDragOnGesture
+    type: string
+    value: "YES"
+- name: "keyboard | function keys behaviour (f1 - f12)"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: com.apple.keyboard.fnState
+    type: bool
+    value: true # true: use function keys as standard function keys | false: use function keys as media keys
+
+# -- MISSION CONTROL -- #
+- name: "mission control | auto space arranging behaviour"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: com.apple.keyboard.fnState
+    type: bool
+    value: true
+- name: "mission control | group windows by application"
+  osx_defaults:
+    domain: com.apple.dock
+    key: expose-group-apps
+    type: bool
+    value: true
+- name: "mission control | switch to space with open windows"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleSpacesSwitchOnActivate
+    type: bool
+    value: true
+- name: "mission control | seperate spaces per display"
+  osx_defaults:
+    domain: com.apple.spaces
+    key: spans-display
+    type: bool
+    value: false
+
+# -- FEEDBACK ASSISTANT -- #
+- name: "feedback assistant | autogather large files"
+  osx_defaults:
+    domain: com.apple.appleseed.FeedbackAssistant
+    key: Autogather
+    type: bool
+    value: true
+
+# -- SIMULATOR -- #
+- name: "simulator | screenshot location"
+  osx_defaults:
+    domain: com.apple.iphonesimulator
+    key: ScreenShotSaveLocation
+    type: string
+    value: "~/nas/gallery/screenshots"
+
+# -- TIME MACHINE -- #
+- name: "time machine | dont prompt to use time machine for new disks"
+  osx_defaults:
+    domain: com.apple.TimeMachine
+    key: DoNotOfferNewDisksForBackup
+    type: bool
+    value: true
+
+# -- ACTIVITY MONITOR -- #
+- name: "activity monitor | update frequency"
+  osx_defaults:
+    domain: com.apple.ActivityMonitor
+    key: UpdatePeriod
+    type: int
+    value: 3 # update frequency in seconds
+- name: "activity monitor | dock icon"
+  osx_defaults:
+    domain: com.apple.ActivityMonitor
+    key: IconType
+    type: int
+    value: 0 # 0: default icon | 2: network usage | 3: disk usage | 5: cpu usage
+
+# -- MESSAGES -- #
+- name: "messages | subject field"
+  osx_defaults:
+    domain: com.apple.MobileSMS
+    key: MMSShowSubject
+    type: bool
+    value: true
+
+# -- MISCELLANEOUS -- #
+- name: "help menu | position"
+  osx_defaults:
+    domain: com.apple.helpviewer
+    key: DevMode
+    type: bool
+    value: false
+- name: "dont show notification when a new song starts"
+  osx_defaults:
+    domain: com.apple.Music
+    key: userWantsPlaybackNotifications
+    type: bool
+    value: false
+- name: "disable application quarantine message"
+  osx_defaults:
+    domain: com.apple.LaunchServices
+    key: LSQuarantine
+    type: bool
+    value: false
+- name: "enable auto save"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: NSCloseAlwaysConfirmsChanges
+    type: bool
+    value: true
+
+# -- WALLPAPER -- #
+- name: "wallpaper | copy to pictures directory"
+  copy:
+    src: "wallpaper.jpeg"
+    dest: "{{ ansible_user_dir }}/Pictures/wallpaper.jpeg"
+    mode: "0644"
+    force: true
+- name: "wallpaper | apply"
+  shell: |
+    /usr/bin/osascript <<EOD
+    tell application "System Events"
+      set desktopCount to count of desktops
+      repeat with desktopNumber from 1 to desktopCount
+        tell desktop desktopNumber
+          set picture to "{{ ansible_user_dir }}/Pictures/wallpaper.jpeg"
+        end tell
+      end repeat
+    end tell
+    EOD
+  args:
+    executable: /bin/bash
+
+# -- Restart Services -- #
+- name: "restart | dock"
+  command: killall Dock
+- name: "restart | finder"
+  command: killall Finder
+- name: "restart | system_ui_server"
+  command: killall SystemUIServer

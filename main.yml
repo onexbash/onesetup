@@ -1,0 +1,66 @@
+---
+# -- -- -- -- -- -- -- -- #
+# --   MAIN PLAYBOOK   -- #
+- name: "onesetup"
+  # -- CONNECTION -- #
+  hosts: localhost
+  connection: local
+  # -- VARIABLES -- #
+  vars:
+    H_USER: "{{ lookup('ansible.builtin.env', 'USER') }}"
+    H_HOME: "{{ lookup('ansible.builtin.env', 'HOME') }}"
+    H_XDG_CONFIG_HOME: "{{ lookup('ansible.builtin.env', 'XDG_CONFIG_HOME') | default(lookup('ansible.builtin.env', 'HOME') + '/.config/') }}"
+    H_ZDOTDIR: "{{ lookup('ansible.builtin.env', 'ZDOTDIR') | default(lookup('ansible.builtin.env', 'HOME') + '/.config/zsh') }}"
+  vars_files:
+    - group_vars/encrypted/ssh.yml
+  pre_tasks:
+    # -- INCLUDE PRE_TASKS -- #
+    # common
+    - name: "pre_tasks | common - prerequisites"
+      include_tasks: pre_tasks/common/prerequisites.yml
+    - name: "pre_tasks | common - tbd"
+      include_tasks: pre_tasks/common/tbd.yml
+    # osx
+    - name: "pre_tasks | osx - prerequisites"
+      include_tasks: pre_tasks/osx/prerequisites.yml
+      when: ansible_os_family == "Darwin"
+    - name: "pre_tasks | osx - tbd"
+      include_tasks: pre_tasks/osx/tbd.yml
+      when: ansible_os_family == "Darwin"
+    # fedora
+    - name: "pre_tasks | fedora - prerequisites"
+      include_tasks: pre_tasks/fedora/prerequisites.yml
+      when: ansible_os_family == "RedHat"
+    - name: "pre_tasks | fedora - tbd"
+      include_tasks: pre_tasks/fedora/tbd.yml
+      when: ansible_os_family == "RedHat"
+    # -- INCLUDE GROUP_VARS -- #
+    # osx
+    - name: "group_vars | osx"
+      include_vars:
+        dir: group_vars/osx
+        extensions:
+          - yml
+      when: ansible_os_family == "Darwin"
+    # fedora linux
+    - name: "group_vars | fedora"
+      include_vars:
+        dir: group_vars/fedora
+        extensions:
+          - yml
+      when: ansible_os_family == "RedHat"
+  # -- INCLUDE ROLES -- #
+  # order of the roles is crucial, as some roles depend on the successful execution of preceding roles
+  roles:
+    - { role: aerospace, tags: ["aerospace"] }
+    - { role: apps, tags: ["apps"] }
+    - { role: zsh, tags: ["zsh"] }
+    - { role: git, tags: ["git"] }
+    - { role: ssh, tags: ["ssh"] }
+    - { role: scripts, tags: ["scripts"] }
+    - { role: alacritty, tags: ["alacritty"] }
+    - { role: nvim, tags: ["nvim"] }
+    - { role: starship, tags: ["starship"] }
+    - { role: fonts, tags: ["fonts"] }
+    - { role: settings, tags: ["settings"] }
+    - { role: karabiner, tags: ["karabiner"] }

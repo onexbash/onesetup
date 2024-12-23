@@ -1,0 +1,7 @@
+---
+brew_taps:
+  - powershell/tap # powershll
+  - FelixKratz/formulae
+  - hashicorp/tap # terraform
+  - sdkman/tap # java version manager
+  - felangel/mason # mason (nvim pkg manager)

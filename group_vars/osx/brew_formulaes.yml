@@ -1,0 +1,139 @@
+---
+brew_formulaes:
+  # -- LANGUAGES -- #
+  - typescript
+  - yazi # terminal file manager
+  - go
+  - git-crypt # git repository file encryption
+  - ruby
+  - rust
+  - dotnet
+  - composer # php composer
+  - php # just there that mason.nvim throws no warning
+  - sqlite
+  - julia # just there that mason.nvim throws no warning
+  - perl # just there that mason.nvim throws no warning
+  - postgresql@14
+  - ansible
+  - javacc # java parser
+  - hashicorp/tap/terraform
+  - bc # numeric processing language
+  - lua
+  - imagemagick
+  - tree-sitter # exposes syntax tree used by LSPs
+  # -- LINTER & FORMATTER -- #
+  - eslint
+  - flow # javascript static type checker
+  - luacheck # lua linter
+  - prettier # javascript formatter
+  - ruff # python formatter & linter
+  - shellcheck # shell linter
+  - stylua # lua formatter
+  - tflint # terraform linter
+  - prettierd # prettier running as daemon for performance
+  # -- ANALYZER & SCANNER -- #
+  - tfsec # terraform vulnerability scanner
+  - rust-analyzer # rust code analyzer
+  # -- MANAGERS -- #
+  - pyenv # python version manager
+  - pyenv-virtualenv # python virtual environment manager
+  # -- LINUX UTILITIES -- #
+  - coreutils # gnu utilities
+  - gnutls # gnu utilities
+  - gawk # awk (gnu version)
+  - git # git (gnu version)
+  - gnu-sed # sed (gnu version)
+  - gnu-tar # tar (gnu version)
+  - gnupg # gpg (gnu version)
+  - grep # grep (gnu version)
+  - iproute2mac # linux ip commands for macos (iproute2)
+  # -- COMPILER, INTERPRETER, PARSER, LIBRARIES .. -- #
+  - cmake
+  - cmake-docs
+  - gcc # C compiler
+  - xz # compression tool
+  - sha2 # sha256sum
+  - openssh # replace built-in | ssh
+  - openssl@3 # replace built-in | ssl
+  - jq # json parser
+  - zlib # data-compression library required by python
+  - libgit2@1.7 # git library
+  - ncurses # text-based UI library
+  - maven # java build tool
+  # -- SHELL -- #
+  - bash # bash (brew version)
+  - zsh # zsh (brew version)
+  - fish # fish (brew version)
+  - powershell # microsoft powershell
+  - azure-cli # cli for azure
+  - azure-functions-core-tools@4 # azure functions
+  - zsh-autocomplete
+  - zsh-fast-syntax-highlighting # better version of zsh-syntax-highlighting
+  - zsh-autosuggestions
+  # -- PACKAGE & VERSION MANAGER -- #
+  - luarocks # lua package manager
+  - pdm # python package manager
+  - poetry # python package manager
+  - pnpm # node package manager
+  - yarn # node package manager
+  - sdkman-cli # java version manager
+  # -- TOOLS -- #
+  - scc # code cost analyzer
+  - fnm # node version manager
+  - clipboard # clipboard manager
+  - pass-otp # OTP extension for pass
+  - zbar # barcode extractor
+  - exiftool # tool for exif metadata
+  - cloudflared # cloudflare cli
+  - git-filter-repo # git tool for rewriting git commit history
+  - mason # nvim pkg manager
+  - infisical/get-cli/infisical # secret manager
+  - fontforge # font patcher / editor
+  - unzip # extraction tool
+  - tldr # simplified man pages
+  - pass # CLI password manager
+  - pinentry
+  - git-delta # git pager
+  - glow # markdown preview
+  - ollama # toolchain for llama
+  - neovim # IDE (vim fork)
+  - vim
+  - zip # archiving tool
+  - gh # Github CLI
+  - defaultbrowser # utility to set default browser
+  - tlrc # simplified man pages
+  - catimg # ascii image preview
+  - cheat # cheatsheet engine
+  - sketchybar # custom macos menubar
+  - fontconfig
+  - bat # better cat
+  - ripgrep # better grep
+  - fastfetch # system info
+  - zellij # terminal multiplexer (tmux alternative)
+  - telnet
+  - netcat # network cli tool
+  - zoxide # better cd
+  - speedtest-cli
+  - wireshark
+  - ffmpegthumbnailer # terminal video thumbnailer
+  - mas # macos app store CLI interface
+  - unar # unarchiving tool
+  - poppler # pdf rendering library
+  - tree
+  - wget
+  - xclip # clipboard manager
+  - svgo # svg optimizer
+  - starship
+  - ripgrep
+  - pastel # color cli tool
+  - lazygit # git cli tool
+  - xsv # csv cli
+  - yabai # tiling window manager
+  - skhd # shortcut daemon
+  - borders # window borders
+  - eza # better ls
+  - fd # better find
+  - sk # fuzzy finder
+  - fzf # fuzzy finder
+  - kubectl # kubernetes cli
+  - atuin # shell history tool
