@@ -22,8 +22,8 @@ function execute_before() {
     autoload -Uz compinit
     compinit
   fi
-  # zsh-syntax-highlighting
-  source "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+  # zsh-fast-syntax-highlighting
+  source "$(brew --prefix)/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 }
 
 # -- AFTER -- #

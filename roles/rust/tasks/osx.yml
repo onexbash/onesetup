@@ -1,0 +1,10 @@
+---
+- name: "cleanup ~/.cargo directory"
+  ansible.builtin.file:
+    path: "{{ H_HOME }}/.cargo"
+    state: absent
+
+- name: "initialize rust via rustup-init"
+  ansible.builtin.shell:
+    cmd: "rustup-init -y"
+    creates: "~/.config/cargo" # skips the task if directory exists

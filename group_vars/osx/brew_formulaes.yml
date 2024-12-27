@@ -7,7 +7,6 @@ brew_formulaes:
   - openjdk # java development kit
   - git-crypt # git repository file encryption
   - ruby
-  - rust
   - dotnet
   - composer # php composer
   - php # just there that mason.nvim throws no warning
@@ -22,6 +21,7 @@ brew_formulaes:
   - lua
   - imagemagick
   - tree-sitter # exposes syntax tree used by LSPs
+  - rustup # rust toolchain
   # -- LINTER & FORMATTER -- #
   - eslint
   - flow # javascript static type checker
@@ -33,7 +33,6 @@ brew_formulaes:
   - tflint # terraform linter
   # -- ANALYZER & SCANNER -- #
   - tfsec # terraform vulnerability scanner
-  - rust-analyzer # rust code analyzer
   # -- MANAGERS -- #
   - pyenv # python version manager
   - pyenv-virtualenv # python virtual environment manager
