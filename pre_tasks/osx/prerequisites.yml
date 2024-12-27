@@ -1,29 +1,39 @@
 ---
-# mas appstore cli tool
+# install mas appstore cli tool
 - name: 'ensure mas (appstore cli-tool) is installed'
   homebrew:
     name: mas
     state: latest
   become: false
-# rosetta2
+# install xcode from appstore
+ - name: "appstore | install xcode"
+   community.general.mas:
+     id: "497799835" # xcode identifier
+     state: "latest"
+# accept xcode license
+- name: "accept xcode license"
+  shell:
+    cmd: "sudo xcodebuild -license accept"
+  become: true
+# install rosetta2
 - name: 'ensure rosetta2 is installed'
   shell:
     cmd: 'softwareupdate --install-rosetta --agree-to-license'
   become: true
   ignore_errors: true
-# bash
+# install bash
 - name: 'ensure bash (brew version) is installed'
   homebrew:
     name: bash
     state: latest
   become: false
-# zsh
+# install zsh
 - name: 'ensure zsh (brew version) is installed'
   homebrew:
     name: zsh
     state: latest
   become: false
-# openssh
+# install openssh
 - name: 'ensure openssh (brew version) is installed'
   homebrew:
     name: openssh
