@@ -1,9 +1,10 @@
 ---
-# accept xcode license
-# - name: "accept xcode license"
-#   shell:
-#     cmd: "sudo xcodebuild -license accept"
-#   become: true
+# mas appstore cli tool
+- name: 'ensure mas (appstore cli-tool) is installed'
+  homebrew:
+    name: mas
+    state: latest
+  become: false
 # rosetta2
 - name: 'ensure rosetta2 is installed'
   shell:
