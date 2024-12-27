@@ -39,3 +39,11 @@
     name: openssh
     state: latest
   become: false
+# ensure correct permissions of ~/.config directory
+- name: "ensure correct permissions of ~/.config directory"
+  ansible.builtin.file: 
+    path: "{{ H_HOME }}/.config"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_user_id }}"
+  become: true
