@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # exit on error, undefined variables, and failed commands in pipes
-set -euo pipefail 
+set -euo pipefail
 # -- TERMINAL COLORS -- #
 export C_BLACK='\033[1;30m'
 export C_RED='\033[1;31m'
@@ -14,13 +14,13 @@ export C_WHITE='\033[1;37m'
 export C_GRAY='\033[1;34m'
 export C_RESET='\033[0m'
 # -- INFO PROMPTS -- #
-export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}" # skipping
-export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}" # warning
-export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}" # ok
-export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}" # info
-export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}" # error
-export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}" # ask user for yes/no
-export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}" # ask user for anything
+export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
+export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
+export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
+export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"     # info
+export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"     # error
+export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
+export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
 export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
 # -- ENV VARS -- #
 export ONESETUP="/opt/onesetup" && echo -e "${I_INFO} \$ONESETUP >>> $ONESETUP"
@@ -31,16 +31,16 @@ export ONESETUP_BAK="/opt/.onesetup.BAK" && echo -e "${I_INFO} \$ONESETUP_BAK >>
 # -- FUNCTIONS -- #
 run_playbook() {
   local skip_tags="${1:-}"
-  echo -e "${I_GO} onesetup ==> running ansible playbook"
+  echo -e "${I_OK} onesetup ==> running ansible playbook"
   # initialize homebrew
   eval "$(/opt/homebrew/bin/brew shellenv)"
   # run ansible playbook with optional --skip-tags
   if [ -n "$skip_tags" ]; then
     ansible-playbook "${ONESETUP}/main.yml" --ask-become-pass --ask-vault-pass --skip-tags "$skip_tags" &&
-      echo -e "${I_DONE} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
+      echo -e "${I_OK} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
   else
     ansible-playbook "${ONESETUP}/main.yml" --ask-become-pass --ask-vault-pass &&
-      echo -e "${I_DONE} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
+      echo -e "${I_OK} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
   fi
 }
 
