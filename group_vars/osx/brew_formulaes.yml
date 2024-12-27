@@ -4,6 +4,7 @@ brew_formulaes:
   - typescript
   - yazi # terminal file manager
   - go
+  - openjdk # java development kit
   - git-crypt # git repository file encryption
   - ruby
   - rust
@@ -85,7 +86,7 @@ brew_formulaes:
   - cloudflared # cloudflare cli
   - git-filter-repo # git tool for rewriting git commit history
   - mason # nvim pkg manager
-  - infisical/get-cli/infisical # secret manager
+  - infisical # secret manager
   - fontforge # font patcher / editor
   - unzip # extraction tool
   - tldr # simplified man pages
@@ -99,7 +100,6 @@ brew_formulaes:
   - zip # archiving tool
   - gh # Github CLI
   - defaultbrowser # utility to set default browser
-  - tlrc # simplified man pages
   - catimg # ascii image preview
   - cheat # cheatsheet engine
   - sketchybar # custom macos menubar
