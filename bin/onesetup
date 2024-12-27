@@ -29,20 +29,6 @@ export ANSIBLE_INVENTORY="${ONESETUP}/inventory.ini" && echo -e "${I_INFO} \$ANS
 export ANSIBLE_CONFIG="${ONESETUP}/ansible.cfg" && echo -e "${I_INFO} \$ANSIBLE_CONFIG >>> $ANSIBLE_CONFIG"
 export ONESETUP_BAK="/opt/.onesetup.BAK" && echo -e "${I_INFO} \$ONESETUP_BAK >>> $ONESETUP_BAK"
 
-# -- USER GUIDE -- #
-# get path to onesetup.secret file
-if [[ -z $ONESETUP_SECRET ]]; then
-  echo -e "${I_INFO} \$ONESETUP_SECRET environment variable not set >>> using default"
-else
-  echo -e "${I_INFO} \$ONESETUP_SECRET environment variable set >>> overwriting default"
-fi
-# user instructions (explained in README.md more detailed)
-echo -e "${I_INFO}onesetup allows you to securely store secrets by using ansible vault:"
-echo -e "${I_INFO}STEP 1: Generate the onesetup.secret file that only contains the ansible-vault master-password and nothing else. no whitespaces, no line breaks, !only the password!"
-echo -e "${I_INFO}STEP 2: Set environment variable \$ONESETUP_SECRET to the path where you store onesetup.secret"
-echo -e "${I_INFO}\$ONESETUP_SECRET >>> ${C_CYAN}$ONESETUP_SECRET ${C_RESET}(see README.md if you're confused)"
-echo -e "${I_WARNING}This is your master secret file. Store it in a secure place and additionally save the secret string in a password manager. If you loose the file and the password, you are fucked."
-
 # -- FUNCTIONS -- #
 run_playbook() {
   local skip_tags="${1:-}"
