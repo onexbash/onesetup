@@ -96,7 +96,7 @@
     force: true
   become: true
 # zdotdir
-- name: "symlik zsh user config"
+- name: "symlink zsh user config"
   ansible.builtin.file:
     src: "{{ role_path }}/files/user_config"
     dest: "{{ H_HOME }}/.config/zsh"

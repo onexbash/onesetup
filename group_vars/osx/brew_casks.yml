@@ -1,11 +1,9 @@
 ---
 brew_casks:
-  - prisma-studio # SQL ORM
   - alacritty # terminal emulator
   - alt-tab # alt-tab replacement
   - appcleaner # app uninstaller
   - chatgpt
-  - miro # collaborative whiteboard
   - nvidia-geforce-now # nvidia cloud gaming
   - cleanshot # screenshot tool (paid)
   - deepl
@@ -17,7 +15,7 @@ brew_casks:
   - gimp # image editor
   - git-credential-manager # required by git for https auth.
   - keepassxc # password manager (.kdbx based)
-  - pdfelement # pdf editor (paid)
+  - pdfelement # pdf editor
   - insomnia # HTTP & GraphQL Client (similar to postman)
   - proton-drive
   - proton-mail
@@ -28,8 +26,7 @@ brew_casks:
   - utm # virtual machine manager
   - visual-studio-code
   - sublime-text # light weight text editor
-  - league-of-legends
-  - wireshark
+  - wireshark # network tool
   - canva
   - figma
   - obs # streaming software
@@ -37,6 +34,5 @@ brew_casks:
   - keka # compression tool
   - kekaexternalhelper # helper utility for keka compression tool
   - whatsapp # whatsapp desktop client
-  - slack # collaboration tool
   - docker # docker desktop
   - karabiner-elements # keyboard remapping tool
