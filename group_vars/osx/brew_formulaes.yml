@@ -13,10 +13,10 @@ brew_formulaes:
   - sqlite
   - julia # just there that mason.nvim throws no warning
   - perl # just there that mason.nvim throws no warning
-  - postgresql@14
-  - ansible
+  - postgresql@14 # database
+  - ansible # infrastructure as code
   - javacc # java parser
-  - hashicorp/tap/terraform
+  - hashicorp/tap/terraform # infrastructure as code
   - bc # numeric processing language
   - lua
   - imagemagick
@@ -30,7 +30,6 @@ brew_formulaes:
   - shellcheck # shell linter
   - stylua # lua formatter
   - tflint # terraform linter
-  - prettierd # prettier running as daemon for performance
   # -- ANALYZER & SCANNER -- #
   - tfsec # terraform vulnerability scanner
   - rust-analyzer # rust code analyzer
@@ -63,7 +62,6 @@ brew_formulaes:
   # -- SHELL -- #
   - bash # bash (brew version)
   - zsh # zsh (brew version)
-  - fish # fish (brew version)
   - powershell # microsoft powershell
   - azure-cli # cli for azure
   - azure-functions-core-tools@4 # azure functions
@@ -95,7 +93,7 @@ brew_formulaes:
   - pinentry
   - git-delta # git pager
   - glow # markdown preview
-  - ollama # toolchain for llama
+  - ollama # toolchain for llama AI
   - neovim # IDE (vim fork)
   - vim
   - zip # archiving tool
@@ -114,26 +112,21 @@ brew_formulaes:
   - netcat # network cli tool
   - zoxide # better cd
   - speedtest-cli
-  - wireshark
   - ffmpegthumbnailer # terminal video thumbnailer
   - mas # macos app store CLI interface
   - unar # unarchiving tool
   - poppler # pdf rendering library
   - tree
   - wget
-  - xclip # clipboard manager
   - svgo # svg optimizer
   - starship
   - ripgrep
   - pastel # color cli tool
   - lazygit # git cli tool
   - xsv # csv cli
-  - yabai # tiling window manager
-  - skhd # shortcut daemon
   - borders # window borders
   - eza # better ls
   - fd # better find
-  - sk # fuzzy finder
   - fzf # fuzzy finder
   - kubectl # kubernetes cli
   - atuin # shell history tool

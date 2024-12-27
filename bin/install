@@ -134,6 +134,10 @@ function install() {
     find "$ONESETUP/roles" -type f -name "*.yml" -exec sudo gchmod 644 {} \; &&
     echo -e "${I_OK}onesetup ==> permissions set" || { echo -e "${I_ERR}onesetup ==> failed to set permissions" && exit 1; }
 
+  # -- ANSIBLE GALAXY --#
+  # ensure ansible dependencies are installed
+  ansible-galaxy collection install -r "${ONESETUP}/requirements.yml"
+
   # -- ONESETUP BINARY -- #
   # remove onesetup binary if exists
   [ -f "/usr/local/bin/onesetup" ] && sudo rm -f "/usr/local/bin/onesetup" && echo -e "${I_OK}onesetup ==> binary cleanup"
