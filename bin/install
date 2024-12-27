@@ -14,13 +14,13 @@ export C_WHITE='\033[1;37m'
 export C_GRAY='\033[1;34m'
 export C_RESET='\033[0m'
 # -- INFO PROMPTS -- #
-export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}" # skipping
-export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}" # warning
-export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}" # ok
-export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}" # info
-export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}" # error
-export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}" # ask user for yes/no
-export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}" # ask user for anything
+export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
+export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
+export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
+export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"     # info
+export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"     # error
+export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
+export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
 export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
 # -- ENV VARS -- #
 export ONESETUP="/opt/onesetup" && echo -e "${I_INFO} \$ONESETUP >>> $ONESETUP"
@@ -112,7 +112,7 @@ function pre_install() {
 function install() {
   # -- INSTALLATION -- #
   # clone repository from github
-  sudo git clone --quiet "https://github.com/onetoolkit/onesetup.git" "$ONESETUP" && echo -e "${I_OK} onesetup ==> repository cloned" || { echo -e "${I_ERR}onesetup ==> failed to clone repository" && exit 1; }
+  sudo git clone --quiet "https://github.com/onexbash/onesetup.git" "$ONESETUP" && echo -e "${I_OK} onesetup ==> repository cloned" || { echo -e "${I_ERR}onesetup ==> failed to clone repository" && exit 1; }
 
   echo -e "${I_LOAD}installing ==> onesetup" && sleep 1
   # -- PERMISSIONS & OWNERSHIP -- #
