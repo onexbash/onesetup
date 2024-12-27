@@ -9,19 +9,18 @@ automated workstation setup playbook using ansible, shell scripts & some magic
 ## Getting Started
 
 1. Run installation script
-   `"bash" -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/bin/install)"`
-3. Restart Terminal (because the installation script replaces global shell config files like /etc/zshenv)
-4. Doublecheck that the master password you wanna use for secret encryption is stored in $ONEVAULT/onesetup.secret
-5. Encrypt your ssh keys & config files inside ~/.ssh with ansible vault (authorized_keys, config, known hosts & private & public ssh keys)
-   `cat $HOME/.ssh/<ssh_key_name> | ansible-vault encrypt_string --stdin-name <ssh_key_name> --vault-id "onesetup@/$ONEVAULT/onesetup.secret"`
-6. Replace the encrypted secrets inside the .yml files of /opt/onesetup/group_vars/encrypted with your own
-7. Execute the onesetup command and enjoy your IaC automation environment! :x
-   `onesetup`
-
-## Command Usage
-
-`onesetup` run without parameters to spin up the complete playbook
-`onesetup --skip "tag1, tag2"` --skip can be used to pass tags (role names) you wanna skip
+```bash
+   "bash" -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/bin/install)"
+```
+2. Restart Terminal to reload shell config
+3. Execute onesetup binary
+```bash
+    onesetup
+```
+4. (optional) skip individual roles using --skip
+```bash
+    onesetup --skip "<role_name>, <role_name>"
+```
 
 ## Roadmap
 
