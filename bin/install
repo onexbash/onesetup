@@ -24,7 +24,6 @@ export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}" # ask user for anyt
 export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
 # -- ENV VARS -- #
 export ONESETUP="/opt/onesetup" && echo -e "${I_INFO} \$ONESETUP >>> $ONESETUP"
-export ONEVAULT="${ONEVAULT:-/opt/onevault}" && echo -e "${I_INFO} \$ONEVAULT >>> $ONEVAULT"
 export ANSIBLE_INVENTORY="${ONESETUP}/inventory.ini" && echo -e "${I_INFO} \$ANSIBLE_INVENTORY >>> $ANSIBLE_INVENTORY"
 export ANSIBLE_CONFIG="${ONESETUP}/ansible.cfg" && echo -e "${I_INFO} \$ANSIBLE_CONFIG >>> $ANSIBLE_CONFIG"
 export ONESETUP_BAK="/opt/.onesetup.BAK" && echo -e "${I_INFO} \$ONESETUP_BAK >>> $ONESETUP_BAK"
@@ -119,7 +118,6 @@ function install() {
   # -- PERMISSIONS & OWNERSHIP -- #
   # set ownership
   sudo gchown -R "$USER" "$ONESETUP" && echo -e "${I_OK}$ONESETUP ==> ownership set to $USER" || { echo -e "${I_ERR}$ONESETUP ==> failed to set ownership to $USER" && exit 1; }
-  sudo gchown -R "$USER" "$ONEVAULT" && echo -e "${I_OK}$ONEVAULT ==> ownership set to $USER" || { echo -e "${I_ERR}$ONEVAULT ==> failed to set ownership to $USER" && exit 1; }
   sudo gchown "$USER" "$HOME" && echo -e "${I_OK}$HOME ==> ownership set to $USER" || { echo -e "${I_ERR}$HOME ==> failed to set ownership to $USER" && exit 1; }
   # set permissions
   sudo gchmod -R 700 "${ONESETUP}/bin"

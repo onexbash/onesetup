@@ -24,7 +24,6 @@ export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}" # ask user for anyt
 export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
 # -- ENV VARS -- #
 export ONESETUP="/opt/onesetup" && echo -e "${I_INFO} \$ONESETUP >>> $ONESETUP"
-export ONEVAULT="${ONEVAULT:-/opt/onevault}" && echo -e "${I_INFO} \$ONEVAULT >>> $ONEVAULT"
 export ANSIBLE_INVENTORY="${ONESETUP}/inventory.ini" && echo -e "${I_INFO} \$ANSIBLE_INVENTORY >>> $ANSIBLE_INVENTORY"
 export ANSIBLE_CONFIG="${ONESETUP}/ansible.cfg" && echo -e "${I_INFO} \$ANSIBLE_CONFIG >>> $ANSIBLE_CONFIG"
 export ONESETUP_BAK="/opt/.onesetup.BAK" && echo -e "${I_INFO} \$ONESETUP_BAK >>> $ONESETUP_BAK"
