@@ -219,12 +219,6 @@
     key: NSDocumentSaveNewDocumentsToCloud
     type: bool
     value: false
-- name: "finder | show titlebar icon"
-  osx_defaults:
-    domain: com.apple.universalaccess
-    key: showWindowTitlebarIcons
-    type: bool
-    value: false
 - name: "finder | titlebar hover delay"
   osx_defaults:
     domain: NSGlobalDomain
