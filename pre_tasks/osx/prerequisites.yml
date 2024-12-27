@@ -6,14 +6,14 @@
     state: latest
   become: false
 # install xcode from appstore
- - name: "appstore | install xcode"
-   community.general.mas:
-     id: "497799835" # xcode identifier
-     state: "latest"
+- name: 'appstore | install xcode'
+  community.general.mas:
+    id: '497799835' # xcode identifier
+    state: 'latest'
 # accept xcode license
-- name: "accept xcode license"
+- name: 'accept xcode license'
   shell:
-    cmd: "sudo xcodebuild -license accept"
+    cmd: 'sudo xcodebuild -license accept'
   become: true
 # install rosetta2
 - name: 'ensure rosetta2 is installed'
