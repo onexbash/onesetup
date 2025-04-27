@@ -1,0 +1,21 @@
+---
+- name: "ensure ssh dir exists"
+  file:
+    state: directory
+    path: "/opt/onesetup/ssh"
+    mode: "0700"
+  delegate_to: controller # to run on control node instead of hosts
+
+- name: "rollout ssh key (private)"
+  copy:
+    content: "{{ onesetup_ssh_key_prv }}"
+    dest: "/opt/onesetup/ssh/onesetup"
+    mode: "0600"
+  delegate_to: controller # to run on control node instead of hosts
+
+- name: "rollout ssh key (public)"
+  copy:
+    content: "{{ onesetup_ssh_key_pub }}"
+    dest: "/opt/onesetup/ssh/onesetup.pub"
+    mode: "0600"
+  delegate_to: controller # to run on control node instead of hosts

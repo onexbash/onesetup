@@ -1,0 +1,24 @@
+---
+
+# setup container network
+- name: "setup container network"
+  containers.podman.podman_network:
+    name: onesetup_container_network
+    subnet: "10.22.22.32/28"
+    gateway: "10.22.22.1"
+    force: true
+    ipv4: true
+    ipv6: false
+
+# build container image
+- name: "build control node container image"
+  containers.podman.podman_image:
+    name: onesetup-controller
+    container_file:
+      file: "../Containerfile"
+
+# run container
+- name: "run control node container"
+  containers.podman.podman_container:
+    name: onesetup-controller
+    image: onesetup-controller

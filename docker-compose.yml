@@ -1,0 +1,21 @@
+services:
+  onesetup-controller:
+    build:
+      context: .
+      dockerfile: Containerfile
+    container_name: onesetup-controller
+    networks:
+      onesetup-network:
+        ipv4_address: 10.22.22.10
+    ports:
+      - "7001:22"
+networks:
+  onesetup-network:
+    driver: bridge
+    enable_ipv4: true
+    enable_ipv6: false
+    external: false
+    ipam:
+      config:
+        - subnet: 10.22.22.0/24
+          gateway: 10.22.22.100

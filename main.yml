@@ -1,0 +1,36 @@
+---
+# -- CONTROL NODE -- #
+- name: "onesetup-controller"
+  hosts: controller
+  gather_facts: true
+  vars_files:
+    - config.yml
+    - group_vars/ssh.yml
+  pre_tasks:
+    - name: "include pre_task: ssh"
+      include_tasks:
+        "pre_tasks/ssh.yml"
+# -- BASE CONFIG -- #
+- name: "onesetup"
+  hosts: macos
+  # remote_user: fschlegelone
+  gather_facts: true
+
+# -- VARIABLES -- #
+  vars_files:
+    - config.yml
+    - group_vars/ssh.yml
+
+# -- PRE TASKS -- #
+  pre_tasks:
+    - name: "set facts"
+      set_fact:
+        dotfiles_repo: "https://github.com/{{ github_username }}/dotfiles.git"
+    - name: "include pre_task: dotfiles"
+      include_tasks:
+        "pre_tasks/dotfiles.yml"
+
+# -- TASKS -- #
+  tasks:
+    - name: check connection
+      ping:

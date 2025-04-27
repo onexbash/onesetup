@@ -1,0 +1,9 @@
+---
+# clone dotfiles repo & store it in tmp dir
+- name: "get dotfiles"
+  ansible.builtin.git:
+    repo: "https://github.com/onexbash/dotfiles"
+    dest: "/tmp/dotfiles"
+    clone: true
+    force: true
+    bare: true
