@@ -1,0 +1,20 @@
+# -- -- -- -- -- -- -- -- #
+# --     INVENTORY     -- #
+# -- -- -- -- -- -- -- -- #
+
+# -- WORKSTATIONS -- #
+# variables
+[workstation.vars]
+ansible_port = 7000
+ansible_connection = "local"
+# hosts
+[workstation.hosts]
+onexmac = { ansible_host = "127.0.0.1" }
+
+# -- SERVER -- #
+# variables
+[server.vars]
+ansible_port = 7001
+# hosts
+[server.hosts]
+ansible-controller = { ansible_host = "10.22.22.120" }

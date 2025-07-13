@@ -1,0 +1,16 @@
+---
+# -- PREPARE FILESYSTEM -- #
+- name: "Ensure Installation Directory exists: {{ install_dir }}"
+  file:
+    path: "{{ install_dir }}"
+    owner: "{{ host_user }}"
+    mode: "0744"
+    recurse: true
+    state: directory
+- name: "Ensure Dotfiles Directory exists"
+  file:
+    path: "{{ dotfiles_dir }}"
+    owner: "{{ host_user }}"
+    mode: "0744"
+    recurse: true
+    state: directory

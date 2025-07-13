@@ -1,0 +1,8 @@
+# -- Critical Files -- #
+secrets.yml
+
+# -- Encrypted Files -- #
+!secrets.yml.vault
+
+# -- System Files (auto-generated) -- #
+.DS_Store

@@ -1,0 +1,16 @@
+---
+# -- FETCH DOTFILES -- #
+- name: Fetch Dotfiles from GitHub Repository
+  get_url:
+    url: "{{ dotfiles_repo_raw }}"
+    dest: "/tmp/dotfiles.zip"
+    mode: "0644"
+- name: Unzip Dotfiles
+  unarchive:
+    src: "/tmp/dotfiles.zip"
+    dest: "/tmp"
+    remote_src: true # indicate the archive file is on the host already and not local to the ansible controller
+    exclude:
+      - ".git"
+      - ".gitignore"
+      - "README.md"
