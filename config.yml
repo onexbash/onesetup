@@ -1,20 +1,20 @@
 ---
-dockitems: ["Spotify", "Alacritty"]
-host_user: "fschlegelone" # account with sudo privileges on the host
+dockitems: ['Spotify', 'Alacritty']
+host_user: 'fschlegelone' # account with sudo privileges on the host
 
-install_dir: "/opt/onesetup"
-dotfiles_dir: "{{ install_dir }}/dotfiles"
+install_dir: '/opt/onesetup'
+dotfiles_dir: '{{ install_dir }}/dotfiles'
 
 # dotfiles repository (only github supported)
-github_username: "onexbash"
-dotfiles_repo_name: "dotfiles"
-dotfiles_repo_uri: "https://github.com/{{ github_username }}/{{ dotfiles_repo_name }}.git"
-dotfiles_repo_raw: "https://github.com/{{ github_username }}/{{ dotfiles_repo_name }}/archive/refs/heads/main.zip"
+github_username: 'onexbash'
+dotfiles_repo_name: 'dotfiles'
+dotfiles_repo_uri: 'https://github.com/{{ github_username }}/{{ dotfiles_repo_name }}.git'
+dotfiles_repo_raw: 'https://github.com/{{ github_username }}/{{ dotfiles_repo_name }}/archive/refs/heads/main.zip'
 
 dotfile_mapping:
   - name: nvim
     type: directory
-    target: "{{ HOME }}/.config"
+    target: '{{ HOME }}/.config'
   - name: eza
     type: directory
-    target: "{{ HOME }}/.config"
+    target: '{{ HOME }}/.config'

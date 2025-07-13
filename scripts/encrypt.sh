@@ -8,8 +8,7 @@
 # call helper functions
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source "$SCRIPT_DIR/helper.sh"
-load_stylings
-set_modes
+load_stylings && set_modes
 
 # get project root
 current_dir="$SCRIPT_DIR"

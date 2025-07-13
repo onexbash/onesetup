@@ -1,16 +1,45 @@
 ---
-# -- FETCH DOTFILES -- #
-- name: Fetch Dotfiles from GitHub Repository
+# Ensure Clean Directory
+- name: 'Cleanup Dotfiles Directory'
+  file:
+    path: '{{ dotfiles_dir }}'
+    state: 'absent'
+# Fetch Dotfiles
+- name: 'Fetch Dotfiles from GitHub Repository'
   get_url:
-    url: "{{ dotfiles_repo_raw }}"
-    dest: "/tmp/dotfiles.zip"
-    mode: "0644"
-- name: Unzip Dotfiles
+    url: '{{ dotfiles_repo_raw }}'
+    dest: '/tmp/dotfiles.zip'
+    mode: '0644'
+
+# Unzip Dotfiles
+- name: 'Unzip Dotfiles'
   unarchive:
-    src: "/tmp/dotfiles.zip"
-    dest: "/tmp"
-    remote_src: true # indicate the archive file is on the host already and not local to the ansible controller
+    src: '/tmp/dotfiles.zip'
+    dest: '/tmp'
+    remote_src: false # false: src is on control-node | true: src is on remote host
     exclude:
-      - ".git"
-      - ".gitignore"
-      - "README.md"
+      - 'dotfiles-main/.git'
+      - 'dotfiles-main/.gitignore'
+      - 'dotfiles-main/README.md'
+
+# Rename Dotfiles Folder
+- name: 'Rename Dotfiles folder'
+  command: 'mv /tmp/dotfiles-main /tmp/dotfiles'
+
+# Place Dotfiles Folder
+- name: 'Copy Dotfiles to host storage'
+  copy:
+    src: '/tmp/dotfiles'
+    dest: '/opt/onesetup'
+    force: true
+    remote_src: false # false: src is on control-node | true: src is on remote host
+
+# Cleanup tmp files
+- name: 'Cleanup: tmp dotfiles archive'
+  file:
+    path: '/tmp/dotfiles.zip'
+    state: 'absent'
+- name: 'Cleanup: tmp dotfiles directory'
+  file:
+    path: '/tmp/dotfiles'
+    state: 'absent'
