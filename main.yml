@@ -5,11 +5,12 @@
     - server
   vars_files:
     - config.yml
+    - secrets.yml.vault
   pre_tasks:
-    - name: "Include Pre-Tasks"
-      include_tasks: "{{ item }}"
+    - name: 'Include Pre-Tasks'
+      include_tasks: '{{ item }}'
       loop: "{{ lookup('ansible.builtin.fileglob', 'pre_tasks/*.yml', wantlist=True) }}"
-      tags: ["always"]
+      tags: ['always']
 
   tasks:
     - import_tasks: tasks/dotfiles.yml
