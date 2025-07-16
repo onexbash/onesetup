@@ -32,22 +32,10 @@ dotfile_mapping:
     type: directory
     origin: '{{ dotfiles_dir }}/starship'
     target: '{{ H_XDG_CONFIG_HOME }}/starship'
-  - name: zshrc_home
-    type: file
-    origin: '{{ dotfiles_dir }}/shell/home/.zshrc'
-    target: '{{ H_ZDOTDIR }}/.zshrc'
-  - name: zshenv_home
-    type: file
-    origin: '{{ dotfiles_dir }}/shell/home/.zshenv'
-    target: '{{ H_ZDOTDIR }}/.zshenv'
-  - name: zprofile_home
-    type: file
-    origin: '{{ dotfiles_dir }}/shell/home/.zprofile'
-    target: '{{ H_ZDOTDIR }}/.zprofile'
-  - name: zlogout_home
-    type: file
-    origin: '{{ dotfiles_dir }}/shell/home/.zlogout'
-    target: '{{ H_ZDOTDIR }}/.zlogout'
+  - name: "shell_home"
+    type: directory
+    origin: '{{ dotfiles_dir }}/shell/home'
+    target: '{{ H_ZDOTDIR }}'
   - name: profile_global
     type: file
     origin: '{{ dotfiles_dir }}/shell/global/profile'
