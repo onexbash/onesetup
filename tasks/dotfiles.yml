@@ -1,45 +1,31 @@
 ---
-# Ensure Clean Directory
-- name: 'Cleanup Dotfiles Directory'
+# Ensure Dotfiles Directory Exists
+- name: 'Ensure Dotfiles Directory Exists'
   file:
     path: '{{ dotfiles_dir }}'
-    state: 'absent'
-# Fetch Dotfiles
-- name: 'Fetch Dotfiles from GitHub Repository'
-  get_url:
-    url: '{{ dotfiles_repo_raw }}'
-    dest: '/tmp/dotfiles.zip'
-    mode: '0644'
+    state: directory
+    mode: '0755'
 
-# Unzip Dotfiles
-- name: 'Unzip Dotfiles'
-  unarchive:
-    src: '/tmp/dotfiles.zip'
-    dest: '/tmp'
-    remote_src: false # false: src is on control-node | true: src is on remote host
-    exclude:
-      - 'dotfiles-main/.git'
-      - 'dotfiles-main/.gitignore'
-      - 'dotfiles-main/README.md'
+# Clone Dotfiles Repository
+- name: 'Clone Dotfiles Repository'
+  git:
+    repo: '{{ dotfiles_repo_uri }}'
+    dest: '{{ dotfiles_dir }}'
+    update: true
 
-# Rename Dotfiles Folder
-- name: 'Rename Dotfiles folder'
-  command: 'mv /tmp/dotfiles-main /tmp/dotfiles'
-
-# Place Dotfiles Folder
-- name: 'Copy Dotfiles to host storage'
-  copy:
-    src: '/tmp/dotfiles'
-    dest: '/opt/onesetup'
-    force: true
-    remote_src: false # false: src is on control-node | true: src is on remote host
-
-# Cleanup tmp files
-- name: 'Cleanup: tmp dotfiles archive'
+# Cleanup Dotfiles Targets
+- name: 'Clean up Dotfiles Targets'
   file:
-    path: '/tmp/dotfiles.zip'
-    state: 'absent'
-- name: 'Cleanup: tmp dotfiles directory'
+    path: '{{ item.target }}'
+    state: absent
+  loop: '{{ dotfile_mapping }}'
+  ignore_errors: true
+
+# Symlink Dotfiles
+- name: 'Symlink Dotfiles'
   file:
-    path: '/tmp/dotfiles'
-    state: 'absent'
+    src: '{{ item.origin }}'
+    dest: '{{ item.target }}'
+    state: link
+    force: yes
+  loop: '{{ dotfile_mapping }}'

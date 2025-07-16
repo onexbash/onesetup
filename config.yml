@@ -3,7 +3,7 @@ dockitems: ['Spotify', 'Alacritty']
 host_user: 'fschlegelone' # account with sudo privileges on the host
 
 install_dir: '/opt/onesetup'
-dotfiles_dir: '{{ install_dir }}/dotfiles'
+dotfiles_dir: '/opt/dotfiles'
 
 # dotfiles repository (only github supported)
 github_username: 'onexbash'
@@ -14,7 +14,49 @@ dotfiles_repo_raw: 'https://github.com/{{ github_username }}/{{ dotfiles_repo_na
 dotfile_mapping:
   - name: nvim
     type: directory
-    target: '{{ HOME }}/.config'
+    origin: '{{ dotfiles_dir }}/nvim'
+    target: '{{ H_XDG_CONFIG_HOME }}/nvim'
   - name: eza
     type: directory
-    target: '{{ HOME }}/.config'
+    origin: '{{ dotfiles_dir }}/eza'
+    target: '{{ H_XDG_CONFIG_HOME }}/eza'
+  - name: lazygit
+    type: directory
+    origin: '{{ dotfiles_dir }}/lazygit'
+    target: '{{ H_XDG_CONFIG_HOME }}/lazygit'
+  - name: zshrc_home
+    type: file
+    origin: '{{ dotfiles_dir }}/shell/home/.zshrc'
+    target: '{{ H_ZDOTDIR }}/.zshrc'
+  - name: zshenv_home
+    type: file
+    origin: '{{ dotfiles_dir }}/shell/home/.zshenv'
+    target: '{{ H_ZDOTDIR }}/.zshenv'
+  - name: zprofile_home
+    type: file
+    origin: '{{ dotfiles_dir }}/shell/home/.zprofile'
+    target: '{{ H_ZDOTDIR }}/.zprofile'
+  - name: zlogout_home
+    type: file
+    origin: '{{ dotfiles_dir }}/shell/home/.zlogout'
+    target: '{{ H_ZDOTDIR }}/.zlogout'
+  - name: profile_global
+    type: file
+    origin: '{{ dotfiles_dir }}/shell/global/profile'
+    target: '/etc/profile'
+  - name: zshrc_global
+    type: file
+    origin: '{{ dotfiles_dir }}/shell/global/zshrc'
+    target: '/etc/zshrc'
+  - name: zshenv_global
+    type: file
+    origin: '{{ dotfiles_dir }}/shell/global/zshenv'
+    target: '/etc/zshenv'
+  - name: zprofile_global
+    type: file
+    origin: '{{ dotfiles_dir }}/shell/global/zprofile'
+    target: '/etc/zprofile'
+  - name: zlogout_global
+    type: file
+    origin: '{{ dotfiles_dir }}/shell/global/zlogout'
+    target: '/etc/zlogout'
