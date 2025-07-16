@@ -24,6 +24,14 @@ dotfile_mapping:
     type: directory
     origin: '{{ dotfiles_dir }}/lazygit'
     target: '{{ H_XDG_CONFIG_HOME }}/lazygit'
+  - name: 'aerospace'
+    type: directory
+    origin: '{{ dotfiles_dir }}/aerospace'
+    target: '{{ H_XDG_CONFIG_HOME }}/aerospace'
+  - name: "starship"
+    type: directory
+    origin: '{{ dotfiles_dir }}/starship'
+    target: '{{ H_XDG_CONFIG_HOME }}/starship'
   - name: zshrc_home
     type: file
     origin: '{{ dotfiles_dir }}/shell/home/.zshrc'
