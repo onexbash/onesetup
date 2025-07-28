@@ -1,9 +1,34 @@
 ---
+# -- PREPARE CONNECTION -- #
+# check if ansible connect user has sudo privileges
+- name: "Ensure Ansible Connect User has sudo privileges"
+  block:
+    - name: "Test sudo access"
+      become: true
+      command: "whoami"
+      register: sudo_check
+    - debug:
+        msg: "✓ SUCCESS: User has sudo privileges (whoami returned: {{ sudo_check.stdout }})"
+  rescue:
+    - debug:
+        msg: "✗ FAILED: User does not have sudo privileges"
+
 # -- PREPARE FILESYSTEM -- #
+# check if install dir exists
 - name: 'Ensure Installation Directory exists: {{ install_dir }}'
   file:
     path: '{{ install_dir }}'
-    owner: '{{ host_user }}'
+    owner: '{{ ansible_user }}'
     mode: '0744'
     recurse: true
     state: directory
+
+# check if dotfiles dir exists
+- name: 'Ensure Dotfiles Directory exists: {{ dotfiles_dir }}'
+  file:
+    path: '{{ install_dir }}'
+    owner: '{{ ansible_user }}'
+    mode: '0744'
+    recurse: true
+    state: directory
+

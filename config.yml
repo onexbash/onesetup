@@ -1,6 +1,6 @@
 ---
 dockitems: ['Spotify', 'Alacritty']
-host_user: 'fschlegelone' # account with sudo privileges on the host
+ansible_user: 'fschlegelone' # account with sudo privileges on the remote targets
 
 install_dir: '/opt/onesetup'
 dotfiles_dir: '/opt/dotfiles'
