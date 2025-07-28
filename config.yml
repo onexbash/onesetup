@@ -12,30 +12,42 @@ dotfiles_repo_uri: 'https://github.com/{{ github_username }}/{{ dotfiles_repo_na
 dotfiles_repo_raw: 'https://github.com/{{ github_username }}/{{ dotfiles_repo_name }}/archive/refs/heads/main.zip'
 
 dotfile_mapping:
+    # nvim
   - name: nvim
     type: directory
     origin: '{{ dotfiles_dir }}/nvim'
     target: '{{ H_XDG_CONFIG_HOME }}/nvim'
+    # eza
   - name: eza
     type: directory
     origin: '{{ dotfiles_dir }}/eza'
     target: '{{ H_XDG_CONFIG_HOME }}/eza'
+    # lazygit
   - name: lazygit
     type: directory
     origin: '{{ dotfiles_dir }}/lazygit'
     target: '{{ H_XDG_CONFIG_HOME }}/lazygit'
+    # aerospace
   - name: 'aerospace'
     type: directory
     origin: '{{ dotfiles_dir }}/aerospace'
     target: '{{ H_XDG_CONFIG_HOME }}/aerospace'
+    # git
+  - name: "git"
+    type: directory
+    origin: "{{ dotfiles_dir }}/git"
+    target: '{{ H_XDG_CONFIG_HOME }}/git'
+    # starship
   - name: "starship"
     type: directory
     origin: '{{ dotfiles_dir }}/starship'
     target: '{{ H_XDG_CONFIG_HOME }}/starship'
+    # shell (home)
   - name: "shell_home"
     type: directory
     origin: '{{ dotfiles_dir }}/shell/home'
     target: '{{ H_ZDOTDIR }}'
+    # shell (global)
   - name: profile_global
     type: file
     origin: '{{ dotfiles_dir }}/shell/global/profile'
