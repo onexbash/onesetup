@@ -22,6 +22,11 @@ dotfile_mapping:
     type: directory
     origin: '{{ dotfiles_dir }}/eza'
     target: '{{ H_XDG_CONFIG_HOME }}/eza'
+    # zed
+  - name: zed
+    type: directory
+    origin: '{{ dotfiles_dir }}/zed'
+    target: '{{ H_XDG_CONFIG_HOME }}/zed'
     # lazygit
   - name: lazygit
     type: directory
