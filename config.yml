@@ -32,6 +32,11 @@ dotfile_mapping:
     type: directory
     origin: '{{ dotfiles_dir }}/aerospace'
     target: '{{ H_XDG_CONFIG_HOME }}/aerospace'
+    # alacritty
+  - name: 'alacritty'
+    type: directory
+    origin: '{{ dotfiles_dir }}/alacritty'
+    target: '{{ H_XDG_CONFIG_HOME }}/alacritty'
     # atuin
   - name: 'atuin'
     type: directory
