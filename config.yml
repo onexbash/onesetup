@@ -32,6 +32,11 @@ dotfile_mapping:
     type: directory
     origin: '{{ dotfiles_dir }}/aerospace'
     target: '{{ H_XDG_CONFIG_HOME }}/aerospace'
+    # atuin
+  - name: 'atuin'
+    type: directory
+    origin: '{{ dotfiles_dir }}/atuin'
+    target: '{{ H_XDG_CONFIG_HOME }}/atuin'
     # git
   - name: "git"
     type: directory
