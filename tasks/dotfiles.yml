@@ -1,10 +1,4 @@
 ---
-# Ensure Dotfiles Directory Exists
-- name: 'Ensure Dotfiles Directory Exists'
-  file:
-    path: '{{ dotfiles_dir }}'
-    state: directory
-    mode: '0755'
 
 # Clone Dotfiles Repository
 - name: 'Clone Dotfiles Repository'
@@ -12,6 +6,13 @@
     repo: '{{ dotfiles_repo_uri }}'
     dest: '{{ dotfiles_dir }}'
     update: true
+
+# Set Dotfiles Directory file permissions
+- name: 'Set Dotfiles Directory file permissions'
+  file:
+    path: '{{ dotfiles_dir }}'
+    state: directory
+    mode: '0755'
 
 # Cleanup Dotfiles Targets
 - name: 'Clean up Dotfiles Targets'
@@ -27,5 +28,5 @@
     src: '{{ item.origin }}'
     dest: '{{ item.target }}'
     state: link
-    force: yes
+    force: true
   loop: '{{ dotfile_mapping }}'

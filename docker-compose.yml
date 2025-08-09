@@ -1,0 +1,10 @@
+services:
+  onesetup-controller:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "8000:8000"
+      - "8443:443"
+      - "822:22"
+      - "8080:8080"
