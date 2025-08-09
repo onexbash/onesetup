@@ -9,6 +9,7 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8000:8000"
+      - "7000:7000"
       - "22:22"
     tty: true
     stdin_open: true
