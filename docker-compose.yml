@@ -1,5 +1,7 @@
 services:
   onesetup-controller:
+    container_name: onesetup-controller
+    hostname: onesetup-controller
     build:
       context: .
       dockerfile: ./Dockerfile
