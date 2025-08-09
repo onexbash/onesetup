@@ -79,4 +79,4 @@ else
 fi
 
 # Start container
-podman-compose -f "$INSTALL_DIR/docker-compose.yml" up && echo -e "${I_OK}Control-Node installed and started successfully!"
+podman-compose -f "$INSTALL_DIR/docker-compose.yml" run "onesetup-controller" && echo -e "${I_OK}Control-Node installed and started successfully!"

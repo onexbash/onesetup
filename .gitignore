@@ -6,3 +6,6 @@ secrets.yml
 
 # -- System Files (auto-generated) -- #
 .DS_Store
+
+.env
+!.env.template
