@@ -1,4 +1,4 @@
-FROM fedora:latest
+FROM fedora:latest as onesetup-controller
 
 # Install with cleanup
 RUN dnf install -y git ansible && \
