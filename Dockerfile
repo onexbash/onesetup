@@ -5,6 +5,8 @@ RUN dnf install -y git ansible && \
   dnf clean all && \
   rm -rf /var/cache/dnf
 
+RUN git clone "https://github.com/onexbash/onesetup.git" "/opt/onesetup"
+
 # Create and use consistent directory
 WORKDIR /opt/onesetup
 
