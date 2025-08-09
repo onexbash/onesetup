@@ -9,6 +9,10 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8000:8000"
+      - "22:22"
     tty: true
     stdin_open: true
     # working_dir: /opt/onesetup
+networks:
+  - "onesetup"
+network_mode: "host"
