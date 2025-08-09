@@ -70,7 +70,7 @@ else
 fi
 
 # Prepare Container Engine (Podman Machine)
-if podman machine list | grep -E '^onesetup\s+.*\s+running'; then
+if ! podman machine list | grep -qE '^onesetup\s+.*\s+running'; then
     podman machine init "onesetup" --disk-size "32"
     podman machine start "onesetup"
 fi
