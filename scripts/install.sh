@@ -78,5 +78,6 @@ else
     exit 1
 fi
 
-# Start container
-podman-compose -f "$INSTALL_DIR/docker-compose.yml" run "onesetup-controller" && echo -e "${I_OK}Control-Node installed and started successfully!"
+# Build & Run Control Node Container
+podman-compose -f "$INSTALL_DIR/docker-compose.yml" build "onesetup-controller" --no-cache && echo -e "${I_OK}Control-Node image built successfully!"
+podman-compose -f "$INSTALL_DIR/docker-compose.yml" run "onesetup-controller" && echo -e "${I_OK}Control-Node container successfully running!"

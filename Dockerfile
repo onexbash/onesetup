@@ -5,6 +5,10 @@ RUN dnf install -y git ansible && \
   dnf clean all && \
   rm -rf /var/cache/dnf
 
+# Invalidate cache to force image rebuild when file changes happen.
+ADD https://raw.githubusercontent.com/onexbash/onesetup/main/README.md /tmp/watch
+
+# Clone Repository
 RUN git clone "https://github.com/onexbash/onesetup.git" "/opt/onesetup"
 
 # Create and use consistent directory
