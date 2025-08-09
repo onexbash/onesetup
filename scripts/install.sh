@@ -70,9 +70,15 @@ else
 fi
 
 # Prepare Container Engine (Podman Machine)
-if ! podman machine list | grep -qE '^onesetup\s+.*\s+running'; then
+if ! podman machine list --format json | jq -e '.[] | select(.Name=="onesetup")' &>/dev/null; then
+    echo -e "${I_OK}Creating new Podman machine 'onesetup'..."
     podman machine init "onesetup" --disk-size "32"
     podman machine start "onesetup"
+elif ! podman machine list | grep -qE '^onesetup\s+.*\s+running'; then
+    echo -e "${I_OK}Starting existing Podman machine 'onesetup'..."
+    podman machine start "onesetup"
+else
+    echo -e "${I_OK}Podman machine 'onesetup' is already running"
 fi
 
 # Start container
