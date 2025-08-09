@@ -1,6 +1,7 @@
 version: "3.8"
 services:
   onesetup-controller:
+    image: onesetup-controller
     container_name: onesetup-controller
     hostname: onesetup-controller
     build:

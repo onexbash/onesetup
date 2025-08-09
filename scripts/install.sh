@@ -79,10 +79,4 @@ else
 fi
 
 # Start container
-echo -e "${I_OK}Starting container..."
-cd "$INSTALL_DIR" || {
-    echo -e "${I_ERR}Failed to enter installation directory: $INSTALL_DIR"
-    exit 1
-}
-
 podman-compose -f "$INSTALL_DIR/docker-compose.yml" up && echo -e "${I_OK}Control-Node installed and started successfully!"
