@@ -1,5 +1,4 @@
 FROM ansible/ansible:fedora25 AS controller
-RUN dnf update --refresh
 RUN dnf install git
 
 WORKDIR /onesetup
