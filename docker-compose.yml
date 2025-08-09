@@ -14,5 +14,5 @@ services:
     stdin_open: true
     # working_dir: /opt/onesetup
 networks:
-  - "onesetup"
-network_mode: "host"
+  onesetup:
+    name: "onesetup"
