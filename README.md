@@ -15,8 +15,6 @@ Currently in Scope of this project is:
 - App Settings (.plist files)
 - Firefox Bookmarks (+ Firefox Developer Edition)
 
-:w
-Installation
 ### Installation
 Run the install script on the machine you wanna run your [Control-Node](https://docs.ansible.com/ansible/latest/network/getting_started/basic_concepts.html) on.
 It will automatically spin up a Container via [podman](https://podman.io/) where the [onesetup](https://github.com/onexbash/onesetup) playbook is executed from.
