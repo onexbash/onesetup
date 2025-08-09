@@ -82,8 +82,4 @@ cd "$INSTALL_DIR" || {
     exit 1
 }
 
-podman compose up --watch "$INSTALL_DIR/docker-compose.yml" || {
-    echo -e "${I_ERR}Failed to start containers"
-    exit 1
-}
-echo -e "${I_OK}Control-Node installed and started successfully!"
+podman-compose -f "$INSTALL_DIR/docker-compose.yml" up && echo -e "${I_OK}Control-Node installed and started successfully!"
