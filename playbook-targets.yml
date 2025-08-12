@@ -11,6 +11,7 @@
   vars_files:
     - config.yml
     - secrets.yml.vault
+
   pre_tasks:
     - name: 'Include Pre-Tasks'
       include_tasks: '{{ item }}'
