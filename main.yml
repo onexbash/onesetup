@@ -1,21 +1,3 @@
 ---
-- name: onesetup
-  hosts:
-    - workstation
-  gather_facts: true
-  vars:
-    H_HOME: "{{ lookup('ansible.builtin.env', 'HOME') }}"
-    H_XDG_CONFIG_HOME: "{{ lookup('ansible.builtin.env', 'XDG_CONFIG_HOME', default=H_HOME + '/.config/') }}"
-    H_ZDOTDIR: "{{ lookup('ansible.builtin.env', 'ZDOTDIR') | default(lookup('ansible.builtin.env', 'HOME') + '/.config/zsh') }}"
-    H_CARGO_HOME: "{{ lookup('ansible.builtin.env', 'CARGO_HOME', default=H_HOME + '/.config/cargo') }}"
-  vars_files:
-    - config.yml
-    - secrets.yml.vault
-  pre_tasks:
-    - name: 'Include Pre-Tasks'
-      include_tasks: '{{ item }}'
-      loop: "{{ lookup('ansible.builtin.fileglob', 'pre_tasks/*.yml', wantlist=True) }}"
-      tags: ['always']
-
-  tasks:
-    - import_tasks: tasks/dotfiles.yml
+- ansible.builtin.import_playbook: playbook-controller.yml
+- ansible.builtin.import_playbook: playbook-targets.yml
