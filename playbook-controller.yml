@@ -25,4 +25,9 @@
         content: "{{ ssh_keys.onesetup }}"
         dest: "~/.ssh/onesetup"
         mode: "0600"
+    - name: "Add remote targets SSH fingerprint to known_hosts"
+      known_hosts:
+        path: ~/.ssh/known_hosts
+        name: "{{ inventory_hostname }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -H ' + inventory_hostname) }}"
 
