@@ -9,7 +9,7 @@ RUN dnf update -y && \
   dnf install -y "git" "ansible" "iputils" "curl" "sshpass" "traceroute" && \
   dnf clean all
 
-RUN ping onexmac-cratos.local
+RUN ping -c 2 onexmac-cratos.local
 RUN traceroute 10.22.22.100
 RUN traceroute 8.8.8.8
 # # TODO: DEBUG, remove later
