@@ -6,7 +6,7 @@ RUN echo "Timestamp: ${TIMESTAMP}"
 
 # Install packages with cleanup & registry update
 RUN dnf update -y && \
-  dnf install -y "git" "ansible" "iputils" "curl" && \
+  dnf install -y "git" "ansible" "iputils" "curl" "sshpass" && \
   dnf clean all
 
 # TODO: DEBUG, remove later
