@@ -12,13 +12,3 @@
   rescue:
     - debug:
         msg: "✗ FAILED: User does not have sudo privileges"
-
-# check if dotfiles dir exists
-- name: 'Ensure Dotfiles Directory exists: {{ dotfiles_dir }}'
-  file:
-    path: '{{ install_dir }}'
-    owner: '{{ ansible_user }}'
-    mode: '0744'
-    recurse: true
-    state: directory
-

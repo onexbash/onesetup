@@ -9,3 +9,5 @@ secrets.yml
 
 .env
 !.env.template
+
+*test*

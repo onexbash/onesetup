@@ -7,12 +7,25 @@
     dest: '{{ dotfiles_dir }}'
     update: true
 
-# Set Dotfiles Directory file permissions
-- name: 'Set Dotfiles Directory file permissions'
+# File Permissions: Dotfiles
+- name: 'Set File Permissions: {{ dotfiles_dir }}/*'
+  file:
+    path: '{{ dotfiles_dir }}'
+    state: directory
+    mode: '0644'
+    owner: '{{ ansible_user }}'
+    group: '{{ sudo_group }}'
+    recurse: true
+
+# File Permissions: Dotfiles Directory
+- name: 'Set File Permissions: {{ dotfiles_dir }}'
   file:
     path: '{{ dotfiles_dir }}'
     state: directory
     mode: '0755'
+    owner: '{{ ansible_user }}'
+    group: '{{ sudo_group }}'
+    recurse: false
 
 # Cleanup Dotfiles Targets
 - name: 'Clean up Dotfiles Targets'
