@@ -1,62 +1,74 @@
 #!/usr/bin/env bash
 
-# -- ANSIBLE VAULT ENCRYPT SCRIPT -- #
-# Use this script to encrypt your plaintext secrets.yml to an encrypted ansible-vault file (secrets.yml.vault)
-# ! NEVER commit plaintext password files to version control. Publish the encrypted file instead.
-# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- #
-
 # call helper functions
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source "$SCRIPT_DIR/helper.sh"
-load_stylings && set_modes
+load_stylings && set_modes && load_tools
 
-# get project root
-current_dir="$SCRIPT_DIR"
-while [[ "$current_dir" != "/" ]]; do
-  if [[ -f "$current_dir/main.yml" || -f "$current_dir/ansible.cfg" ]]; then
-    break # exit loop
-  fi
-  current_dir=$(dirname "$current_dir")
-done
-ONESETUP_ROOT="$current_dir"
 
-SECRET_FILE_PLAINTEXT=$ONESETUP_ROOT/secrets.yml
-SECRET_FILE_ENCRYPTED=$ONESETUP_ROOT/secrets.yml.vault
-
-# check if encrypted secret file exists. If yes, prompt if it should be overwritten.
-if [[ -f "$SECRET_FILE_ENCRYPTED" ]]; then
-  encrypted_file_present=1
-  echo -e "${I_WARN}An ansible-vault encrypted secret file already exists: $SECRET_FILE_ENCRYPTED"
-  read -p "$(echo -e "${I_ASK_YN}Overwrite? ")" -r answer
-  case "$answer" in
-    [Yy]) answer_overwrite=1 ;;
-    *) answer_overwrite=0 ;;
-  esac
-else
-  encrypted_file_present=0
-fi
-
-# check if plaintext secret file exists
-if [[ ! -f "$SECRET_FILE_PLAINTEXT" ]]; then
-  echo -e "${I_ERR}No plaintext secret file found in $SECRET_FILE_PLAINTEXT. Please make sure it exists before running this script again."
-  exit 1 # exit with error
-fi
-
-# declare encrypt function
-function encrypt(){
-  ansible-vault encrypt "$SECRET_FILE_PLAINTEXT" --output "$SECRET_FILE_ENCRYPTED"
-  echo -e "${I_DONE}Secrets encrypted to: $SECRET_FILE_ENCRYPTED"
-  echo -e "${I_INFO}You can now use this as vars file in ansible."
+# Encrypt String with Ansible-Vault
+function encrypt_string() {
+  printf "%b" "${I_ASK}Secret to Encrypt: "
+  read -r secret
+  printf "%b" "${I_ASK}Variable Name: "
+  read -r varname
+  ansible-vault encrypt_string \
+    --show-input \
+    --vault-id "onesetup@prompt" \
+    --encrypt-vault-id "onesetup" \
+    --name "$varname" \
+    "$secret" | pbcopy
+  echo -e "${I_OK}Encrypted string copied to clipboard."
 }
+# Encrypt File Content with Ansible-Vault
+function encrypt_file() {
+  local filepath="$1"
 
-# call encrypt function
-if [[ "$encrypted_file_present" -eq 0 ]]; then
-  encrypt
-elif [[ "$encrypted_file_present" -eq 1 ]]; then
-  if [[ "$answer_overwrite" -eq 1 ]]; then
-    encrypt
-  elif [[ "$answer_overwrite" -eq 0 ]]; then
-    echo -e "${I_ERR}Encrypted Secret File already exists & user doesn't want to overwrite it. \n Exiting.."
-    exit 1
+  # Check if file exists
+  if [[ ! -f "$filepath" ]]; then
+    echo -e "${I_ERR}File not found: $filepath"
+    return 1
   fi
-fi
+
+  # Read the file content into a variable
+  local filecontent
+  filecontent=$(<"$filepath")
+
+  # Ask for variable name
+  printf "%b" "${I_ASK}Variable Name: "
+  read -r varname
+
+  # Encrypt and copy to clipboard
+  ansible-vault encrypt_string \
+    --show-input \
+    --vault-id "onesetup@prompt" \
+    --encrypt-vault-id "onesetup" \
+    --name "$varname" \
+    "$filecontent" | pbcopy
+
+  echo -e "${I_OK}Encrypted file content copied to clipboard."
+}
+# User Selection to decide which encrypt function to run
+choice=$(gum choose "Encrypt String" "Encrypt File Content" \
+  --cursor.foreground "#cba6f7" \
+  --header.foreground "#cba6f7" \
+  --selected.foreground "#cba6f7" \
+  --header "Choose:" \
+  --no-show-help \
+  --ordered
+)
+case "$choice" in
+  "Encrypt String")
+    encrypt_string
+    ;;
+  "Encrypt File Content")
+    # gum file picker
+    filepath=$(gum file \
+      --cursor.foreground "#cba6f7" \
+      --header.foreground "#cba6f7" \
+      --selected.foreground "#cba6f7" \
+      --all
+      )  
+    encrypt_file "$filepath"
+    ;;
+esac

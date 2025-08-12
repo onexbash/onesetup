@@ -72,6 +72,15 @@ function load_env_file() {
   fi
 }
 
+function load_tools(){
+  # gum
+  if ! command -v gum >/dev/null 2>&1; then
+    echo -e "${I_DO}Installing gum"
+    brew install gum
+  fi
+}
+
+
 function print_sysinfo() {
   HOSTNAME="$(hostname -s)"
   OS="$(sw_vers -productName)"

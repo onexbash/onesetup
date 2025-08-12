@@ -3,8 +3,26 @@
   hosts: localhost
   connection: local
   gather_facts: true
+  # pre_tasks:
+  #   - name: 'Include Pre-Tasks'
+  #     include_tasks: '{{ item }}'
+  #     loop: "{{ lookup('ansible.builtin.fileglob', 'pre_tasks/*.yml', wantlist=True) }}"
+  #     tags: ['controller']
   tasks:
-    - name: Print the gateway for each host when defined
-      ansible.builtin.debug:
-        msg: System {{ inventory_hostname }} has gateway {{ ansible_default_ipv4.gateway }}
-      when: ansible_default_ipv4.gateway is defined
+    - name: "Prepare SSH Directory"
+      file:
+        path: "~/.ssh"
+        state: directory
+        mode: "0700"
+        recurse: false
+    - name: "Decrypt & rollout onesetup ssh key (public)"
+      copy:
+        content: "{{ ssh_keys.onesetup_pub }}"
+        dest: "~/.ssh/onesetup.pub"
+        mode: "0644"
+    - name: "Decrypt & rollout onesetup ssh key (private)"
+      copy:
+        content: "{{ ssh_keys.onesetup }}"
+        dest: "~/.ssh/onesetup"
+        mode: "0600"
+

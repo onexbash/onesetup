@@ -1,13 +1,11 @@
 # -- Critical Files -- #
 secrets.yml
+.env
+!.env.template
 
 # -- Encrypted Files -- #
 !secrets.yml.vault
 
 # -- System Files (auto-generated) -- #
 .DS_Store
-
-.env
-!.env.template
-
 *test*
