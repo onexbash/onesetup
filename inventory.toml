@@ -5,7 +5,7 @@
 # -- WORKSTATIONS -- #
 # variables
 [workstation.vars]
-ansible_port = 7000
+ansible_port = 22
 ansible_user = "fschlegelone"
 # hosts
 [workstation.hosts]

@@ -43,3 +43,52 @@ function set_modes() {
     fi
   fi
 }
+# Get Working Directory where a script is located.
+function get_script_pwd() {
+  SOURCE="${BASH_SOURCE[0]}"
+  while [ -L "$SOURCE" ]; do
+    DIR="$(cd -P -- "$(dirname -- "$SOURCE")" >/dev/null 2>&1 && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+  done
+  # this directory
+  THIS_DIR="$(cd -P -- "$(dirname -- "$SOURCE")" >/dev/null 2>&1 && pwd)" && export THIS_DIR="$THIS_DIR"
+  # parent directory of this directory
+  PARENT_DIR="$(dirname "$THIS_DIR")" && export PARENT_DIR="$PARENT_DIR"
+  # repository root (only works inside of a git repository)
+  REPO_ROOT="$(git rev-parse --show-toplevel)" && export REPO_ROOT="$REPO_ROOT"
+}
+
+# Accepts a directory as parameter & loads variables from all .env files inside of it.
+# usage: load_env_file "/path/to/project/directory"
+function load_env_file() {
+  local env_dir="$1"
+  if [ -f "$env_dir/.env" ]; then
+    set -a
+    source "$env_dir/.env"
+    set +a
+  else
+    echo "No .env file found in $env_dir" >&2
+  fi
+}
+
+function print_sysinfo() {
+  HOSTNAME="$(hostname -s)"
+  OS="$(sw_vers -productName)"
+  OS_VERSION="$(sw_vers -productVersion)"
+  IFACE="$(route -n get default 2>/dev/null | awk '/interface:/{print $2; exit}')"
+  
+  IPV4=""
+  if [[ -n "${IFACE}" ]]; then
+    if ipconfig getifaddr "$IFACE" >/dev/null 2>&1; then
+      IPV4="$(ipconfig getifaddr "$IFACE")"
+    else
+      IPV4="$(ifconfig "$IFACE" 2>/dev/null | awk '$1=="inet"{print $2; exit}')"
+    fi
+  fi
+  echo -e "${I_INFO}HOSTNAME: $HOSTNAME"
+  echo -e "${I_INFO}OS: $OS"
+  echo -e "${I_INFO}OS Version: $OS_VERSION"
+  echo -e "${I_INFO}Network Interface: ${IFACE:-unknown}${IPV4:+ ($IPV4)}"
+}
+
