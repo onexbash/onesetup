@@ -1,11 +1,11 @@
 ---
-sudo_group: 'sudox' # name of the admin/sudo group that will be created on the remote targets
+sudo_group: 'xsudoers' # name of the admin/sudo group that will be created on the remote targets
 
-install_dir: '/opt/onesetup'
-dotfiles_dir: '/opt/dotfiles'
+install_dir: '/opt/xsetup'
+dotfiles_dir: '/opt/xdots'
 
 github_username: 'onexbash'
-dotfiles_repo_name: 'dotfiles' # dotfiles repository name (github/gitlab)
+dotfiles_repo_name: 'xdots' # dotfiles repository name (github/gitlab)
 dotfiles_repo_uri: 'https://github.com/{{ github_username }}/{{ dotfiles_repo_name }}.git'
 dotfiles_repo_raw: 'https://github.com/{{ github_username }}/{{ dotfiles_repo_name }}/archive/refs/heads/main.zip'
 

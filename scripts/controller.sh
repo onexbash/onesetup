@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Variables
-REPO_URL="https://github.com/onexbash/onesetup.git"
-INSTALL_DIR="/opt/onesetup"
+REPO_URL="https://github.com/onexbash/xsetup.git"
+INSTALL_DIR="/opt/xsetup"
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # Load helper script
 source "$SCRIPT_DIR/helper.sh"
