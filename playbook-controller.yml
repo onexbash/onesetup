@@ -9,17 +9,24 @@
         path: "/home/onesetup/.ssh"
         state: directory
         mode: "0700"
+        owner: "onesetup"
+        group: "onesetup"
         recurse: false
     - name: "Decrypt & rollout onesetup ssh key (public)"
       copy:
         content: "{{ ssh_keys.id_onesetup_pub }}"
         dest: "/home/onesetup/.ssh/id_onesetup.pub"
         mode: "0644"
+        owner: "onesetup"
+        group: "onesetup"
     - name: "Decrypt & rollout onesetup ssh key (private)"
       copy:
         content: "{{ ssh_keys.id_onesetup }}"
         dest: "/home/onesetup/.ssh/id_onesetup"
         mode: "0600"
+        owner: "onesetup"
+        group: "onesetup"
+
     # - name: "Add remote targets SSH fingerprint to known_hosts"
     #   known_hosts:
     #     path: ~/.ssh/known_hosts
