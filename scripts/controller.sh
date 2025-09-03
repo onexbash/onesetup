@@ -69,12 +69,10 @@ else
 fi
 
 # Prepare Container Engine (Podman Machine)
-if podman info &>/dev/null; then
+if podman info &>/dev/null; then # TODO: properly handle podman-machine checks
   echo -e "${I_OK}Podman machine is running"
 else
-  echo -e "${I_ERR}Podman machine is not running or Podman is not installed" >&2
-  echo -e "${I_ERR}Please boot up a podman machine & restart this script." >&2
-  exit 1
+  echo -e "${I_ERR}Podman machine is not running or Podman is not installed. Please startup a podman machine & restart this script." && exit 1
 fi
 
 # Build & Run Control Node Container
