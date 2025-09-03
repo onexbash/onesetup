@@ -1,6 +1,7 @@
 ---
 - name: "onesetup - Controller Playbook"
-  hosts: localhost
+  hosts:
+    - localhost
   connection: local
   gather_facts: true
   tasks:

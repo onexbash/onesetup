@@ -2,6 +2,7 @@
 - name: "onesetup - Remote Target Playbook"
   hosts:
     - workstation
+  connection: ssh
   gather_facts: true
   vars:
     H_HOME: "{{ lookup('ansible.builtin.env', 'HOME') }}"
@@ -9,15 +10,13 @@
     H_ZDOTDIR: "{{ lookup('ansible.builtin.env', 'ZDOTDIR') | default(lookup('ansible.builtin.env', 'HOME') + '/.config/zsh') }}"
     H_CARGO_HOME: "{{ lookup('ansible.builtin.env', 'CARGO_HOME', default=H_HOME + '/.config/cargo') }}"
     ansible_become_password: "{{ sudo_password }}"
+    ansible_password: "{{ sudo_password }}"
   vars_files:
     - config.yml
-
   pre_tasks:
     - name: 'Include Pre-Tasks'
       include_tasks: '{{ item }}'
       loop: "{{ lookup('ansible.builtin.fileglob', 'pre_tasks/*.yml', wantlist=True) }}"
       tags: ['always']
-
   tasks:
     - import_tasks: tasks/dotfiles.yml
-
