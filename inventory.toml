@@ -9,4 +9,4 @@ ansible_port = 22
 ansible_user = "fschlegelone"
 # hosts
 [workstation.hosts]
-onexmac-cratos = { ansible_host = "10.22.22.100" }
+onexmac-cratos = { ansible_host = "100.65.55.179" }
