@@ -24,4 +24,6 @@ WORKDIR /home/onesetup/src
 # Verify & Run Ansible Playbook
 RUN test -f /usr/bin/ansible-playbook || (echo "ansible-playbook missing!" && exit 1)
 RUN "/usr/bin/ansible" all -i "inventory.toml" -m ping
-CMD ["/usr/bin/ansible-playbook", "--ask-vault-password", "main.yml"]
+RUN "/usr/bin/ansible-playbook" --ask-vault-password "main.yml"
+CMD ["tail", "-f", "/dev/null"]
+# CMD ["/usr/bin/ansible-playbook", "--ask-vault-password", "main.yml"]
