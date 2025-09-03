@@ -17,13 +17,13 @@
         recurse: false
     - name: "Decrypt & rollout onesetup ssh key (public)"
       copy:
-        content: "{{ ssh_keys.onesetup_pub }}"
-        dest: "~/.ssh/onesetup.pub"
+        content: "{{ ssh_keys.id_onesetup_pub }}"
+        dest: "~/.ssh/id_onesetup.pub"
         mode: "0644"
     - name: "Decrypt & rollout onesetup ssh key (private)"
       copy:
-        content: "{{ ssh_keys.onesetup }}"
-        dest: "~/.ssh/onesetup"
+        content: "{{ ssh_keys.id_onesetup }}"
+        dest: "~/.ssh/id_onesetup"
         mode: "0600"
     - name: "Add remote targets SSH fingerprint to known_hosts"
       known_hosts:

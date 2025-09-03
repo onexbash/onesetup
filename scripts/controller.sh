@@ -19,8 +19,8 @@ case "$OS" in
 esac
 echo -e "${I_OK}Detected platform: $PLATFORM"
 
-# Install prerequisites
-install_prerequisites() {
+# Ensure prerequisites are satisfied
+prerequisites() {
   # git
   if ! command -v git &> /dev/null; then
     case "$PLATFORM" in
@@ -41,40 +41,47 @@ install_prerequisites() {
   fi
 }
 
-
-# Install prerequisites
-echo -e "${I_OK}Checking prerequisites..."
-install_prerequisites
-
-# Cleanup installation directory
-echo -e "${I_OK}Preparing installation directory..."
-if [[ -d "$INSTALL_DIR" ]]; then
-  sudo rm -rf "$INSTALL_DIR"
-fi
-sudo mkdir -p "$(dirname "$INSTALL_DIR")"
-
-# Clone repository
-echo -e "${I_OK}Cloning repository..."
-sudo git clone "$REPO_URL" "$INSTALL_DIR" || {
-  echo -e "${I_ERR}Failed to clone repository" && exit 1
+function install() {
+  # Cleanup installation directory
+  echo -e "${I_OK}Preparing installation directory..."
+  if [[ -d "$INSTALL_DIR" ]]; then
+    sudo rm -rf "$INSTALL_DIR"
+  fi
+  sudo mkdir -p "$(dirname "$INSTALL_DIR")"
+  
+  # Clone repository
+  echo -e "${I_OK}Cloning repository..."
+  sudo git clone "$REPO_URL" "$INSTALL_DIR" || {
+    echo -e "${I_ERR}Failed to clone repository" && exit 1
+  }
+  
+  # Set permissions
+  echo -e "${I_OK}Setting permissions..."
+  sudo chmod 774 "$INSTALL_DIR"
+  if [[ "$PLATFORM" == "linux" ]]; then
+    sudo chown -R "$(id -u):$(id -g)" "$INSTALL_DIR"
+  else
+    sudo chown -R "$(id -u)" "$INSTALL_DIR"
+  fi
 }
 
-# Set permissions
-echo -e "${I_OK}Setting permissions..."
-sudo chmod 774 "$INSTALL_DIR"
-if [[ "$PLATFORM" == "linux" ]]; then
-  sudo chown -R "$(id -u):$(id -g)" "$INSTALL_DIR"
-else
-  sudo chown -R "$(id -u)" "$INSTALL_DIR"
-fi
+function connection() {
+  ssh-keygen -t ed25519 -C "onesetup@control-node"
+}
 
-# Prepare Container Engine (Podman Machine)
-if podman info &>/dev/null; then # TODO: properly handle podman-machine checks
-  echo -e "${I_OK}Podman machine is running"
-else
-  echo -e "${I_ERR}Podman machine is not running or Podman is not installed. Please startup a podman machine & restart this script." && exit 1
-fi
+function run() {
+  # Prepare Container Engine (Podman Machine)
+  if podman info &>/dev/null; then # TODO: properly handle podman-machine checks
+    echo -e "${I_OK}Podman machine is running"
+  else
+    echo -e "${I_ERR}Podman machine is not running or Podman is not installed. Please startup a podman machine & restart this script." && exit 1
+  fi
+  # Build & Run Control Node Container
+  podman-compose -f "$INSTALL_DIR/docker-compose.yml" build "onesetup-controller" --no-cache && echo -e "${I_OK}Control-Node image built successfully!"
+  podman-compose -f "$INSTALL_DIR/docker-compose.yml" run "onesetup-controller" && echo -e "${I_OK}Control-Node container successfully running!"
+}
 
-# Build & Run Control Node Container
-podman-compose -f "$INSTALL_DIR/docker-compose.yml" build "onesetup-controller" --no-cache && echo -e "${I_OK}Control-Node image built successfully!"
-podman-compose -f "$INSTALL_DIR/docker-compose.yml" run "onesetup-controller" && echo -e "${I_OK}Control-Node container successfully running!"
+echo -e "${I_OK}Checking prerequisites..." && prerequisites
+echo -e "${I_OK}Installing Control-Node..." && install
+echo -e "${I_OK}Establishing Connection..." && connection
+echo -e "${I_OK}Running Control-Node Container..." && run
