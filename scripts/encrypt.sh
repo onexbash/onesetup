@@ -4,7 +4,7 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source "$SCRIPT_DIR/helper.sh"
 load_stylings && set_modes && load_tools
-
+vault_id="onesetup"
 
 # Encrypt String with Ansible-Vault
 function encrypt_string() {
@@ -14,8 +14,8 @@ function encrypt_string() {
   read -r varname
   ansible-vault encrypt_string \
     --show-input \
-    --vault-id "xsetup@prompt" \
-    --encrypt-vault-id "xsetup" \
+    --vault-id "$vault_id@prompt" \
+    --encrypt-vault-id "$vault_id" \
     --name "$varname" \
     "$secret" | pbcopy
   echo -e "${I_OK}Encrypted string copied to clipboard."
@@ -41,8 +41,8 @@ function encrypt_file() {
   # Encrypt and copy to clipboard
   ansible-vault encrypt_string \
     --show-input \
-    --vault-id "xsetup@prompt" \
-    --encrypt-vault-id "xsetup" \
+    --vault-id "$vault_id@prompt" \
+    --encrypt-vault-id "$vault_id" \
     --name "$varname" \
     "$filecontent" | pbcopy
 
