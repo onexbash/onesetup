@@ -1,9 +1,9 @@
 version: "3.8"
 services:
-  onesetup-controller:
-    image: onesetup-controller
-    container_name: onesetup-controller
-    hostname: onesetup-controller
+  onesetup:
+    image: onesetup
+    container_name: onesetup
+    hostname: onesetup
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -13,7 +13,6 @@ services:
       - "22:22"
     tty: true
     stdin_open: true
-    # working_dir: /opt/onesetup
 networks:
   onesetup:
     name: "onesetup"

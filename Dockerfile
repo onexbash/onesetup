@@ -1,4 +1,4 @@
-FROM fedora:latest as onesetup-controller
+FROM fedora:latest as onesetup
 
 # Force image rebuilding when this Dockerfile's content changes.
 ARG TIMESTAMP
@@ -22,5 +22,4 @@ RUN git clone "https://github.com/onexbash/onesetup.git" "/home/onesetup/src"
 WORKDIR /home/onesetup/src
 
 # Verify & Run Ansible Playbook
-RUN ping "100.65.55.179"
 CMD ["/usr/bin/ansible-playbook", "--ask-vault-password", "main.yml"]
