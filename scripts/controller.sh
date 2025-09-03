@@ -66,7 +66,8 @@ function install() {
 }
 
 function connection() {
-  ssh-keygen -t ed25519 -C "onesetup@control-node"
+  echo "connecting.."
+  # ssh-keygen -t ed25519 -C "onesetup@control-node"
 }
 
 function run() {

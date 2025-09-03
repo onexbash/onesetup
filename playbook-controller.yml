@@ -3,11 +3,6 @@
   hosts: localhost
   connection: local
   gather_facts: true
-  # pre_tasks:
-  #   - name: 'Include Pre-Tasks'
-  #     include_tasks: '{{ item }}'
-  #     loop: "{{ lookup('ansible.builtin.fileglob', 'pre_tasks/*.yml', wantlist=True) }}"
-  #     tags: ['controller']
   tasks:
     - name: "Prepare SSH Directory"
       file:
@@ -25,9 +20,9 @@
         content: "{{ ssh_keys.id_onesetup }}"
         dest: "~/.ssh/id_onesetup"
         mode: "0600"
-    - name: "Add remote targets SSH fingerprint to known_hosts"
-      known_hosts:
-        path: ~/.ssh/known_hosts
-        name: "{{ inventory_hostname }}"
-        key: "{{ lookup('pipe', 'ssh-keyscan -H ' + inventory_hostname) }}"
+    # - name: "Add remote targets SSH fingerprint to known_hosts"
+    #   known_hosts:
+    #     path: ~/.ssh/known_hosts
+    #     name: "{{ inventory_hostname }}"
+    #     key: "{{ lookup('pipe', 'ssh-keyscan -H ' + inventory_hostname) }}"
 
