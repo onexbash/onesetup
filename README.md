@@ -5,16 +5,6 @@ The idea of this project is to have a System that ensures all of your devices ar
 The core logic is defined in Ansible Playbooks that store a huge collection of [Desired States](https://www.puppeteers.net/learn/understanding-infrastructure-as-code-iac/#headline-133-5156).
 Additionally we use some scripts & container files for automatically setting up & running everything with no effort.
 
-## Scope
-Currently in Scope of this project is:
-- Software Installation
-- System Settings
-- Dotfiles Rollout
-- SSH Config
-- Network Config
-- App Settings (.plist files)
-- Firefox Bookmarks (+ Firefox Developer Edition)
-
 ## Prerequesites
 - [Homebrew](https://brew.sh/) *(MacOS)*
 - [Git](https://git-scm.com/downloads)
@@ -39,6 +29,17 @@ Dotfiles are installed to an [origin](/opt/dotfiles) and symlinked to the expect
 Your Dotfiles need to be published to a separate Repository *e.g:* [onexbash - dotfiles](https://github.com/onexbash/dotfiles).
 **WARNING:** *If changes on the local Dotfiles Directory happen, they need to be committed & pushed to main before onesetup can run*
 **WARNING:** *Keep in mind that simultanous usage on multiple machines can lead to merge conflicts that need to be resolved manually.*
+
+## Scope
+Currently in Scope of this project is:
+- Software Installation
+- System Settings
+- Dotfiles Rollout
+- SSH Config
+- Network Config
+- App Settings (.plist files)
+- Firefox Bookmarks (+ Firefox Developer Edition)
+
 
 ## Road Map
 - [GitLab](https://gitlab.com), [Bitbucket](https://bitbucket.org), [Azure Devops](https://azure.microsoft.com/de-de/products/devops/) & [Jujutsu](https://github.com/jj-vcs/jj) Support
