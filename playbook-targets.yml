@@ -16,9 +16,10 @@
     DOTFILES_REPO_SSH: "git@github.com:onexbash/dotfiles.git"
     DOTFILES_REPO_HTTPS: "https://github.com/onexbash/dotfiles.git"
     # environment variables
-    HOME: "{{ lookup('env', 'HOME') }}"
-    XDG_CONFIG_HOME: "{{ lookup('env', 'HOME') }}/.config"
-    XDG_CONFIG_HOME: "{{ lookup('env', 'HOME') }}/.config/zsh"
+    HOME: "{{ ansible_facts.env.PWD }}"
+    XDG_CONFIG_HOME: "{{ HOME }}/.config"
+    ZDOTDIR: "{{ XDG_CONFIG_HOME }}/zsh"
+    USR: "{{ ansible_facts.env.SUDO_USER }}"
   pre_tasks:
     - name: 'Include Pre-Tasks'
       include_tasks: '{{ item }}'
