@@ -7,20 +7,7 @@
   vars:
     ansible_become_password: "{{ sudo_password }}"
     ansible_password: "{{ sudo_password }}"
-  environment:
-    HOME: "{{ ansible_env.HOME }}"
-    XDG_CONFIG_HOME: "{{ ansible_env.HOME }}/.config"
-    XDG_DATA_HOME: "{{ ansible_env.HOME }}/.local/share"
-    XDG_STATE_HOME: "{{ ansible_env.HOME }}/.local/state"
-    XDG_CACHE_HOME: "{{ ansible_env.HOME }}/.cache"
-    ZDOTDIR: "{{ ansible_env.HOME }}/.config/zsh"
-    USER: "{{ ansible_env.USER }}"
-    ONESETUP_DIR: "/opt/onesetup"
-    ONESETUP_REPO_SSH: "git@github.com:onexbash/onesetup.git"
-    ONESETUP_REPO_HTTPS: "https://github.com/onexbash/onesetup.git"
-    DOTFILES_DIR: "/opt/dotfiles"
-    DOTFILES_REPO_SSH: "git@github.com:onexbash/dotfiles.git"
-    DOTFILES_REPO_HTTPS: "https://github.com/onexbash/dotfiles.git"
+  environment: "{{ env }}"
   pre_tasks:
     - name: 'Include Pre-Tasks'
       include_tasks: '{{ item }}'
