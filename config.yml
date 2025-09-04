@@ -14,52 +14,52 @@ dotfile_mapping:
   - name: nvim
     type: directory
     origin: '{{ dotfiles_dir }}/nvim'
-    target: '{{ H_XDG_CONFIG_HOME }}/nvim'
+    target: '{{ XDG_CONFIG_HOME }}/nvim'
     # eza
   - name: eza
     type: directory
     origin: '{{ dotfiles_dir }}/eza'
-    target: '{{ H_XDG_CONFIG_HOME }}/eza'
+    target: '{{ XDG_CONFIG_HOME }}/eza'
     # zed
   - name: zed
     type: directory
     origin: '{{ dotfiles_dir }}/zed'
-    target: '{{ H_XDG_CONFIG_HOME }}/zed'
+    target: '{{ XDG_CONFIG_HOME }}/zed'
     # lazygit
   - name: lazygit
     type: directory
     origin: '{{ dotfiles_dir }}/lazygit'
-    target: '{{ H_XDG_CONFIG_HOME }}/lazygit'
+    target: '{{ XDG_CONFIG_HOME }}/lazygit'
     # aerospace
   - name: 'aerospace'
     type: directory
     origin: '{{ dotfiles_dir }}/aerospace'
-    target: '{{ H_XDG_CONFIG_HOME }}/aerospace'
+    target: '{{ XDG_CONFIG_HOME }}/aerospace'
     # alacritty
   - name: 'alacritty'
     type: directory
     origin: '{{ dotfiles_dir }}/alacritty'
-    target: '{{ H_XDG_CONFIG_HOME }}/alacritty'
+    target: '{{ XDG_CONFIG_HOME }}/alacritty'
     # atuin
   - name: 'atuin'
     type: directory
     origin: '{{ dotfiles_dir }}/atuin'
-    target: '{{ H_XDG_CONFIG_HOME }}/atuin'
+    target: '{{ XDG_CONFIG_HOME }}/atuin'
     # git
   - name: "git"
     type: directory
     origin: "{{ dotfiles_dir }}/git"
-    target: '{{ H_XDG_CONFIG_HOME }}/git'
+    target: '{{ XDG_CONFIG_HOME }}/git'
     # starship
   - name: "starship"
     type: directory
     origin: '{{ dotfiles_dir }}/starship'
-    target: '{{ H_XDG_CONFIG_HOME }}/starship'
+    target: '{{ XDG_CONFIG_HOME }}/starship'
     # shell (home)
   - name: "shell_home"
     type: directory
     origin: '{{ dotfiles_dir }}/shell/home'
-    target: '{{ H_ZDOTDIR }}'
+    target: '{{ ZDOTDIR }}'
     # shell (global)
   - name: profile_global
     type: file
