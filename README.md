@@ -17,10 +17,9 @@ Currently in Scope of this project is:
 
 ## Prerequesites
 ### MacOS
-1. Homebrew installed & `brew` command added to $PATH
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
+- [Homebrew](https://brew.sh/)
+- [Git](https://git-scm.com/downloads)
+- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
 ## Get Started
 Run the following command on a machine with local network access to your remote-targets:
