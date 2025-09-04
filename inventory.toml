@@ -6,7 +6,6 @@
 # variables
 [workstation.vars]
 ansible_port = 22
-ansible_user = "fschlegelone"
 # hosts
 [workstation.hosts]
-onexmac-cratos = { ansible_host = "100.65.55.179" }
+onexmac-cratos = { ansible_host = "100.65.55.179", ansible_user = "fschlegelone" }
