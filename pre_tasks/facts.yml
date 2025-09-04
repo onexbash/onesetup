@@ -2,12 +2,12 @@
 # Set Environment Variables as Ansible Facts
 - name: "Set Facts: Environment Variables"
   set_fact:
-    HOME: "{{ ansible_env.HOME }}"
-    XDG_CONFIG_HOME: "{{ ansible_env.HOME }}/.config"
-    XDG_DATA_HOME: "{{ ansible_env.HOME }}/.local/share"
-    XDG_STATE_HOME: "{{ ansible_env.HOME }}/.local/state"
-    XDG_CACHE_HOME: "{{ ansible_env.HOME }}/.cache"
-    ZDOTDIR: "{{ ansible_env.HOME }}/.config/zsh"
+    HOME: "{{ '~' | expanduser }}"
+    XDG_CONFIG_HOME: "{{ HOME }}/.config"
+    XDG_DATA_HOME: "{{ HOME }}/.local/share"
+    XDG_STATE_HOME: "{{ HOME }}/.local/state"
+    XDG_CACHE_HOME: "{{ HOME }}/.cache"
+    ZDOTDIR: "{{ XDG_CONFIG_HOME }}/zsh"
     ONESETUP_DIR: "/opt/onesetup"
     ONESETUP_REPO_SSH: "git@github.com:onexbash/onesetup.git"
     ONESETUP_REPO_HTTPS: "https://github.com/onexbash/onesetup.git"
