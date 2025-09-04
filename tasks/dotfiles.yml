@@ -1,5 +1,4 @@
 ---
-
 # Clone Dotfiles Repository
 - name: 'Clone Dotfiles Repository'
   git:
@@ -27,19 +26,57 @@
     group: 'wheel'
     recurse: false
 
-# Cleanup Dotfiles Targets
+# Rollout: global shell config
+- name: "Rollout global shell config files (bash & zsh)"
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ ansible_user }}"
+    group: "wheel"
+    mode: "0644"
+  loop:
+    - { src: "{{ dotfiles_dir }}/shell/global/profile", dest: "/etc/profile" }
+    - { src: "{{ dotfiles_dir }}/shell/global/zshenv", dest: "/etc/zshenv" }
+    - { src: "{{ dotfiles_dir }}/shell/global/zprofile", dest: "/etc/zprofile" }
+    - { src: "{{ dotfiles_dir }}/shell/global/zshrc", dest: "/etc/zshrc" }
+    - { src: "{{ dotfiles_dir }}/shell/global/zlogout", dest: "/etc/zlogout" }
+
+
+# Cleanup: Dotfiles Targets
 - name: 'Clean up Dotfiles Targets'
   file:
-    path: '{{ item.target }}'
+    path: '{{ item.dest }}'
     state: absent
-  loop: '{{ dotfile_mapping }}'
+  loop:
+    - { src: "{{ dotfiles_dir }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/zsh" }
+    - { src: "{{ dotfiles_dir }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
+    - { src: "{{ dotfiles_dir }}/alacritty", dest: "{{ XDG_CONFIG_HOME }}/alacritty" }
+    - { src: "{{ dotfiles_dir }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
+    - { src: "{{ dotfiles_dir }}/starship", dest: "{{ XDG_CONFIG_HOME }}/starship" }
+    - { src: "{{ dotfiles_dir }}/aerospace", dest: "{{ XDG_CONFIG_HOME }}/aerospace" }
+    - { src: "{{ dotfiles_dir }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
+    - { src: "{{ dotfiles_dir }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
+    - { src: "{{ dotfiles_dir }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
+    - { src: "{{ dotfiles_dir }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }
   ignore_errors: true
 
-# Symlink Dotfiles
+# Rollout: Dotfiles
 - name: 'Symlink Dotfiles'
   file:
     src: '{{ item.origin }}'
     dest: '{{ item.target }}'
     state: link
+    owner: "{{ ansible_user }}"
+    group: "wheel"
     force: true
-  loop: '{{ dotfile_mapping }}'
+  loop:
+    - { src: "{{ dotfiles_dir }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/zsh" }
+    - { src: "{{ dotfiles_dir }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
+    - { src: "{{ dotfiles_dir }}/alacritty", dest: "{{ XDG_CONFIG_HOME }}/alacritty" }
+    - { src: "{{ dotfiles_dir }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
+    - { src: "{{ dotfiles_dir }}/starship", dest: "{{ XDG_CONFIG_HOME }}/starship" }
+    - { src: "{{ dotfiles_dir }}/aerospace", dest: "{{ XDG_CONFIG_HOME }}/aerospace" }
+    - { src: "{{ dotfiles_dir }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
+    - { src: "{{ dotfiles_dir }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
+    - { src: "{{ dotfiles_dir }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
+    - { src: "{{ dotfiles_dir }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }

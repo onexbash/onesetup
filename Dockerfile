@@ -6,7 +6,7 @@ RUN echo "Timestamp: ${TIMESTAMP}"
 
 # Install packages with cleanup & registry update
 RUN dnf update -y && \
-  dnf install -y "git" "ansible" "curl" "sshpass" "ping" && \
+  dnf install -y "git" "ansible" "curl" "sshpass" && \
   dnf clean all
 
 # Create service user with sudo privileges

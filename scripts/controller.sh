@@ -21,18 +21,24 @@ echo -e "${I_OK}Detected platform: $PLATFORM"
 
 # Ensure prerequisites are satisfied
 prerequisites() {
+  # homebrew
+  if [[ "$PLATFORM" = "macos" ]]; then
+    if ! command -v "brew" &> /dev/null; then
+      echo -e "${I_ERR}Homebrew not available. Please install from 'https://brew.sh' & re-run script"
+    fi
+  fi
   # git
-  if ! command -v git &> /dev/null; then
+  if ! command -v "git" &> /dev/null; then
     case "$PLATFORM" in
-      linux) sudo dnf install -y git || sudo apt install -y git;;
+      linux) sudo dnf install -y git;;
       macos) brew install git;;
     esac
   fi
   # podman
-  if ! command -v podman &> /dev/null; then
+  if ! command -v "podman" &> /dev/null; then
     case "$PLATFORM" in
       linux)
-        sudo dnf install -y podman podman-compose || sudo apt install -y podman podman-compose
+        sudo dnf install -y podman podman-compose
         ;;
       macos)
         brew install podman podman-compose

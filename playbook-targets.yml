@@ -7,13 +7,14 @@
   vars:
     ansible_become_password: "{{ sudo_password }}"
     ansible_password: "{{ sudo_password }}"
-    # ENVIRONMENT VARIABLES (gathered on remote target)
+  environment:
     HOME: "{{ ansible_env.HOME }}"
-    XDG_CONFIG_HOME: "{{ ansible_env.XDG_CONFIG_HOME | default(ansible_env.HOME + '/.config') }}"
-    XDG_DATA_HOME: "{{ ansible_env.XDG_DATA_HOME | default(ansible_env.HOME + '/.local/share') }}"
-    XDG_STATE_HOME: "{{ ansible_env.XDG_STATE_HOME | default(ansible_env.HOME + '/.local/state') }}"
-    XDG_CACHE_HOME: "{{ ansible_env.XDG_CACHE_HOME | default(ansible_env.HOME + '/.cache') }}"
-    ZDOTDIR: "{{ ansible_env.ZDOTDIR | default(ansible_env.HOME + '/.config/zsh') }}"
+    XDG_CONFIG_HOME: "{{ ansible_env.HOME }}/.config"
+    XDG_DATA_HOME: "{{ ansible_env.HOME }}/.local/share"
+    XDG_STATE_HOME: "{{ ansible_env.HOME }}/.local/state"
+    XDG_CACHE_HOME: "{{ ansible_env.HOME }}/.cache"
+    ZDOTDIR: "{{ ansible_env.HOME }}/.config/zsh"
+    USER: "{{ ansible_env.USER }}"
   vars_files:
     - config.yml
   pre_tasks:
