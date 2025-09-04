@@ -36,8 +36,8 @@
 # Symlink: Global Shell Config
 - name: 'Symlink: Global Shell Config'
   file:
-    src: '{{ item.origin }}'
-    dest: '{{ item.target }}'
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
     state: link
     owner: '{{ ansible_user }}'
     group: "wheel"
@@ -71,8 +71,8 @@
 # Rollout: Dotfiles
 - name: 'Symlink Dotfiles'
   file:
-    src: '{{ item.origin }}'
-    dest: '{{ item.target }}'
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
     state: link
     owner: '{{ ansible_user }}'
     group: "wheel"
