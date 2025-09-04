@@ -4,10 +4,24 @@ ONESETUP_DIR="/opt/onesetup"
 ONESETUP_REPO_HTTPS="https://github.com/onexbash/onesetup.git"
 DOTFILES_DIR="/opt/dotfiles"
 DOTFILES_REPO_HTTPS="https://github.com/onexbash/dotfiles.git"
-THIS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Load helper script
-source "$THIS_DIR/scripts/helper.sh"
+function load_script() {
+  local base_url="https://raw.githubusercontent.com/onexbash/onesetup/main"
+  local script_path="$1"
+  local tmp_file=$(mktemp)
+  
+  curl -sSL "${base_url}/${script_path}" -o "$tmp_file"
+  
+  if [ $? -eq 0 ]; then
+    source "$tmp_file"
+    rm -f "$tmp_file"
+  else
+    echo "Failed to load $script_path" && exit 1
+  fi
+}
+load_script "scripts/helper.sh"
+
 load_stylings && set_modes
 
 # Info Prompt 
