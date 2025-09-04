@@ -71,12 +71,6 @@ function connection() {
 }
 
 function run() {
-  # Prepare Container Engine (Podman Machine)
-  if podman info &>/dev/null; then # TODO: properly handle podman-machine checks
-    echo -e "${I_OK}Podman machine is running"
-  else
-    echo -e "${I_ERR}Podman machine is not running or Podman is not installed. Please startup a podman machine & restart this script." && exit 1
-  fi
   # Build & Run Control Node Container
   podman-compose -f "$INSTALL_DIR/docker-compose.yml" build "onesetup" --no-cache && echo -e "${I_OK}Control-Node image built successfully!"
   podman-compose -f "$INSTALL_DIR/docker-compose.yml" run "onesetup" && echo -e "${I_OK}Control-Node container successfully running!"
