@@ -2,17 +2,21 @@
 # Clone Dotfiles Repository
 - name: 'Clone Dotfiles Repository'
   git:
-    repo: '{{ dotfiles_repo_uri }}'
-    dest: '{{ dotfiles_dir }}'
+    repo: '{{ DOTFILES_REPO_SSH }}'
+    clone: true
+    dest: '{{ DOTFILES_DIR }}'
+    force: false # respect local changes to prevent dotfile loss
+    remote: origin
     update: true
+    recursive: true # whether submodules should be included/skipped
 
 # File Permissions: Dotfiles
-- name: 'Set File Permissions: {{ dotfiles_dir }}/*'
+- name: 'Set File Permissions: {{ DOTFILES_DIR }}/*'
   file:
-    path: '{{ dotfiles_dir }}'
+    path: '{{ DOTFILES_DIR }}'
     state: directory
     mode: '0774'
-    owner: '{{ ansible_user }}'
+    owner: '{{ USER }}'
     group: 'wheel'
     recurse: true
 
@@ -22,11 +26,11 @@
     path: '{{ item.dest }}'
     state: absent
   loop:
-    - { src: "{{ dotfiles_dir }}/shell/global/profile", dest: "/etc/profile" }
-    - { src: "{{ dotfiles_dir }}/shell/global/zshenv", dest: "/etc/zshenv" }
-    - { src: "{{ dotfiles_dir }}/shell/global/zprofile", dest: "/etc/zprofile" }
-    - { src: "{{ dotfiles_dir }}/shell/global/zshrc", dest: "/etc/zshrc" }
-    - { src: "{{ dotfiles_dir }}/shell/global/zlogout", dest: "/etc/zlogout" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/zshrc", dest: "/etc/zshrc" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/zlogout", dest: "/etc/zlogout" }
   ignore_errors: true
 
 # Rollout: global shell config
@@ -34,15 +38,15 @@
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-    owner: "{{ ansible_user }}"
+    owner: "{{ USER }}"
     group: "wheel"
     mode: "0644"
   loop:
-    - { src: "{{ dotfiles_dir }}/shell/global/profile", dest: "/etc/profile" }
-    - { src: "{{ dotfiles_dir }}/shell/global/zshenv", dest: "/etc/zshenv" }
-    - { src: "{{ dotfiles_dir }}/shell/global/zprofile", dest: "/etc/zprofile" }
-    - { src: "{{ dotfiles_dir }}/shell/global/zshrc", dest: "/etc/zshrc" }
-    - { src: "{{ dotfiles_dir }}/shell/global/zlogout", dest: "/etc/zlogout" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/zshrc", dest: "/etc/zshrc" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/zlogout", dest: "/etc/zlogout" }
 
 # Cleanup: Dotfiles Targets
 - name: 'Clean up Dotfiles Targets'
@@ -50,16 +54,16 @@
     path: '{{ item.dest }}'
     state: absent
   loop:
-    - { src: "{{ dotfiles_dir }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/zsh" }
-    - { src: "{{ dotfiles_dir }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
-    - { src: "{{ dotfiles_dir }}/alacritty", dest: "{{ XDG_CONFIG_HOME }}/alacritty" }
-    - { src: "{{ dotfiles_dir }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
-    - { src: "{{ dotfiles_dir }}/starship", dest: "{{ XDG_CONFIG_HOME }}/starship" }
-    - { src: "{{ dotfiles_dir }}/aerospace", dest: "{{ XDG_CONFIG_HOME }}/aerospace" }
-    - { src: "{{ dotfiles_dir }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
-    - { src: "{{ dotfiles_dir }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
-    - { src: "{{ dotfiles_dir }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
-    - { src: "{{ dotfiles_dir }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }
+    - { src: "{{ DOTFILES_DIR }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/zsh" }
+    - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
+    - { src: "{{ DOTFILES_DIR }}/alacritty", dest: "{{ XDG_CONFIG_HOME }}/alacritty" }
+    - { src: "{{ DOTFILES_DIR }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
+    - { src: "{{ DOTFILES_DIR }}/starship", dest: "{{ XDG_CONFIG_HOME }}/starship" }
+    - { src: "{{ DOTFILES_DIR }}/aerospace", dest: "{{ XDG_CONFIG_HOME }}/aerospace" }
+    - { src: "{{ DOTFILES_DIR }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
+    - { src: "{{ DOTFILES_DIR }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
+    - { src: "{{ DOTFILES_DIR }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
+    - { src: "{{ DOTFILES_DIR }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }
   ignore_errors: true
 
 # Rollout: Dotfiles
@@ -68,17 +72,17 @@
     src: '{{ item.origin }}'
     dest: '{{ item.target }}'
     state: link
-    owner: "{{ ansible_user }}"
+    owner: "{{ USER }}"
     group: "wheel"
     force: true
   loop:
-    - { src: "{{ dotfiles_dir }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/zsh" }
-    - { src: "{{ dotfiles_dir }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
-    - { src: "{{ dotfiles_dir }}/alacritty", dest: "{{ XDG_CONFIG_HOME }}/alacritty" }
-    - { src: "{{ dotfiles_dir }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
-    - { src: "{{ dotfiles_dir }}/starship", dest: "{{ XDG_CONFIG_HOME }}/starship" }
-    - { src: "{{ dotfiles_dir }}/aerospace", dest: "{{ XDG_CONFIG_HOME }}/aerospace" }
-    - { src: "{{ dotfiles_dir }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
-    - { src: "{{ dotfiles_dir }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
-    - { src: "{{ dotfiles_dir }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
-    - { src: "{{ dotfiles_dir }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }
+    - { src: "{{ DOTFILES_DIR }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/zsh" }
+    - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
+    - { src: "{{ DOTFILES_DIR }}/alacritty", dest: "{{ XDG_CONFIG_HOME }}/alacritty" }
+    - { src: "{{ DOTFILES_DIR }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
+    - { src: "{{ DOTFILES_DIR }}/starship", dest: "{{ XDG_CONFIG_HOME }}/starship" }
+    - { src: "{{ DOTFILES_DIR }}/aerospace", dest: "{{ XDG_CONFIG_HOME }}/aerospace" }
+    - { src: "{{ DOTFILES_DIR }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
+    - { src: "{{ DOTFILES_DIR }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
+    - { src: "{{ DOTFILES_DIR }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
+    - { src: "{{ DOTFILES_DIR }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }

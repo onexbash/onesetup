@@ -1,8 +1,0 @@
----
-install_dir: '/opt/onesetup'
-dotfiles_dir: '/opt/dotfiles'
-
-github_username: 'onexbash'
-dotfiles_repo_name: 'dotfiles' # dotfiles repository name (github/gitlab)
-dotfiles_repo_uri: 'https://github.com/{{ github_username }}/{{ dotfiles_repo_name }}.git'
-dotfiles_repo_raw: 'https://github.com/{{ github_username }}/{{ dotfiles_repo_name }}/archive/refs/heads/main.zip'
