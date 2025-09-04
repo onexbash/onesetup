@@ -15,10 +15,17 @@ Currently in Scope of this project is:
 - App Settings (.plist files)
 - Firefox Bookmarks (+ Firefox Developer Edition)
 
+## Prerequesites
+### MacOS
+1. Homebrew installed & `brew` command added to $PATH
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
 ## Get Started
 Run the following command on a machine with local network access to your remote-targets:
 ```bash
-    curl -sSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh | bash
+curl -sSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh | bash
 ```
 This script will automatically spin-up the Ansible Control-Node in a container.
 This Control-Node serves the purpose of applying the Desired States of all playbook tasks to the Remote Targets specified in [inventory.toml](./inventory.toml)
