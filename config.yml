@@ -1,6 +1,4 @@
 ---
-sudo_group: 'xsudoers' # name of the admin/sudo group that will be created on the remote targets
-
 install_dir: '/opt/onesetup'
 dotfiles_dir: '/opt/dotfiles'
 

@@ -14,7 +14,7 @@
     state: directory
     mode: '0644'
     owner: '{{ ansible_user }}'
-    group: '{{ sudo_group }}'
+    group: 'wheel'
     recurse: true
 
 # File Permissions: Dotfiles Directory
@@ -24,7 +24,7 @@
     state: directory
     mode: '0755'
     owner: '{{ ansible_user }}'
-    group: '{{ sudo_group }}'
+    group: 'wheel'
     recurse: false
 
 # Cleanup Dotfiles Targets

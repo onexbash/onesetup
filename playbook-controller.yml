@@ -11,7 +11,7 @@
         state: directory
         mode: "0700"
         owner: "onesetup"
-        group: "onesetup"
+        group: "wheel"
         recurse: false
     - name: "Decrypt & rollout onesetup ssh key (public)"
       copy:
@@ -19,14 +19,14 @@
         dest: "/home/onesetup/.ssh/id_onesetup.pub"
         mode: "0644"
         owner: "onesetup"
-        group: "onesetup"
+        group: "wheel"
     - name: "Decrypt & rollout onesetup ssh key (private)"
       copy:
         content: "{{ ssh_keys.id_onesetup }}"
         dest: "/home/onesetup/.ssh/id_onesetup"
         mode: "0600"
         owner: "onesetup"
-        group: "onesetup"
+        group: "wheel"
 
     # - name: "Add remote targets SSH fingerprint to known_hosts"
     #   known_hosts:
