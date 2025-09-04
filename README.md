@@ -20,6 +20,8 @@ Run the following command on a machine with local network access to your remote-
 ```bash
     curl -sSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/controller.sh | bash
 ```
+This script will automatically spin-up the Ansible Control-Node in a container.
+This Control-Node serves the purpose of applying the Desired States of all playbook tasks to the Remote Targets specified in [inventory.toml](./inventory.toml)
 
 ## Dotfiles
 Dotfiles are installed to a [source directory](/opt/onesetup) and symlinked to the expected location on all targets.

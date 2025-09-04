@@ -1,25 +1,88 @@
 #!/usr/bin/env bash
-# -- -- -- -- -- -- -- -- -- -- #
-# --   ONESETUP EXECUTABLE   -- #
-# -- -- -- -- -- -- -- -- -- -- #
-
-# call helper functions
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+# Variables
+REPO_URL="https://github.com/onexbash/onesetup.git"
+INSTALL_DIR="/opt/onesetup"
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+# Load helper script
 source "$SCRIPT_DIR/helper.sh"
 load_stylings && set_modes
 
-# get project root
-current_dir="$SCRIPT_DIR"
-while [[ "$current_dir" != "/" ]]; do
-  if [[ -f "$current_dir/main.yml" || -f "$current_dir/ansible.cfg" ]]; then
-    break # exit loop
-  fi
-  current_dir=$(dirname "$current_dir")
-done
-ONESETUP_ROOT="$current_dir"
+echo -e "${I_INFO}Onesetup will now prepare the Ansible control-node on this Machine (containerized)."
+echo -e "${I_INFO}Please make sure your system is up-to-date before proceeding..." && sleep 5
 
-# run playbook
-run(){
-  ansible-playbook --ask-vault-pass "$ONESETUP_ROOT/main.yml"
+# Detect OS
+OS="$(uname -s)"
+case "$OS" in
+  Linux*)     PLATFORM="linux";;
+  Darwin*)    PLATFORM="macos";;
+  *)          echo -e "Unsupported OS: $OS"; exit 1;;
+esac
+echo -e "${I_OK}Detected platform: $PLATFORM"
+
+# Ensure prerequisites are satisfied
+prerequisites() {
+  # homebrew
+  if [[ "$PLATFORM" = "macos" ]]; then
+    if ! command -v "brew" &> /dev/null; then
+      echo -e "${I_ERR}Homebrew not available. Please install from 'https://brew.sh' & re-run script"
+    fi
+  fi
+  # git
+  if ! command -v "git" &> /dev/null; then
+    case "$PLATFORM" in
+      linux) sudo dnf install -y git;;
+      macos) brew install git;;
+    esac
+  fi
+  # podman
+  if ! command -v "podman" &> /dev/null; then
+    case "$PLATFORM" in
+      linux)
+        sudo dnf install -y podman podman-compose
+        ;;
+      macos)
+        brew install podman podman-compose
+        ;;
+    esac
+  fi
 }
-run
+
+function install() {
+  # Cleanup installation directory
+  echo -e "${I_OK}Preparing installation directory..."
+  if [[ -d "$INSTALL_DIR" ]]; then
+    sudo rm -rf "$INSTALL_DIR"
+  fi
+  sudo mkdir -p "$(dirname "$INSTALL_DIR")"
+  
+  # Clone repository
+  echo -e "${I_OK}Cloning repository..."
+  sudo git clone "$REPO_URL" "$INSTALL_DIR" || {
+    echo -e "${I_ERR}Failed to clone repository" && exit 1
+  }
+  
+  # Set permissions
+  echo -e "${I_OK}Setting permissions..."
+  sudo chmod 774 "$INSTALL_DIR"
+  if [[ "$PLATFORM" == "linux" ]]; then
+    sudo chown -R "$(id -u):$(id -g)" "$INSTALL_DIR"
+  else
+    sudo chown -R "$(id -u)" "$INSTALL_DIR"
+  fi
+}
+
+function connection() {
+  echo "connecting.."
+  # ssh-keygen -t ed25519 -C "onesetup@control-node"
+}
+
+function run() {
+  # Build & Run Control Node Container
+  podman-compose -f "$INSTALL_DIR/docker-compose.yml" build "onesetup" --no-cache && echo -e "${I_OK}Control-Node image built successfully!"
+  podman-compose -f "$INSTALL_DIR/docker-compose.yml" run "onesetup" && echo -e "${I_OK}Control-Node container successfully running!"
+}
+
+echo -e "${I_OK}Checking prerequisites..." && prerequisites
+echo -e "${I_OK}Installing Control-Node..." && install
+echo -e "${I_OK}Establishing Connection..." && connection
+echo -e "${I_OK}Running Control-Node Container..." && run
