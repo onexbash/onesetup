@@ -14,3 +14,4 @@
     DOTFILES_DIR: "/opt/dotfiles"
     DOTFILES_REPO_SSH: "git@github.com:onexbash/dotfiles.git"
     DOTFILES_REPO_HTTPS: "https://github.com/onexbash/dotfiles.git"
+  become: false
