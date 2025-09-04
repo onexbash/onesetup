@@ -2,7 +2,7 @@
 # Clone Dotfiles Repository
 - name: 'Clone Dotfiles Repository'
   git:
-    repo: '{{ ansible_env.DOTFILES_REPO_SSH }}'
+    repo: '{{ DOTFILES_REPO_SSH }}'
     clone: true
     dest: '{{ DOTFILES_DIR }}'
     force: false # respect local changes to prevent dotfile loss
