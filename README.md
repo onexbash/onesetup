@@ -20,7 +20,7 @@ Currently in Scope of this project is:
 - [Git](https://git-scm.com/downloads)
 - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
-## Get Started
+## Getting Started
 Run the following command on a machine with local network access to your remote-targets:
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
