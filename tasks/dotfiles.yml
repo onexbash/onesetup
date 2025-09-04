@@ -33,20 +33,22 @@
     - { src: "{{ DOTFILES_DIR }}/shell/global/zlogout", dest: "/etc/zlogout" }
   ignore_errors: true
 
-# Rollout: global shell config
-- name: "Rollout: global shell config files (bash & zsh)"
-  copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+# Symlink: Global Shell Config
+- name: 'Symlink: Global Shell Config'
+  file:
+    src: '{{ item.origin }}'
+    dest: '{{ item.target }}'
+    state: link
     owner: '{{ ansible_user }}'
     group: "wheel"
-    mode: "0644"
+    force: true
   loop:
     - { src: "{{ DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zshrc", dest: "/etc/zshrc" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zlogout", dest: "/etc/zlogout" }
+
 
 # Cleanup: Dotfiles Targets
 - name: 'Clean up Dotfiles Targets'
