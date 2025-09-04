@@ -16,7 +16,7 @@
     path: '{{ DOTFILES_DIR }}'
     state: directory
     mode: '0774'
-    owner: '{{ USER }}'
+    owner: '{{ ansible_user }}'
     group: 'wheel'
     recurse: true
 
@@ -38,7 +38,7 @@
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-    owner: "{{ USER }}"
+    owner: '{{ ansible_user }}'
     group: "wheel"
     mode: "0644"
   loop:
@@ -72,7 +72,7 @@
     src: '{{ item.origin }}'
     dest: '{{ item.target }}'
     state: link
-    owner: "{{ USER }}"
+    owner: '{{ ansible_user }}'
     group: "wheel"
     force: true
   loop:

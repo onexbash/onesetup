@@ -3,7 +3,6 @@
 - name: "Set Facts: Environment Variables"
   set_fact:
     HOME: "{{ ansible_env.HOME }}"
-    USER: "{{ ansible_env.USER }}"
     XDG_CONFIG_HOME: "{{ ansible_env.HOME }}/.config"
     XDG_DATA_HOME: "{{ ansible_env.HOME }}/.local/share"
     XDG_STATE_HOME: "{{ ansible_env.HOME }}/.local/state"
