@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 # Variables
-REPO_URL="https://github.com/onexbash/onesetup.git"
-INSTALL_DIR="/opt/onesetup"
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+ONESETUP_DIR="/opt/onesetup"
+ONESETUP_REPO_HTTPS="https://github.com/onexbash/onesetup.git"
+DOTFILES_DIR="/opt/dotfiles"
+DOTFILES_REPO_HTTPS="https://github.com/onexbash/dotfiles.git"
+THIS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
 # Load helper script
-source "$SCRIPT_DIR/helper.sh"
+source "$THIS_DIR/scripts/helper.sh"
 load_stylings && set_modes
 
-echo -e "${I_INFO}Onesetup will now prepare the Ansible control-node on this Machine (containerized)."
-echo -e "${I_INFO}Please make sure your system is up-to-date before proceeding..." && sleep 5
+# Info Prompt 
+echo -e "${I_INFO}Onesetup will now prepare the Ansible control-node on this Machine (containerized)." && echo -e "${I_INFO}Please make sure your system is up-to-date before proceeding..." && sleep 5
 
 # Detect OS
 OS="$(uname -s)"
@@ -20,7 +23,7 @@ esac
 echo -e "${I_OK}Detected platform: $PLATFORM"
 
 # Ensure prerequisites are satisfied
-prerequisites() {
+function prerequisites() {
   # homebrew
   if [[ "$PLATFORM" = "macos" ]]; then
     if ! command -v "brew" &> /dev/null; then
@@ -50,24 +53,24 @@ prerequisites() {
 function install() {
   # Cleanup installation directory
   echo -e "${I_OK}Preparing installation directory..."
-  if [[ -d "$INSTALL_DIR" ]]; then
-    sudo rm -rf "$INSTALL_DIR"
+  if [[ -d "$ONESETUP_DIR" ]]; then
+    sudo rm -rf "$ONESETUP_DIR"
   fi
-  sudo mkdir -p "$(dirname "$INSTALL_DIR")"
+  sudo mkdir -p "$(dirname "$ONESETUP_DIR")"
   
   # Clone repository
   echo -e "${I_OK}Cloning repository..."
-  sudo git clone "$REPO_URL" "$INSTALL_DIR" || {
+  sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR" || {
     echo -e "${I_ERR}Failed to clone repository" && exit 1
   }
   
   # Set permissions
   echo -e "${I_OK}Setting permissions..."
-  sudo chmod 774 "$INSTALL_DIR"
+  sudo chmod 774 "$ONESETUP_DIR"
   if [[ "$PLATFORM" == "linux" ]]; then
-    sudo chown -R "$(id -u):$(id -g)" "$INSTALL_DIR"
+    sudo chown -R "$(id -u):$(id -g)" "$ONESETUP_DIR"
   else
-    sudo chown -R "$(id -u)" "$INSTALL_DIR"
+    sudo chown -R "$(id -u)" "$ONESETUP_DIR"
   fi
 }
 
@@ -78,8 +81,8 @@ function connection() {
 
 function run() {
   # Build & Run Control Node Container
-  podman-compose -f "$INSTALL_DIR/docker-compose.yml" build "onesetup" --no-cache && echo -e "${I_OK}Control-Node image built successfully!"
-  podman-compose -f "$INSTALL_DIR/docker-compose.yml" run "onesetup" && echo -e "${I_OK}Control-Node container successfully running!"
+  podman-compose -f "$ONESETUP_DIR/docker-compose.yml" build "onesetup" --no-cache && echo -e "${I_OK}Control-Node image built successfully!"
+  podman-compose -f "$ONESETUP_DIR/docker-compose.yml" run "onesetup" && echo -e "${I_OK}Control-Node container successfully running!"
 }
 
 echo -e "${I_OK}Checking prerequisites..." && prerequisites
