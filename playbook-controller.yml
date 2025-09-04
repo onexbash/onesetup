@@ -4,40 +4,33 @@
     - localhost
   connection: local
   gather_facts: true
-  #environment:
-  #  HOME: "{{ ansible_env.HOME }}"
-  #  XDG_CONFIG_HOME: "{{ ansible_env.HOME }}/.config"
-  #  XDG_DATA_HOME: "{{ ansible_env.HOME }}/.local/share"
-  #  XDG_STATE_HOME: "{{ ansible_env.HOME }}/.local/state"
-  #  XDG_CACHE_HOME: "{{ ansible_env.HOME }}/.cache"
-  #  ZDOTDIR: "{{ ansible_env.HOME }}/.config/zsh"
-  #  USER: "{{ ansible_env.USER }}"
-  #  ONESETUP_DIR: "/opt/onesetup"
-  #  ONESETUP_REPO_SSH: "git@github.com:onexbash/onesetup.git"
-  #  ONESETUP_REPO_HTTPS: "https://github.com/onexbash/onesetup.git"
-  #  DOTFILES_DIR: "/opt/dotfiles"
-  #  DOTFILES_REPO_SSH: "git@github.com:onexbash/dotfiles.git"
-  #  DOTFILES_REPO_HTTPS: "https://github.com/onexbash/dotfiles.git"
   tasks:
-    - name: "Prepare SSH Directory"
-      file:
-        path: "/home/onesetup/.ssh"
-        state: directory
-        mode: "0700"
-        owner: "onesetup"
-        group: "wheel"
-        recurse: false
-    - name: "Decrypt & rollout onesetup ssh key (public)"
-      copy:
-        content: "{{ ssh_keys.id_onesetup_pub }}"
-        dest: "/home/onesetup/.ssh/id_onesetup.pub"
-        mode: "0644"
-        owner: "onesetup"
-        group: "wheel"
-    - name: "Decrypt & rollout onesetup ssh key (private)"
-      copy:
-        content: "{{ ssh_keys.id_onesetup }}"
-        dest: "/home/onesetup/.ssh/id_onesetup"
-        mode: "0600"
-        owner: "onesetup"
-        group: "wheel"
+    - name: "Display System Info"
+      setup:
+        filter:
+          - 'ansible_distribution'
+          - 'ansible_machine_id'
+          - 'ansible_*_mb'
+  # tasks:
+  #   - name: "Prepare SSH Directory"
+  #     file:
+  #       path: "/home/onesetup/.ssh"
+  #       state: directory
+  #       mode: "0700"
+  #       owner: "onesetup"
+  #       group: "wheel"
+  #       recurse: false
+  #   - name: "Decrypt & rollout onesetup ssh key (public)"
+  #     copy:
+  #       content: "{{ ssh_keys.id_onesetup_pub }}"
+  #       dest: "/home/onesetup/.ssh/id_onesetup.pub"
+  #       mode: "0644"
+  #       owner: "onesetup"
+  #       group: "wheel"
+  #   - name: "Decrypt & rollout onesetup ssh key (private)"
+  #     copy:
+  #       content: "{{ ssh_keys.id_onesetup }}"
+  #       dest: "/home/onesetup/.ssh/id_onesetup"
+  #       mode: "0600"
+  #       owner: "onesetup"
+  #       group: "wheel"
