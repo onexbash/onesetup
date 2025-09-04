@@ -25,10 +25,16 @@ Currently in Scope of this project is:
 ## Get Started
 Run the following command on a machine with local network access to your remote-targets:
 ```bash
-curl -sSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh | bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
 ```
 This script will automatically spin-up the Ansible Control-Node in a container.
 This Control-Node serves the purpose of applying the Desired States of all playbook tasks to the Remote Targets specified in [inventory.toml](./inventory.toml)
+
+## Encrypt Secrets
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/encrypt.sh)"
+```
+
 
 ## Dotfiles
 Dotfiles are installed to an [origin](/opt/dotfiles) and symlinked to the expected location on all targets.
