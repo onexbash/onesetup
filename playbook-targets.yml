@@ -13,7 +13,7 @@
     XDG_DATA_HOME: "{{ ansible_env.HOME }}/.local/share"
     XDG_STATE_HOME: "{{ ansible_env.HOME }}/.local/state"
     XDG_CACHE_HOME: "{{ ansible_env.HOME }}/.cache"
-    ZDOTDIR: "{{ ansible_env.HOME }}/.config/zsh"
+    ZDOTDIR: "{{ ansible_env.XDG_CONFIG_HOME }}/zsh"
     USER: "{{ ansible_env.USER }}"
     ONESETUP_DIR: "/opt/onesetup"
     ONESETUP_REPO_SSH: "git@github.com:onexbash/onesetup.git"
