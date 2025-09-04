@@ -5,8 +5,20 @@
   connection: ssh
   gather_facts: true
   vars:
+    # ansible variables
     ansible_become_password: "{{ sudo_password }}"
     ansible_password: "{{ sudo_password }}"
+    # onesetup variables
+    ONESETUP_DIR: "/opt/onesetup"
+    ONESETUP_REPO_SSH: "git@github.com:onexbash/onesetup.git"
+    ONESETUP_REPO_HTTPS: "https://github.com/onexbash/onesetup.git"
+    DOTFILES_DIR: "/opt/dotfiles"
+    DOTFILES_REPO_SSH: "git@github.com:onexbash/dotfiles.git"
+    DOTFILES_REPO_HTTPS: "https://github.com/onexbash/dotfiles.git"
+    # environment variables
+    HOME: "{{ lookup('env', 'HOME') }}"
+    XDG_CONFIG_HOME: "{{ lookup('env', 'HOME') }}/.config"
+    XDG_CONFIG_HOME: "{{ lookup('env', 'HOME') }}/.config/zsh"
   pre_tasks:
     - name: 'Include Pre-Tasks'
       include_tasks: '{{ item }}'
