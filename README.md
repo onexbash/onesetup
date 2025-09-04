@@ -16,8 +16,7 @@ Currently in Scope of this project is:
 - Firefox Bookmarks (+ Firefox Developer Edition)
 
 ## Prerequesites
-### MacOS
-- [Homebrew](https://brew.sh/) *(MacOS)* \ [DNF](https://docs.fedoraproject.org/en-US/quick-docs/dnf/) *(Fedora Linux)*
+- [Homebrew](https://brew.sh/) *(MacOS)*
 - [Git](https://git-scm.com/downloads)
 - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
