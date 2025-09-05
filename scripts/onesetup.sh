@@ -97,7 +97,7 @@ function install() {
 }
 # Build & Run Control-Node Container
 function run() {
-  podman-compose -f "$ONESETUP_DIR/docker-compose.yml" build "onesetup" && echo -e "${I_OK}Control-Node image built successfully!"
+  podman-compose -f "$ONESETUP_DIR/docker-compose.yml" build --build-arg "ONESETUP_DIR=$ONESETUP_DIR" "onesetup" && echo -e "${I_OK}Control-Node image built successfully!"
   podman-compose -f "$ONESETUP_DIR/docker-compose.yml" run "onesetup" && echo -e "${I_OK}Control-Node container successfully running!"
 }
 

@@ -15,8 +15,9 @@ USER onesetup
 WORKDIR /home/onesetup/src
 
 ARG ONESETUP_DIR
-RUN echo "Build-time ONESETUP_DIR: $ONESETUP_DIR" && \
-    echo "Current working directory: $(pwd)"
+ARG ONESETUP_REPO_NAME
+RUN echo "!!TEST!! ONESETUP_DIR: $ONESETUP_DIR"
+RUN echo "!!TEST!! ONESETUP_REPO_NAME: $ONESETUP_REPO_NAME"
 
 # Verify & Run Ansible Playbook
 # CMD ["/usr/bin/ansible-playbook", "--ask-vault-password", "main.yml"]
