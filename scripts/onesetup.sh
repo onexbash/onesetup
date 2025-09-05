@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Environment Variables
-export GITHUB_USERNAME="onexbash"
-export ONESETUP_DIR="${HOME}/onesetup"
-export DOTFILES_DIR="/opt/dotfiles"
-export DOTFILES_REPO_NAME="dotfiles" && ONESETUP_REPO_NAME="onesetup"
-export ONESETUP_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME.git"
-export DOTFILES_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME.git"
-export ONESETUP_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME/main"
-export DOTFILES_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME/main"
+GITHUB_USERNAME="onexbash"
+ONESETUP_DIR="${HOME}/onesetup"
+DOTFILES_DIR="/opt/dotfiles"
+DOTFILES_REPO_NAME="dotfiles" && ONESETUP_REPO_NAME="onesetup"
+ONESETUP_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME.git"
+DOTFILES_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME.git"
+ONESETUP_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME/main"
+DOTFILES_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME/main"
 
 
 # Load helper script
@@ -97,7 +97,11 @@ function install() {
 }
 # Build & Run Control-Node Container
 function run() {
-  podman-compose -f "$ONESETUP_DIR/docker-compose.yml" build --build-arg "ONESETUP_DIR=$ONESETUP_DIR" "onesetup" && echo -e "${I_OK}Control-Node image built successfully!"
+  podman-compose -f "$ONESETUP_DIR/docker-compose.yml" build \
+    --build-arg "ONESETUP_DIR=$ONESETUP_DIR" \
+    --build-arg "ONESETUP_REPO_NAME=$ONESETUP_REPO_NAME" \
+    "onesetup" \
+    && echo -e "${I_OK}Control-Node image built successfully!"
   podman-compose -f "$ONESETUP_DIR/docker-compose.yml" run "onesetup" && echo -e "${I_OK}Control-Node container successfully running!"
 }
 

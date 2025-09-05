@@ -7,9 +7,6 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-      args:
-        - "ONESETUP_DIR:${ONESETUP_DIR}"
-        - "ONESETUP_REPO_NAME:${ONESETUP_REPO_NAME}"
     volumes:
       # Mount current directory
       - .:/home/onesetup/src
@@ -17,9 +14,6 @@ services:
       - "8000:8000"
       - "7000:7000"
       - "22:22"
-    environment:
-      - "ONESETUP_DIR:${ONESETUP_DIR}"
-      - "ONESETUP_REPO_NAME:${ONESETUP_REPO_NAME}"
     tty: true
     stdin_open: true
 networks:
