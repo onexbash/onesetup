@@ -16,10 +16,6 @@ services:
       - "22:22"
     tty: true
     stdin_open: true
-    environment:
-      - HOME=/home/onesetup
-      - XDG_CONFIG_HOME=${HOME}/.config
-      - ZDOTDIR=${XDG_CONFIG_HOME}/zsh
 networks:
   onesetup:
     name: "onesetup"

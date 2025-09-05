@@ -85,16 +85,26 @@ function install() {
         echo -e "${I_INFO}The installation directory is $behind_count commits behind of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
         echo -e "${I_OK}Updating.."
         sudo rm -rf "$ONESETUP_DIR"
-      else
-        install_status=1
-        echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
-        echo -e "${I_OK}Skipping installation.."
       fi
+    else
+      install_status=1
+      echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
+      echo -e "${I_OK}Skipping installation.."
     fi
     case "$install_status" in
-      0) sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR";;
-      1) ;;
-      2) sudo rm -rf "$ONESETUP_DIR" && sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR";;
+      0) 
+        echo -e "${I_INFO}Onesetup is not installed yet. Installing.."
+        sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR"
+      ;;
+      1) 
+        echo -e "${I_INFO}Onesetup is already installed & up-to-date. Skipping Installation.."
+      ;;
+      2)
+        echo -e "${I_INFO}Onesetup is already installed but outdated. Updating Installation.."
+        sudo rm -rf "$ONESETUP_DIR" && sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR"
+      ;;
+      *)
+        echo -e "${I_ERR}Unhandled case"
     esac
   fi
   # Set permissions
