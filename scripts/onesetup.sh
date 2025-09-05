@@ -57,55 +57,39 @@ function prerequisites() {
   fi 
 }
 
-function install() {
-  # 0) not installed 
-  # 1) already installed & not behind
-  # 2) already installed but behind
-  local install_status
-
-  # Check if installation directory exists 
+function install() { 
+  # Check if installation directory is a git repository
   if [[ -d "$ONESETUP_DIR" ]]; then
-    echo -e "${I_INFO}The installation directory already exists. Checking if it's up-to-date"
-    # Check if installation directory is ahead/behind of the github repo
+    if ! git -C "$ONESETUP_DIR" rev-parse --git-dir > /dev/null 2>&1; then
+      sudo rm -rf "$ONESETUP_DIR" && echo -e "${I_INFO}There was a broken installation at $ONESETUP_DIR. Deletion complete."
+    fi
+  fi
+  # Check if installation directory is up-to-date
+  if [[ -d "$ONESETUP_DIR" ]]; then
     git fetch
     local behind_count=$(git -C "$ONESETUP_DIR" rev-list --count HEAD..@{u})
     local ahead_count=$(git -C "$ONESETUP_DIR" rev-list --count @{u}..HEAD)
-    # TODO: add check to handle cases where /opt/onesetup exists but is not a git repo
     if (( $behind_count > 0 )) || (( $ahead_count > 0 )); then
       if (( $behind_count > 0 )) && (( $ahead_count > 0 )); then
-        install_status=2
         echo -e "${I_WARN}The installation directory is $behind_count commits behind and $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
         echo -e "${I_ERR}Please Check! Exiting.." && exit 0
       elif (( $ahead_count > 0 )); then
-        install_status=1
         echo -e "${I_WARN}The installation directory is $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
         echo -e "${I_ERR}Please Check! Exiting.." && exit 0
       elif (( $behind_count > 0 )); then
-        install_status=2
         echo -e "${I_INFO}The installation directory is $behind_count commits behind of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
-        echo -e "${I_OK}Updating.."
-        sudo rm -rf "$ONESETUP_DIR"
+        echo -e "${I_INFO}Updating.."
+        sudo rm -rf "$ONESETUP_DIR" && sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR"
       fi
     else
-      install_status=1
       echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
-      echo -e "${I_OK}Skipping installation.."
+      echo -e "${I_INFO}Skipping installation.."
     fi
-    case "$install_status" in
-      0) 
-        echo -e "${I_INFO}Onesetup is not installed yet. Installing.."
-        sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR"
-      ;;
-      1) 
-        echo -e "${I_INFO}Onesetup is already installed & up-to-date. Skipping Installation.."
-      ;;
-      2)
-        echo -e "${I_INFO}Onesetup is already installed but outdated. Updating Installation.."
-        sudo rm -rf "$ONESETUP_DIR" && sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR"
-      ;;
-      *)
-        echo -e "${I_ERR}Unhandled case"
-    esac
+  fi
+  # Install only if directory is empty.
+  if [[ ! -d "$ONESETUP_DIR" ]]; then
+    echo -e "${I_INFO}Onesetup is not installed yet. Installing to ${ONESETUP_DIR} .." && sleep 1
+    sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR" && echo -e "${I_OK}Installation complete!"
   fi
   # Set permissions
   sudo chmod 774 "$ONESETUP_DIR" && echo -e "${I_OK}Permissions on installation directory set! (744): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set permissions on installation directory! (744): $ONESETUP_DIR"
