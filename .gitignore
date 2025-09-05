@@ -1,5 +1,16 @@
-# -- Secrets -- #
-.env
-
 # -- System Files (auto-generated) -- #
 .DS_Store
+*.swap
+
+# -- TMP Files -- #
+tmp/
+*.tmp
+*.log
+
+# -- Secrets -- #
+*.env
+*.secret
+
+# -- IDE Files -- #
+.vscode
+.idea
