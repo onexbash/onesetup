@@ -7,13 +7,25 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+      args:
+        - ONESETUP_DIR=${ONESETUP_DIR}
+        - ONESETUP_REPO=${ONESETUP_REPO}
+        - DOTFILES_DIR=${DOTFILES_DIR}
+        - DOTFILES_REPO=${DOTFILES_REPO}
+
     volumes:
-      # Mount current directory
+      # Mount installation directory
       - .:/home/onesetup/src
     ports:
       - "8000:8000"
       - "7000:7000"
       - "22:22"
+    # Use environment variables from entrypoint script (build-time) to set container environment (runtime)
+    environment:
+      - ONESETUP_DIR=${ONESETUP_DIR}
+      - ONESETUP_REPO=${ONESETUP_REPO}
+      - DOTFILES_DIR=${DOTFILES_DIR}
+      - DOTFILES_REPO=${DOTFILES_REPO}
     tty: true
     stdin_open: true
 networks:

@@ -1,0 +1,2 @@
+export ONESETUP_DIR="${HOME}/onesetup" && export DOTFILES_DIR="${HOME}/dotfiles" && export ONESETUP_REPO="onexbash/onesetup" && export DOTFILES_REPO="onexbash/onesetup" && podman-compose -f "$ONESETUP_DIR/docker-compose.yml" build --build-arg "DOTFILES_DIR=$DOTFILES_DIR" --build-arg "ONESETUP_DIR=$ONESETUP_DIR" --build-arg "DOTFILES_REPO=$DOTFILES_REPO" --build-arg "ONESETUP_REPO=$ONESETUP_REPO" "onesetup" && podman-compose -f "$ONESETUP_DIR/docker-compose.yml" run "onesetup"
+

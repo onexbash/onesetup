@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
+
 # Environment Variables
-GITHUB_USERNAME="onexbash"
-ONESETUP_DIR="${HOME}/onesetup"
-DOTFILES_DIR="/opt/dotfiles"
-DOTFILES_REPO_NAME="dotfiles" && ONESETUP_REPO_NAME="onesetup"
-ONESETUP_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME.git"
-DOTFILES_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME.git"
-ONESETUP_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME/main"
-DOTFILES_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME/main"
+export ONESETUP_DIR="${HOME}/onesetup"
+export DOTFILES_DIR="${HOME}/dotfiles"
+export ONESETUP_REPO="onexbash/onesetup"
+export DOTFILES_REPO="onexbash/onesetup"
+
+# Variables
+ONESETUP_REPO_HTTPS="https://github.com/${ONESETUP_REPO}.git"
+DOTFILES_REPO_HTTPS="https://github.com/${ONESETUP_REPO}.git"
+ONESETUP_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
+DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
 
 
 # Load helper script
@@ -71,18 +74,18 @@ function install() {
     local ahead_count=$(git -C "$ONESETUP_DIR" rev-list --count @{u}..HEAD)
     if (( $behind_count > 0 )) || (( $ahead_count > 0 )); then
       if (( $behind_count > 0 )) && (( $ahead_count > 0 )); then
-        echo -e "${I_WARN}The installation directory is $behind_count commits behind and $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
+        echo -e "${I_WARN}The installation directory is $behind_count commits behind and $ahead_count commits ahead of the remote (https://github.com/$ONESETUP_REPO)."
         echo -e "${I_ERR}Please Check! Exiting.." && exit 0
       elif (( $ahead_count > 0 )); then
-        echo -e "${I_WARN}The installation directory is $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
+        echo -e "${I_WARN}The installation directory is $ahead_count commits ahead of the remote (https://github.com/$ONESETUP_REPO)."
         echo -e "${I_ERR}Please Check! Exiting.." && exit 0
       elif (( $behind_count > 0 )); then
-        echo -e "${I_INFO}The installation directory is $behind_count commits behind of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
+        echo -e "${I_INFO}The installation directory is $behind_count commits behind of the remote (https://github.com/$ONESETUP_REPO)."
         echo -e "${I_INFO}Updating.."
         sudo rm -rf "$ONESETUP_DIR" && sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR"
       fi
     else
-      echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
+      echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$ONESETUP_REPO)."
       echo -e "${I_INFO}Skipping installation.."
     fi
   fi
@@ -97,12 +100,22 @@ function install() {
 }
 # Build & Run Control-Node Container
 function run() {
+  # build
+
+  export ONESETUP_DIR="${HOME}/onesetup" && export DOTFILES_DIR="${HOME}/dotfiles" && export ONESETUP_REPO="onexbash/onesetup" && export DOTFILES_REPO="onexbash/onesetup" && podman-compose -f "$ONESETUP_DIR/dev/onesetup/docker-compose.yml" build --build-arg "DOTFILES_DIR=$DOTFILES_DIR" --build-arg "ONESETUP_DIR=$ONESETUP_DIR" --build-arg "DOTFILES_REPO=$DOTFILES_REPO" --build-arg "ONESETUP_REPO=$ONESETUP_REPO" "onesetup" && podman-compose -f "$ONESETUP_DIR/dev/onesetup/docker-compose.yml" run "onesetup"
+
   podman-compose -f "$ONESETUP_DIR/docker-compose.yml" build \
     --build-arg "ONESETUP_DIR=$ONESETUP_DIR" \
-    --build-arg "ONESETUP_REPO_NAME=$ONESETUP_REPO_NAME" \
+    --build-arg "DOTFILES_DIR=$DOTFILES_DIR" \
+    --build-arg "ONESETUP_REPO=$ONESETUP_REPO" \
+    --build-arg "DOTFILES_REPO=$DOTFILES_REPO" \
     "onesetup" \
-    && echo -e "${I_OK}Control-Node image built successfully!"
-  podman-compose -f "$ONESETUP_DIR/docker-compose.yml" run "onesetup" && echo -e "${I_OK}Control-Node container successfully running!"
+    && echo -e "${I_OK}Control-Node image built successfully!" \
+    || echo -e "${I_ERR}Control-Node Container Image failed to build!"
+  # run
+  podman-compose -f "$ONESETUP_DIR/docker-compose.yml" run "onesetup" \
+    && echo -e "${I_OK}Control-Node container successfully running!" \
+    || echo -e "${I_ERR}Control-Node Container failed to run!"
 }
 
 # Function Calls

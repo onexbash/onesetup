@@ -1,5 +1,11 @@
 FROM fedora:42
 
+ARG DOTFILES_DIR
+ARG DOTFILES_REPO
+ARG ONESETUP_DIR
+ARG ONESETUP_DIR2
+ARG ONESETUP_REPO
+
 # Install packages with cleanup & registry update
 RUN dnf update -y && \
   dnf install -y "git" "ansible" "curl" "sshpass" && \
@@ -14,12 +20,5 @@ USER onesetup
 # Create working directory
 WORKDIR /home/onesetup/src
 
-ARG ONESETUP_DIR
-ARG ONESETUP_REPO_NAME
-RUN echo "!!TEST!! ONESETUP_DIR: $ONESETUP_DIR"
-RUN echo "!!TEST!! ONESETUP_REPO_NAME: $ONESETUP_REPO_NAME"
-
-# Verify & Run Ansible Playbook
-# CMD ["/usr/bin/ansible-playbook", "--ask-vault-password", "main.yml"]
-
-CMD ["/bin/bash", "-c", "echo 'Runtime ONESETUP_DIR: $ONESETUP_DIR'; /usr/bin/ansible-playbook --ask-vault-password main.yml"]
+# Run Control-Node entrypoint script
+CMD ["./scripts/controller.sh"]
