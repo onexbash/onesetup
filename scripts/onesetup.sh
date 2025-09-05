@@ -1,40 +1,37 @@
 #!/usr/bin/env bash
 # Variables
+GITHUB_USER="onexbash"
 ONESETUP_DIR="/opt/onesetup"
-ONESETUP_REPO_HTTPS="https://github.com/onexbash/onesetup.git"
 DOTFILES_DIR="/opt/dotfiles"
-DOTFILES_REPO_HTTPS="https://github.com/onexbash/dotfiles.git"
+DOTFILES_REPO_NAME="dotfiles" && ONESETUP_REPO_NAME="onesetup"
+ONESETUP_REPO_HTTPS="https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME.git"
+DOTFILES_REPO_HTTPS="https://github.com/$GITHUB_USER/$DOTFILES_REPO_NAME.git"
+ONESETUP_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USER/$ONESETUP_REPO_NAME/main"
+DOTFILES_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USER/$DOTFILES_REPO_NAME/main"
+
 
 # Load helper script
-function load_script() {
-  local base_url="https://raw.githubusercontent.com/onexbash/onesetup/main"
-  local script_path="$1"
-  local tmp_file=$(mktemp)
-  
-  curl -sSL "${base_url}/${script_path}" -o "$tmp_file"
-  
-  if [ $? -eq 0 ]; then
-    source "$tmp_file"
-    rm -f "$tmp_file"
-  else
-    echo "Failed to load $script_path" && exit 1
-  fi
+function load_helper(){
+  source <(curl -s "$ONESETUP_REPO_RAW/scripts/helper.sh") || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
+  load_stylings && set_modes
 }
-load_script "scripts/helper.sh"
 
-load_stylings && set_modes
-
-# Info Prompt 
-echo -e "${I_INFO}Onesetup will now prepare the Ansible control-node on this Machine (containerized)." && echo -e "${I_INFO}Please make sure your system is up-to-date before proceeding..." && sleep 5
-
-# Detect OS
-OS="$(uname -s)"
-case "$OS" in
-  Linux*)     PLATFORM="linux";;
-  Darwin*)    PLATFORM="macos";;
-  *)          echo -e "Unsupported OS: $OS"; exit 1;;
-esac
-echo -e "${I_OK}Detected platform: $PLATFORM"
+# Detect Operating System
+function detect_os() {
+  OS="$(uname -s)"
+  case "$OS" in
+    Linux*) PLATFORM="linux";;
+    Darwin*) PLATFORM="macos";;
+    Windows*) PLATFORM="windows";;
+    *) PLATFORM="unknown";;
+  esac
+  case "$PLATFORM" in
+    linux) echo -e "${I_OK}Supported platform detected: $PLATFORM";;
+    macos) echo -e "${I_OK}Supported platform detected: $PLATFORM";;
+    windows) echo -e "${I_ERR}haha, windows is not supported you fcking looser" && exit 1;;
+    *) echo -e "Whatever this sh*t you're running this on is, it's not supported!: $OS" && exit 1;;
+  esac
+}
 
 # Ensure prerequisites are satisfied
 function prerequisites() {
@@ -54,52 +51,47 @@ function prerequisites() {
   # podman
   if ! command -v "podman" &> /dev/null; then
     case "$PLATFORM" in
-      linux)
-        sudo dnf install -y podman podman-compose
-        ;;
-      macos)
-        brew install podman podman-compose
-        ;;
+      linux) sudo dnf install -y podman podman-compose && echo -e "${I_OK}podman installed!" || echo -e "${I_ERR}failed to install podman!";;
+      macos) brew install podman podman-compose && echo -e "${I_OK}podman installed!" || echo -e "${I_ERR}failed to install podman!";;
     esac
-  fi
+  fi 
 }
 
 function install() {
-  # Cleanup installation directory
-  echo -e "${I_OK}Preparing installation directory..."
+  # Check if installation directory exists
   if [[ -d "$ONESETUP_DIR" ]]; then
-    sudo rm -rf "$ONESETUP_DIR"
+    echo -e "${I_WARN}The installation directory already exists. Checking if it's up-to-date with https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME"
+    # Check if installation directory is ahead/behind of the github repo
+    git fetch
+    local behind_count="$(git rev-list --count HEAD..@{u})"
+    local ahead_count="$(git rev-list --count @{u}..HEAD)"
+    if (( $behind_count > 0 )) || (( $ahead_count > 0 )); then
+      if (( $behind_count > 0 )) && (( $ahead_count > 0 )); then
+        echo -e "${I_WARN}The installation directory is $behind_count commits behind and $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME)."
+        echo -e "${I_ERR}Please Check! Exiting.." && exit 0
+      elif (( $ahead_count > 0 )); then
+        echo -e "${I_WARN}The installation directory is $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME)."
+        echo -e "${I_ERR}Please Check! Exiting.." && exit 0
+      elif (( $behind_count > 0 )); then
+        echo -e "${I_WARN}The installation directory is $behind_count commits behind of the remote (https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME)."
+        echo -e "${I_OK}Updating.."
+        sudo rm -rf "$ONESETUP_DIR"
+      fi
+    fi
   fi
-  sudo mkdir -p "$(dirname "$ONESETUP_DIR")"
-  
   # Clone repository
-  echo -e "${I_OK}Cloning repository..."
-  sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR" || {
-    echo -e "${I_ERR}Failed to clone repository" && exit 1
-  }
-  
+  sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR"
   # Set permissions
   echo -e "${I_OK}Setting permissions..."
-  sudo chmod 774 "$ONESETUP_DIR"
-  if [[ "$PLATFORM" == "linux" ]]; then
-    sudo chown -R "$(id -u):$(id -g)" "$ONESETUP_DIR"
-  else
-    sudo chown -R "$(id -u)" "$ONESETUP_DIR"
-  fi
+  sudo chmod 774 "$ONESETUP_DIR" && echo -e "${I_OK}Permissions on installation directory set! (744): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set permissions on installation directory! (744): $ONESETUP_DIR"
+  sudo chown -R "$USER:wheel" "$ONESETUP_DIR" && echo -e "${I_OK}Ownership on installation directory set! ($USER:wheel): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set ownership on installation directory! ($USER:wheel): $ONESETUP_DIR"
 }
-
-function connection() {
-  echo "connecting.."
-  # ssh-keygen -t ed25519 -C "onesetup@control-node"
-}
-
+# Build & Run Control-Node Container
 function run() {
-  # Build & Run Control Node Container
   podman-compose -f "$ONESETUP_DIR/docker-compose.yml" build "onesetup" --no-cache && echo -e "${I_OK}Control-Node image built successfully!"
   podman-compose -f "$ONESETUP_DIR/docker-compose.yml" run "onesetup" && echo -e "${I_OK}Control-Node container successfully running!"
 }
-
-echo -e "${I_OK}Checking prerequisites..." && prerequisites
-echo -e "${I_OK}Installing Control-Node..." && install
-echo -e "${I_OK}Establishing Connection..." && connection
-echo -e "${I_OK}Running Control-Node Container..." && run
+load_helper && echo -e "${I_OK}Helper Script loaded!"
+prerequisites && echo -e "${I_OK}Prerequesites checked!"
+install && echo -e "${I_OK}Onesetup installed!"
+run && echo -e "${I_OK}Control-Node running!"
