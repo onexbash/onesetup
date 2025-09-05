@@ -14,8 +14,5 @@ USER onesetup
 # Create working directory
 WORKDIR /home/onesetup/src
 
-# Copy Ansible project files (cached until files change)
-COPY --chown=onesetup:onesetup . .
-
 # Verify & Run Ansible Playbook
 CMD ["/usr/bin/ansible-playbook", "--ask-vault-password", "main.yml"]

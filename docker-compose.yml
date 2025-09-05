@@ -5,7 +5,7 @@ services:
     container_name: onesetup
     hostname: onesetup
     build:
-      context: .  # Build from current directory
+      context: .
       dockerfile: ./Dockerfile
     volumes:
       # Mount current directory
