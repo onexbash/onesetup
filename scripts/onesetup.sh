@@ -14,7 +14,7 @@ DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
 
 # Load helper script
 function load_helper(){
-  source <(curl -s "$ONESETUP_REPO_RAW/scripts/helper.sh") || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
+  source <(curl -s "$ONESETUP_REPO_RAW/scripts/helper.sh") && echo -e "${I_OK}Helper Script loaded!"|| echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
   load_stylings && set_modes
 }
 
@@ -116,7 +116,7 @@ function run() {
 }
 
 # Function Calls
-load_helper && echo -e "${I_OK}Helper Script loaded!"
+load_helper
 prerequisites && echo -e "${I_OK}Prerequesites checked!"
 install && echo -e "${I_OK}Onesetup installed!"
 run && echo -e "${I_OK}Control-Node running!"
