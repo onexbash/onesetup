@@ -14,8 +14,11 @@ USER onesetup
 # Create working directory
 WORKDIR /home/onesetup/src
 
-# Check if environment variables are exported to the container session
-RUN echo "$ONESETUP_DIR"
+ARG ONESETUP_DIR
+RUN echo "Build-time ONESETUP_DIR: $ONESETUP_DIR" && \
+    echo "Current working directory: $(pwd)"
 
 # Verify & Run Ansible Playbook
-CMD ["/usr/bin/ansible-playbook", "--ask-vault-password", "main.yml"]
+# CMD ["/usr/bin/ansible-playbook", "--ask-vault-password", "main.yml"]
+
+CMD ["/bin/bash", "-c", "echo 'Runtime ONESETUP_DIR: $ONESETUP_DIR'; /usr/bin/ansible-playbook --ask-vault-password main.yml"]
