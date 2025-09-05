@@ -1,0 +1,47 @@
+---
+# ensure profile dir
+- name: "Firefox: Ensure profile directories exist"
+  file:
+    mode: "0774"
+    owner: "{{ ansible_user }}"
+    group: "wheel"
+    state: "directory"
+
+# check existing files in profile dir
+- name: "Firefox: Find existing files in profile directory"
+  ansible.builtin.find:
+    paths: "{{ firefox_profile_dir }}/{{ firefox_profile_name }}"
+    # get a list of all files
+    patterns: "{{ lookup('ansible.builtin.fileglob', role_path + '/files/*', wantlist=true) | map('basename') | list }}"
+    use_regex: no
+  register: files_to_remove
+
+# cleanup profile_dir
+- name: "Firefox: Clean up existing files in Profile Directory"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ files_to_remove.files }}"
+  when: files_to_remove.matched > 0
+  loop_control:
+    label: "{{ item.path | basename }}" # Clean output: shows only filename
+
+# check existing files in role dir
+- name: "Firefox: Find all files and directories in source directory"
+  ansible.builtin.find:
+    paths: "{{ role_path }}/files"
+    file_type: any
+    hidden: yes # hidden files
+  register: source_items
+
+# symlink files
+- name: "Firefox: Symlink Files [{{ firefox_profile_dir }}/{{ firefox_profile_name }}]"
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: "{{ firefox_profile_dir }}/{{ item.path | basename }}"
+    state: link
+    force: true
+  loop: "{{ source_items.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"  # Clean output: shows only filename
+

@@ -10,7 +10,6 @@
     HOME: "{{ ansible_facts.env.PWD }}"
     XDG_CONFIG_HOME: "{{ HOME }}/.config"
     ZDOTDIR: "{{ XDG_CONFIG_HOME }}/zsh"
-    USR: "{{ ansible_facts.env.SUDO_USER }}"
     # ansible variables
     ansible_become_password: "{{ sudo_password }}"
     ansible_password: "{{ sudo_password }}"
@@ -31,4 +30,5 @@
       tags: ['always']
   # -- Tasks -- #
   tasks:
+    # import tasks
     - import_tasks: tasks/dotfiles.yml
