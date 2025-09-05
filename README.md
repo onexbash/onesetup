@@ -13,7 +13,7 @@ Additionally we use some scripts & container files for automatically setting up 
 ## Getting Started
 Run the following command on the machine that should act as the :
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
 ```
 This script will automatically spin-up the Ansible Control-Node in a container and applies the Ansible Playbook to the [Remote Targets](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html).
 This Control-Node serves the purpose of applying the Desired States of all playbook tasks to the Remote Targets specified in [inventory.toml](./inventory.toml)
@@ -22,7 +22,7 @@ This Control-Node serves the purpose of applying the Desired States of all playb
 
 ## Encrypt Secrets
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/encrypt.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/encrypt.sh)"
 ```
 
 
