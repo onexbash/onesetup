@@ -11,12 +11,14 @@ Additionally we use some scripts & container files for automatically setting up 
 - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
 ## Getting Started
-Run the following command on a machine with local network access to your remote-targets:
+Run the following command on the machine that should act as the :
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
 ```
-This script will automatically spin-up the Ansible Control-Node in a container.
+This script will automatically spin-up the Ansible Control-Node in a container and applies the Ansible Playbook to the [Remote Targets](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html).
 This Control-Node serves the purpose of applying the Desired States of all playbook tasks to the Remote Targets specified in [inventory.toml](./inventory.toml)
+
+[Remote Target](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html)
 
 ## Encrypt Secrets
 ```bash
