@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Variables
-GITHUB_USER="onexbash"
+GITHUB_USERNAME="onexbash"
 ONESETUP_DIR="/opt/onesetup"
 DOTFILES_DIR="/opt/dotfiles"
 DOTFILES_REPO_NAME="dotfiles" && ONESETUP_REPO_NAME="onesetup"
-ONESETUP_REPO_HTTPS="https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME.git"
-DOTFILES_REPO_HTTPS="https://github.com/$GITHUB_USER/$DOTFILES_REPO_NAME.git"
-ONESETUP_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USER/$ONESETUP_REPO_NAME/main"
-DOTFILES_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USER/$DOTFILES_REPO_NAME/main"
+ONESETUP_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME.git"
+DOTFILES_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME.git"
+ONESETUP_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME/main"
+DOTFILES_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME/main"
 
 
 # Load helper script
@@ -58,31 +58,46 @@ function prerequisites() {
 }
 
 function install() {
-  # Check if installation directory exists
+  # 0) not installed 
+  # 1) already installed & not behind
+  # 2) already installed but behind
+  local install_status
+
+  # Check if installation directory exists 
   if [[ -d "$ONESETUP_DIR" ]]; then
-    echo -e "${I_WARN}The installation directory already exists. Checking if it's up-to-date with https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME"
+    echo -e "${I_INFO}The installation directory already exists. Checking if it's up-to-date"
     # Check if installation directory is ahead/behind of the github repo
     git fetch
-    local behind_count="$(git rev-list --count HEAD..@{u})"
-    local ahead_count="$(git rev-list --count @{u}..HEAD)"
+    local behind_count=$(git -C "$ONESETUP_DIR" rev-list --count HEAD..@{u})
+    local ahead_count=$(git -C "$ONESETUP_DIR" rev-list --count @{u}..HEAD)
+    # TODO: add check to handle cases where /opt/onesetup exists but is not a git repo
     if (( $behind_count > 0 )) || (( $ahead_count > 0 )); then
       if (( $behind_count > 0 )) && (( $ahead_count > 0 )); then
-        echo -e "${I_WARN}The installation directory is $behind_count commits behind and $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME)."
+        install_status=2
+        echo -e "${I_WARN}The installation directory is $behind_count commits behind and $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
         echo -e "${I_ERR}Please Check! Exiting.." && exit 0
       elif (( $ahead_count > 0 )); then
-        echo -e "${I_WARN}The installation directory is $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME)."
+        install_status=1
+        echo -e "${I_WARN}The installation directory is $ahead_count commits ahead of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
         echo -e "${I_ERR}Please Check! Exiting.." && exit 0
       elif (( $behind_count > 0 )); then
-        echo -e "${I_WARN}The installation directory is $behind_count commits behind of the remote (https://github.com/$GITHUB_USER/$ONESETUP_REPO_NAME)."
+        install_status=2
+        echo -e "${I_INFO}The installation directory is $behind_count commits behind of the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
         echo -e "${I_OK}Updating.."
         sudo rm -rf "$ONESETUP_DIR"
+      else
+        install_status=1
+        echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME)."
+        echo -e "${I_OK}Skipping installation.."
       fi
     fi
+    case "$install_status" in
+      0) sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR";;
+      1) ;;
+      2) sudo rm -rf "$ONESETUP_DIR" && sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR";;
+    esac
   fi
-  # Clone repository
-  sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR"
   # Set permissions
-  echo -e "${I_OK}Setting permissions..."
   sudo chmod 774 "$ONESETUP_DIR" && echo -e "${I_OK}Permissions on installation directory set! (744): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set permissions on installation directory! (744): $ONESETUP_DIR"
   sudo chown -R "$USER:wheel" "$ONESETUP_DIR" && echo -e "${I_OK}Ownership on installation directory set! ($USER:wheel): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set ownership on installation directory! ($USER:wheel): $ONESETUP_DIR"
 }
