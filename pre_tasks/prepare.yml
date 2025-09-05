@@ -1,8 +1,4 @@
 ---
-# display all available facts
-- name: "Display all available facts"
-  ansible.builtin.debug:
-    var: ansible_facts
 # check if ansible connect user has sudo privileges
 - name: "Ensure Ansible Connect User has sudo privileges"
   block:
