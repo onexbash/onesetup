@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Variables
-GITHUB_USERNAME="onexbash"
-ONESETUP_DIR="/opt/onesetup"
-DOTFILES_DIR="/opt/dotfiles"
-DOTFILES_REPO_NAME="dotfiles" && ONESETUP_REPO_NAME="onesetup"
-ONESETUP_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME.git"
-DOTFILES_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME.git"
-ONESETUP_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME/main"
-DOTFILES_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME/main"
+# Environment Variables
+export GITHUB_USERNAME="onexbash"
+export ONESETUP_DIR="${HOME}/onesetup"
+export DOTFILES_DIR="/opt/dotfiles"
+export DOTFILES_REPO_NAME="dotfiles" && ONESETUP_REPO_NAME="onesetup"
+export ONESETUP_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME.git"
+export DOTFILES_REPO_HTTPS="https://github.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME.git"
+export ONESETUP_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$ONESETUP_REPO_NAME/main"
+export DOTFILES_REPO_RAW="https://raw.githubusercontent.com/$GITHUB_USERNAME/$DOTFILES_REPO_NAME/main"
 
 
 # Load helper script
@@ -66,7 +66,7 @@ function install() {
   fi
   # Check if installation directory is up-to-date
   if [[ -d "$ONESETUP_DIR" ]]; then
-    git fetch
+    git -C "$ONESETUP_DIR" fetch
     local behind_count=$(git -C "$ONESETUP_DIR" rev-list --count HEAD..@{u})
     local ahead_count=$(git -C "$ONESETUP_DIR" rev-list --count @{u}..HEAD)
     if (( $behind_count > 0 )) || (( $ahead_count > 0 )); then
