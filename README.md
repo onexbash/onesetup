@@ -25,7 +25,7 @@ This Control-Node serves the purpose of applying the Desired States of all playb
 
 
 ## Dotfiles
-Dotfiles are installed to an [origin](/opt/dotfiles) and symlinked to the expected location on all targets.
+Dotfiles are installed to a source directory and symlinked to the expected location on all targets.
 Your Dotfiles need to be published to a separate Repository *e.g:* [onexbash - dotfiles](https://github.com/onexbash/dotfiles).
 **WARNING:** *If changes on the local Dotfiles Directory happen, they need to be committed & pushed to main before onesetup can run*
 **WARNING:** *Keep in mind that simultanous usage on multiple machines can lead to merge conflicts that need to be resolved manually.*

@@ -2,16 +2,15 @@
 
 # Environment Variables
 export ONESETUP_DIR="${HOME}/onesetup"
-export DOTFILES_DIR="${HOME}/dotfiles"
 export ONESETUP_REPO="onexbash/onesetup"
-export DOTFILES_REPO="onexbash/onesetup"
+export DOTFILES_DIR="${HOME}/dotfiles"
+export DOTFILES_REPO="onexbash/dotfiles"
 
 # Variables
 ONESETUP_REPO_HTTPS="https://github.com/${ONESETUP_REPO}.git"
-DOTFILES_REPO_HTTPS="https://github.com/${ONESETUP_REPO}.git"
 ONESETUP_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
-DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
-
+DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
+DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
 
 # Load helper script
 function load_helper(){
@@ -57,10 +56,10 @@ function prerequisites() {
       linux) sudo dnf install -y podman podman-compose && echo -e "${I_OK}podman installed!" || echo -e "${I_ERR}failed to install podman!";;
       macos) brew install podman podman-compose && echo -e "${I_OK}podman installed!" || echo -e "${I_ERR}failed to install podman!";;
     esac
-  fi 
+  fi
 }
 
-function install() { 
+function install() {
   # Check if installation directory is a git repository
   if [[ -d "$ONESETUP_DIR" ]]; then
     if ! git -C "$ONESETUP_DIR" rev-parse --git-dir > /dev/null 2>&1; then
@@ -101,8 +100,6 @@ function install() {
 # Build & Run Control-Node Container
 function run() {
   # build
-
-  export ONESETUP_DIR="${HOME}/onesetup" && export DOTFILES_DIR="${HOME}/dotfiles" && export ONESETUP_REPO="onexbash/onesetup" && export DOTFILES_REPO="onexbash/onesetup" && podman-compose -f "$ONESETUP_DIR/dev/onesetup/docker-compose.yml" build --build-arg "DOTFILES_DIR=$DOTFILES_DIR" --build-arg "ONESETUP_DIR=$ONESETUP_DIR" --build-arg "DOTFILES_REPO=$DOTFILES_REPO" --build-arg "ONESETUP_REPO=$ONESETUP_REPO" "onesetup" && podman-compose -f "$ONESETUP_DIR/dev/onesetup/docker-compose.yml" run "onesetup"
 
   podman-compose -f "$ONESETUP_DIR/docker-compose.yml" build \
     --build-arg "ONESETUP_DIR=$ONESETUP_DIR" \

@@ -5,17 +5,16 @@ services:
     container_name: onesetup
     hostname: onesetup
     build:
-      context: .
+      context: ${ONESETUP_DIR}
       dockerfile: ./Dockerfile
       args:
         - ONESETUP_DIR=${ONESETUP_DIR}
         - ONESETUP_REPO=${ONESETUP_REPO}
         - DOTFILES_DIR=${DOTFILES_DIR}
         - DOTFILES_REPO=${DOTFILES_REPO}
-
     volumes:
       # Mount installation directory
-      - .:/home/onesetup/src
+      - ${ONESETUP_DIR}:/home/onesetup/src
     ports:
       - "8000:8000"
       - "7000:7000"
