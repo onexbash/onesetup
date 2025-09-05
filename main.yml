@@ -14,10 +14,10 @@
     ansible_become_password: "{{ sudo_password }}"
     ansible_password: "{{ sudo_password }}"
     # onesetup variables (passed by control-node entrypoint script)
-    ONESETUP_DIR: '{{ lookup("env", "ONESETUP_DIR") }}'
-    DOTFILES_DIR: '{{ lookup("env", "DOTFILES_DIR") }}'
-    ONESETUP_REPO: '{{ lookup("env", "ONESETUP_REPO") }}'
-    DOTFILES_REPO: '{{ lookup("env", "DOTFILES_REPO") }}'
+    ONESETUP_DIR: '{{ lookup("env", "ONESETUP_DIR") }} | default("~/.local/share/onesetup")'
+    DOTFILES_DIR: '{{ lookup("env", "DOTFILES_DIR") }} | default("~/.local/share/dotfiles")'
+    ONESETUP_REPO: '{{ lookup("env", "ONESETUP_REPO") }} | default("onexbash/onesetup")'
+    DOTFILES_REPO: '{{ lookup("env", "DOTFILES_REPO") }} | default("onexbash/dotfiles")'
     ONESETUP_REPO_SSH: "git@github.com:{{ ONESETUP_REPO }}.git"
     ONESETUP_REPO_HTTPS: "https://github.com/{{ ONESETUP_REPO }}.git"
     DOTFILES_REPO_SSH: "git@github.com:{{ DOTFILES_REPO }}.git"
