@@ -1,4 +1,4 @@
-FROM fedora:latest
+FROM fedora:42
 
 # Install packages with cleanup & registry update
 RUN dnf update -y && \
