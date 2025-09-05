@@ -5,8 +5,11 @@ services:
     container_name: onesetup
     hostname: onesetup
     build:
-      context: .
+      context: .  # Build from current directory
       dockerfile: ./Dockerfile
+    volumes:
+      # Mount current directory
+      - .:/home/onesetup/src
     ports:
       - "8000:8000"
       - "7000:7000"

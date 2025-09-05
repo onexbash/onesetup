@@ -1,0 +1,13 @@
+.DS_Store
+.git
+.gitignore
+.dockerignore
+banner.png
+README.md
+*.log
+*tmp
+*.swap
+*.env
+*.secret
+.vscode
+.idea

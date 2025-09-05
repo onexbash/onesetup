@@ -28,6 +28,7 @@ function load_stylings(){
   return 0
 }
 
+# Set Script modes (exit behaviour etc.)
 function set_modes() {
   # Exit on error & pipe failures
   set -eo pipefail
@@ -43,6 +44,7 @@ function set_modes() {
     fi
   fi
 }
+
 # Get Working Directory where a script is located.
 function get_script_pwd() {
   SOURCE="${BASH_SOURCE[0]}"

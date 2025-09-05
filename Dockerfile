@@ -1,8 +1,4 @@
-FROM fedora:latest as onesetup
-
-# Force image rebuilding when this Dockerfile's content changes.
-ARG TIMESTAMP
-RUN echo "Timestamp: ${TIMESTAMP}"
+FROM fedora:latest
 
 # Install packages with cleanup & registry update
 RUN dnf update -y && \
@@ -15,11 +11,11 @@ RUN useradd -ms "/bin/bash" "onesetup" && \
   usermod -aG "wheel" "onesetup"
 USER onesetup
 
-# Clone Repository
-RUN git clone "https://github.com/onexbash/onesetup.git" "/home/onesetup/src"
-
-# Create and use consistent directory
+# Create working directory
 WORKDIR /home/onesetup/src
+
+# Copy Ansible project files (cached until files change)
+COPY --chown=onesetup:onesetup . .
 
 # Verify & Run Ansible Playbook
 CMD ["/usr/bin/ansible-playbook", "--ask-vault-password", "main.yml"]
