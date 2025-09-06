@@ -1,2 +1,1 @@
-firefox_profile_dir: "~/Library/Application Support/Firefox/Profiles"
-firefox_profile_name: "onexbash"
+firefox_profile_dir: "/opt/onexcloud/appdata/firefox/onexbash"

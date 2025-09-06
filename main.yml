@@ -32,3 +32,6 @@
   tasks:
     # import tasks
     - import_tasks: tasks/dotfiles.yml
+  roles:
+    - role: "firefox"
+      tags: ["firefox"]
