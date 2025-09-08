@@ -28,7 +28,8 @@
     dest: "{{ item.dest }}"
     mode: "0644"
     owner: "root"
-    group: "wheel"
+    group: "wheel" 
+    force: true
   loop:
     - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
@@ -41,6 +42,7 @@
     - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
   loop_control:
     label: "{{ item.dest }}"
+  become: true
 
 # Cleanup: Dotfiles Targets
 - name: 'Clean up Dotfiles Targets'
