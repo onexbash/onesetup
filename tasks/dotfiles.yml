@@ -9,6 +9,7 @@
     remote: origin
     update: true
     recursive: true # whether submodules should be included/skipped
+  become: true
 
 # File Permissions: Dotfiles
 - name: 'Set File Permissions: {{ DOTFILES_DIR }}/*'
