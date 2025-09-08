@@ -25,6 +25,7 @@ services:
       - ONESETUP_REPO=${ONESETUP_REPO}
       - DOTFILES_DIR=${DOTFILES_DIR}
       - DOTFILES_REPO=${DOTFILES_REPO}
+      - ANSIBLE_DEBUG=1
     tty: true
     stdin_open: true
 networks:
