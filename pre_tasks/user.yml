@@ -1,4 +1,5 @@
 ---
+# Create Groups
 - name: "Group: Ensure 'wheel' exists"
   ansible.builtin.group:
     name: "wheel"
@@ -15,13 +16,28 @@
     state: present
     system: true
 
+# Create Users
 - name: "Configure User & default shell"
-  user:
+  ansible.builtin.user:
     name: "{{ ansible_user }}"
     comment: "{{ ansible_user }}"
     hidden: false
     group: "staff"
     append: true # true: add user to the specified group but don't remove him from existing groups.
     shell: "/opt/homebrew/bin/bash" # TODO: linux support
-    password: "{{ sudo_password }}"
+    password: "{{ sudo_password | password_hash('sha512') }}"
     update_password: "always" # update password if they differ [always/on_create]
+
+# Verify Users & Groups
+- name: "Ensure Ansible Connect User has sudo privileges"
+  block:
+    - name: "Test sudo access"
+      become: true
+      command: "whoami"
+      register: sudo_check
+    - debug:
+        msg: "✓ SUCCESS: User has sudo privileges (whoami returned: {{ sudo_check.stdout }})"
+  rescue:
+    - debug:
+        msg: "✗ FAILED: User does not have sudo privileges"
+
