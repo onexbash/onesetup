@@ -1,10 +1,26 @@
 ---
+- name: "Group: Ensure 'wheel' exists"
+  ansible.builtin.group:
+    name: "wheel"
+    state: present
+    system: false
+- name: "Group: Ensure 'staff' exists"
+  ansible.builtin.group:
+    name: "staff"
+    state: present
+    system: false
+- name: "Group: Ensure 'service' exists"
+  ansible.builtin.group:
+    name: "service"
+    state: present
+    system: true
+
 - name: "Configure User & default shell"
   user:
     name: "{{ ansible_user }}"
     comment: "This is one of the core users that is allowed to escalate sudo privileges"
     hidden: false
-    group: "core"
+    group: "staff"
     append: true # true: add user to the specified group but don't remove him from existing groups.
     shell: "/opt/homebrew/bin/bash" # TODO: linux support
     password: "{{ sudo_password }}"
