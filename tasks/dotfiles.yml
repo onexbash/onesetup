@@ -26,6 +26,7 @@
     path: '{{ item.dest }}'
     state: absent
   loop:
+    - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
@@ -33,16 +34,28 @@
     - { src: "{{ DOTFILES_DIR }}/shell/global/zlogout", dest: "/etc/zlogout" }
   ignore_errors: true
 
+# File Permissions: Global Shell Config
+- name: 'Set File Permissions: {{ DOTFILES_DIR }}/shell/global'
+  file:
+    path: '{{ DOTFILES_DIR }}/shell/global'
+    state: directory
+    mode: '0644'
+    owner: 'root'
+    group: 'wheel'
+    recurse: true
+
 # Symlink: Global Shell Config
 - name: 'Symlink: Global Shell Config'
   file:
     src: '{{ item.src }}'
     dest: '{{ item.dest }}'
     state: link
-    owner: '{{ ansible_user }}'
+    mode: "0644"
+    owner: "root"
     group: "wheel"
     force: true
   loop:
+    - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
