@@ -7,7 +7,6 @@
   # -- Variables -- #
   vars:
     # environment variables
-    HOME: "{{ ansible_facts.env.PWD }}"
     XDG_CONFIG_HOME: "{{ HOME }}/.config"
     ZDOTDIR: "{{ XDG_CONFIG_HOME }}/zsh"
     # ansible variables

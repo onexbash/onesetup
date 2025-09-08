@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # Environment Variables
-export ONESETUP_DIR="${HOME}/onesetup"
+export ONESETUP_DIR="${HOME}/.local/share/onesetup"
 export ONESETUP_REPO="onexbash/onesetup"
-export DOTFILES_DIR="${HOME}/dotfiles"
+export DOTFILES_DIR="${HOME}/.local/share/dotfiles"
 export DOTFILES_REPO="onexbash/dotfiles"
 
 # Variables
