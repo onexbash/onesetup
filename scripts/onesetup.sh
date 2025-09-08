@@ -20,7 +20,6 @@ function load_scripts(){
   set -a 
   source <(curl -s "$ONESETUP_REPO_RAW/.env.public") && echo -e "${I_OK}Environment Variables Loaded from .env.public!"|| echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
   set +a
-  echo "$ANSIBLE_DEBUG"
 }
 
 # Detect Operating System
