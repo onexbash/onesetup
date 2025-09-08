@@ -23,7 +23,6 @@
     comment: "{{ ansible_user }}"
     hidden: false
     group: "staff"
-    append: true # true: add user to the specified group but don't remove him from existing groups.
     shell: "/opt/homebrew/bin/bash" # TODO: linux support
     password: "{{ sudo_password }}"
     update_password: "on_create" # update password if they differ [always/on_create]
