@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # Environment Variables
-export ONESETUP_DIR="${HOME}/.local/share/onesetup"
+export ONESETUP_DIR="/opt/onesetup"
 export ONESETUP_REPO="onexbash/onesetup"
-export DOTFILES_DIR="${HOME}/.local/share/dotfiles"
+export DOTFILES_DIR="/opt/dotfiles"
 export DOTFILES_REPO="onexbash/dotfiles"
 
 # Variables
@@ -12,6 +12,7 @@ ONESETUP_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
 DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
 DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
 
+# Load Scripts
 function load_scripts(){
   # Load helper script
   source <(curl -s "$ONESETUP_REPO_RAW/scripts/helper.sh") && echo -e "${I_OK}Helper Script loaded!"|| echo -e "${I_ERR}Please make sure you are connected to the internet and try again."

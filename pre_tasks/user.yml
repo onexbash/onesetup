@@ -16,17 +16,6 @@
     state: present
     system: true
 
-# Create Users
-- name: "Configure User & default shell"
-  ansible.builtin.user:
-    name: "{{ ansible_user }}"
-    comment: "{{ ansible_user }}"
-    hidden: false
-    group: "staff"
-    shell: "/opt/homebrew/bin/bash" # TODO: linux support
-    password: "{{ sudo_password }}"
-    update_password: "on_create" # update password if they differ [always/on_create]
-
 # Verify Users & Groups
 - name: "Ensure Ansible Connect User has sudo privileges"
   block:

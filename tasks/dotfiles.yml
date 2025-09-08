@@ -16,53 +16,31 @@
   file:
     path: '{{ DOTFILES_DIR }}'
     state: directory
-    mode: '0774'
+    mode: '0775'
     owner: '{{ ansible_user }}'
     group: 'wheel'
     recurse: true
 
-# Cleanup: global shell config
-- name: 'Cleanup: global shell config files (bash & zsh)'
-  file:
-    path: '{{ item.dest }}'
-    state: absent
-  loop:
-    - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
-    - { src: "{{ DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
-    - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
-    - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
-    - { src: "{{ DOTFILES_DIR }}/shell/global/zshrc", dest: "/etc/zshrc" }
-    - { src: "{{ DOTFILES_DIR }}/shell/global/zlogout", dest: "/etc/zlogout" }
-  ignore_errors: true
-
-# File Permissions: Global Shell Config
-- name: 'Set File Permissions: {{ DOTFILES_DIR }}/shell/global'
-  file:
-    path: '{{ DOTFILES_DIR }}/shell/global'
-    state: directory
-    mode: '0644'
-    owner: 'root'
-    group: 'wheel'
-    recurse: true
-
-# Symlink: Global Shell Config
-- name: 'Symlink: Global Shell Config'
-  file:
-    src: '{{ item.src }}'
-    dest: '{{ item.dest }}'
-    state: link
+# Copy: Global Shell Config
+- name: "Copy: Global Shell Config"
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     mode: "0644"
     owner: "root"
     group: "wheel"
-    force: true
   loop:
-    - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
-    - { src: "{{ DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zshrc", dest: "/etc/zshrc" }
     - { src: "{{ DOTFILES_DIR }}/shell/global/zlogout", dest: "/etc/zlogout" }
-
+    - { src: "{{ DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/bashrc", dest: "/etc/bashrc" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/bash_profile", dest: "/etc/bash_profile" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/bash_logout", dest: "/etc/bash_logout" }
+    - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
+  loop_control:
+    label: "{{ item.dest }}"
 
 # Cleanup: Dotfiles Targets
 - name: 'Clean up Dotfiles Targets'
