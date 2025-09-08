@@ -25,14 +25,12 @@
     DOTFILES_REPO_HTTPS: "https://github.com/{{ DOTFILES_REPO }}.git"
   # -- Pre Tasks -- #
   pre_tasks:
-    - name: 'Include Pre-Tasks'
-      include_tasks: '{{ item }}'
-      loop: "{{ lookup('ansible.builtin.fileglob', 'pre_tasks/*.yml', wantlist=True) }}"
-      tags: ['always']
+    - import_tasks: pre_tasks/user.yml
+    - import_tasks: tasks/shell.yml
+  # -- Roles -- #
+  roles:
+    - role: elliotweiser.osx-command-line-tools
+      when: ansible_facts['os_family'] == 'Darwin'
   # -- Tasks -- #
   tasks:
-    # import tasks
     - import_tasks: tasks/dotfiles.yml
-  #roles:
-  #  - role: "firefox"
-  #    tags: ["firefox"]
