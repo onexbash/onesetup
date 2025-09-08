@@ -11,7 +11,7 @@
     ansible_password: "{{ sudo_password }}"
     ansible_facts_parallel: true # allow parallel facts gathering
     # environment variables
-    HOME: "{{ ansible_env.HOME }}"
+    HOME: "/Users/{{ ansible_user }}"
     XDG_CONFIG_HOME: "{{ HOME }}/.config"
     ZDOTDIR: "{{ XDG_CONFIG_HOME }}/zsh"
     # onesetup variables (passed by control-node entrypoint script)
