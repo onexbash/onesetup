@@ -9,6 +9,7 @@ tmp/
 
 # -- Secrets -- #
 *.env
+!.env.public
 *.secret
 
 # -- IDE Files -- #

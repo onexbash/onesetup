@@ -25,7 +25,8 @@ services:
       - ONESETUP_REPO=${ONESETUP_REPO}
       - DOTFILES_DIR=${DOTFILES_DIR}
       - DOTFILES_REPO=${DOTFILES_REPO}
-      - ANSIBLE_DEBUG=1
+      - ANSIBLE_DEBUG=${ANSIBLE_DEBUG}
+    env_file: ${ONESETUP_DIR}/.env.public
     tty: true
     stdin_open: true
 networks:

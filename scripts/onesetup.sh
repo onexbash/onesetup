@@ -12,10 +12,15 @@ ONESETUP_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
 DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
 DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
 
-# Load helper script
-function load_helper(){
+function load_scripts(){
+  # Load helper script
   source <(curl -s "$ONESETUP_REPO_RAW/scripts/helper.sh") && echo -e "${I_OK}Helper Script loaded!"|| echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
   load_stylings && set_modes
+  # Load .env.public
+  set -a 
+  source <(curl -s "$ONESETUP_REPO_RAW/.env.public") && echo -e "${I_OK}Environment Variables Loaded from .env.public!"|| echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
+  set +a
+  echo "$ANSIBLE_DEBUG"
 }
 
 # Detect Operating System
@@ -116,7 +121,7 @@ function run() {
 }
 
 # Function Calls
-load_helper
+load_scripts
 prerequisites && echo -e "${I_OK}Prerequesites checked!"
 install && echo -e "${I_OK}Onesetup installed!"
 run && echo -e "${I_OK}Control-Node running!"
