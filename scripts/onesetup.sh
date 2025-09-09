@@ -16,7 +16,7 @@ DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
 function load_scripts(){
   # Load helper script
   source <(curl -s "$ONESETUP_REPO_RAW/scripts/helper.sh") && echo -e "${I_OK}Helper Script loaded!"|| echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
-  load_stylings && set_modes
+  load_colors && load_prompt_styles && set_modes
   # Load .env.public
   set -a 
   source <(curl -s "$ONESETUP_REPO_RAW/.env.public") && echo -e "${I_OK}Environment Variables Loaded from .env.public!"|| echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
