@@ -73,7 +73,7 @@
     dest: '{{ item.dest }}'
     state: 'link'
     force: true
-  loop: "{{ shell_user }}"
+  loop: "{{ shell_home }}"
 
 # Symlink: Dotfiles
 - name: 'Symlink: Dotfiles'
