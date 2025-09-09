@@ -66,6 +66,22 @@
     remote_src: true
   loop: "{{ shell_global }}"
 
+# Cleanup: User Shell Files (dest)
+- name: 'Cleanup: User Shell Files'
+  ansible.builtin.file:
+    path: '{{ item.dest }}'
+    state: 'absent'
+    force: true
+  loop: "{{ shell_home }}"
+
+# Cleanup: Dotfiles (dest)
+- name: 'Cleanup: Dotfiles'
+  ansible.builtin.file:
+    path: '{{ item.dest }}'
+    state: 'absent'
+    force: true
+  loop: "{{ dotfiles }}"
+
 # Symlink: User Shell Files
 - name: 'Symlink: User Shell Files'
   ansible.builtin.file:
