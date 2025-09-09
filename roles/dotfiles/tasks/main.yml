@@ -75,6 +75,15 @@
   loop: "{{ shell_home }}"
   become: true
 
+# Cleanup: User Shell Config Dir (dest)
+- name: 'Cleanup: Shell Config Directory'
+  ansible.builtin.file:
+    path: '{{ item.dest }}'
+    state: 'absent'
+    force: true
+  loop: "{{ shell_config_dir }}"
+  become: true
+
 # Cleanup: Dotfiles (dest)
 - name: 'Cleanup: Dotfiles'
   ansible.builtin.file:
@@ -82,6 +91,7 @@
     state: 'absent'
     force: true
   loop: "{{ dotfiles }}"
+  ignore_errors: true
   become: true
 
 # Symlink: User Shell Files
@@ -93,6 +103,15 @@
     force: true
   loop: "{{ shell_home }}"
 
+# Symlink: Shell Config Dir
+- name: 'Symlink: Shell Config Directory'
+  ansible.builtin.file:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    state: 'link'
+    force: true
+  loop: "{{ shell_config_dir }}"
+
 # Symlink: Dotfiles
 - name: 'Symlink: Dotfiles'
   ansible.builtin.file:
@@ -101,4 +120,4 @@
     state: 'link'
     force: true
   loop: "{{ dotfiles }}"
-
+  ignore_errors: true
