@@ -1,31 +1,69 @@
 #!/usr/bin/env bash
-# -- -- -- -- -- -- -- -- -- -- #
-# --      HELPER SCRIPT      -- #
-# -- -- -- -- -- -- -- -- -- -- #
-# this script loads prompt stylings, sets some options
-# and provides reusable functions that can be sourced by other scripts.
+function load_colors() {
+  # -- DEFINE ANSI CODES -- #
+  declare -A colorcodes
+  colorcodes=(
+    ["black"]="0"
+    ["red"]="1" 
+    ["green"]="2"
+    ["yellow"]="3"
+    ["blue"]="4"
+    ["magenta"]="5"
+    ["cyan"]="6"
+    ["white"]="7"
+    ["gray"]="8"
+  )
 
-# -- PROMPT STYLINGS -- #
-function load_stylings(){
-  export C_BLACK='\033[1;30m'
-  export C_RED='\033[1;31m'
-  export C_GREEN='\033[1;32m'
-  export C_YELLOW='\033[1;33m'
-  export C_BLUE='\033[1;34m'
-  export C_PURPLE='\033[1;35m'
-  export C_CYAN='\033[1;36m'
-  export C_WHITE='\033[1;37m'
-  export C_GRAY='\033[1;30m'
-  export C_RESET='\033[0m'
-  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"       # ok
-  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}" # warning
-  export I_ERR="${C_BLACK}[${C_RED} ERROR ${C_BLACK}] ${C_RESET}"    # error
-  export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"    # info
-  export I_DO="${C_BLACK}[${C_PURPLE}  ...  ${C_BLACK}] ${C_RESET}"     # do
-  export I_DONE="${C_BLACK}[${C_GREEN} DONE ${C_BLACK}] ${C_RESET}"     # done
-  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"          # ask user for anything
-  export I_ASK_YN="${C_BLACK}[${C_BLUE} [Y/N] ${C_BLACK}] ${C_RESET}"   # ask user for yes or no
-  return 0
+  # Control Codes
+  local foreground="38"
+  local background="48"
+  local colorspace="5" # 5) 256 Colors | 2) RGB Colors
+  
+  # -- CONSTRUCT ANSI ESCAPE SEQUENCE -- #
+  get_ansi_sequence() {
+    local type="$1"    # "fg" or "bg"
+    local color="$2"   # color name from colorcodes array
+
+    if [[ "$type" == "fg" ]]; then
+      type="$foreground"
+    elif [[ "$type" == "bg" ]]; then
+      type="$background"
+    fi
+    # return constructed ansi escape sequence
+    echo "\e[${type};${colorspace};${colorcodes[$color]}m"
+  }
+ 
+  # -- EXPORT VARIABLES -- #
+  # Export Color Variables
+  for color in "${!colorcodes[@]}"; do
+    # Foreground Colors
+    # usage: `echo -e "${FG_BLUE}blue text"`
+    export "FG_${color^^}"="$(get_ansi_sequence "fg" "$color")"
+    # Background Colors
+    # usage: `echo -e "${BG_BLUE}blue background"`
+    export "BG_${color^^}"="$(get_ansi_sequence "bg" "$color")"
+  done 
+  # Export Style Variables
+  export RESET="\e[0m"
+  export BOLD="\e[1m"
+}
+
+# Load Prompt Style Variables
+function load_prompt_styles() {
+  # ok
+  export I_OK="${FG_BLACK}[${FG_GREEN}  OK  ${FG_BLACK}] ${RESET}"       
+  # warning
+  export I_WARN="${FG_BLACK}[${FG_YELLOW} WARNING ${FG_BLACK}] ${RESET}" 
+  # error
+  export I_ERR="${FG_BLACK}[${FG_RED} ERROR ${FG_BLACK}] ${RESET}"    
+  # info
+  export I_INFO="${FG_BLACK}[${FG_PURPLE} INFO ${FG_BLACK}] ${RESET}"    
+  # do
+  export I_DO="${FG_BLACK}[${FG_PURPLE}  ...  ${FG_BLACK}] ${RESET}"     
+  # ask user for anything
+  export I_ASK="${FG_BLACK}[${FG_BLUE} ? ${FG_BLACK}] ${RESET}"          
+  # ask user for yes or no
+  export I_ASK_YN="${FG_BLACK}[${FG_BLUE} [Y/N] ${FG_BLACK}] ${RESET}"   
 }
 
 # Set Script modes (exit behaviour etc.)
@@ -72,34 +110,5 @@ function load_env_file() {
   else
     echo "No .env file found in $env_dir" >&2
   fi
-}
-
-function load_tools(){
-  # gum
-  if ! command -v gum >/dev/null 2>&1; then
-    echo -e "${I_DO}Installing gum"
-    brew install gum
-  fi
-}
-
-
-function print_sysinfo() {
-  HOSTNAME="$(hostname -s)"
-  OS="$(sw_vers -productName)"
-  OS_VERSION="$(sw_vers -productVersion)"
-  IFACE="$(route -n get default 2>/dev/null | awk '/interface:/{print $2; exit}')"
-  
-  IPV4=""
-  if [[ -n "${IFACE}" ]]; then
-    if ipconfig getifaddr "$IFACE" >/dev/null 2>&1; then
-      IPV4="$(ipconfig getifaddr "$IFACE")"
-    else
-      IPV4="$(ifconfig "$IFACE" 2>/dev/null | awk '$1=="inet"{print $2; exit}')"
-    fi
-  fi
-  echo -e "${I_INFO}HOSTNAME: $HOSTNAME"
-  echo -e "${I_INFO}OS: $OS"
-  echo -e "${I_INFO}OS Version: $OS_VERSION"
-  echo -e "${I_INFO}Network Interface: ${IFACE:-unknown}${IPV4:+ ($IPV4)}"
 }
 

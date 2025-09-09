@@ -1,0 +1,51 @@
+---
+# Home Directory
+- name: "Configure Home Directory: {{ HOME }}"
+  ansible.builtin.file:
+    path: "{{ HOME }}"
+    state: "directory"
+    mode: "0755"
+    owner: "{{ ansible_user }}"
+    group: "staff"
+    force: false
+
+# Config Directory
+- name: "Configure Config Directory: {{ XDG_CONFIG_HOME }}"
+  ansible.builtin.file:
+    path: "{{ XDG_CONFIG_HOME }}"
+    state: "directory"
+    mode: "0755"
+    owner: "{{ ansible_user }}"
+    group: "staff"
+    force: false
+
+# Data Directory
+- name: "Configure Data Directory: {{ XDG_DATA_HOME }}"
+  ansible.builtin.file:
+    path: "{{ XDG_DATA_HOME }}"
+    state: "directory"
+    mode: "0755"
+    owner: "{{ ansible_user }}"
+    group: "staff"
+    force: false
+
+# State Directory
+- name: "Configure State Directory: {{ XDG_STATE_HOME }}"
+  ansible.builtin.file:
+    path: "{{ XDG_STATE_HOME }}"
+    state: "directory"
+    mode: "0755"
+    owner: "{{ ansible_user }}"
+    group: "staff"
+    force: false
+
+# Cache Directory
+- name: "Configure Cache Directory: {{ XDG_CACHE_HOME }}"
+  ansible.builtin.file:
+    path: "{{ XDG_CACHE_HOME }}"
+    state: "directory"
+    mode: "0755"
+    owner: "{{ ansible_user }}"
+    group: "staff"
+    force: false
+

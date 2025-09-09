@@ -1,8 +1,0 @@
----
-- name: "Set Bash as Default Shell: {{ ansible_user }}"
-  ansible.builtin.command:
-    cmd: chsh -s "/opt/homebrew/bin/bash" "{{ ansible_user }}"
-
-- name: "Set Bash as Default Shell: root"
-  ansible.builtin.command:
-    cmd: chsh -s "/opt/homebrew/bin/bash" "root"

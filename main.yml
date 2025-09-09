@@ -13,7 +13,10 @@
     # environment variables
     HOME: "/Users/{{ ansible_user }}"
     XDG_CONFIG_HOME: "{{ HOME }}/.config"
-    ZDOTDIR: "{{ XDG_CONFIG_HOME }}/zsh"
+    XDG_DATA_HOME: "{{ HOME }}/.local/share"
+    XDG_STATE_HOME: "{{ HOME }}/.local/state"
+    XDG_CACHE_HOME: "{{ HOME }}/.cache"
+    ZDOTDIR: "{{ HOME }}"
     # onesetup variables (passed by control-node entrypoint script)
     ONESETUP_DIR: '{{ lookup("env", "ONESETUP_DIR") }}'
     DOTFILES_DIR: '{{ lookup("env", "DOTFILES_DIR") }}'
@@ -26,11 +29,9 @@
   # -- Pre Tasks -- #
   pre_tasks:
     - import_tasks: pre_tasks/user.yml
-    - import_tasks: tasks/shell.yml
+    - import_tasks: pre_tasks/filesystem.yml
   # -- Roles -- #
   roles:
     - role: elliotweiser.osx-command-line-tools
       when: ansible_facts['os_family'] == 'Darwin'
-  # -- Tasks -- #
-  tasks:
-    - import_tasks: tasks/dotfiles.yml
+    - role: 'dotfiles'

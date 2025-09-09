@@ -1,0 +1,33 @@
+shell_global:
+  - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
+  - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
+  - { src: "{{ DOTFILES_DIR }}/shell/global/zshrc", dest: "/etc/zshrc" }
+  - { src: "{{ DOTFILES_DIR }}/shell/global/zlogout", dest: "/etc/zlogout" }
+  - { src: "{{ DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
+  - { src: "{{ DOTFILES_DIR }}/shell/global/bashrc", dest: "/etc/bashrc" }
+  - { src: "{{ DOTFILES_DIR }}/shell/global/bash_profile", dest: "/etc/bash_profile" }
+  - { src: "{{ DOTFILES_DIR }}/shell/global/bash_logout", dest: "/etc/bash_logout" }
+  - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
+
+shell_home:
+  - { src: "{{ DOTFILES_DIR }}/shell/home/config_dir", dest: "{{ XDG_CONFIG_HOME }}/shell" }
+  - { src: "{{ DOTFILES_DIR }}/shell/home/zshenv", dest: "{{ ZDOTDIR }}/.zshenv" }
+  - { src: "{{ DOTFILES_DIR }}/shell/home/zprofile", dest: "{{ ZDOTDIR }}/.zprofile" }
+  - { src: "{{ DOTFILES_DIR }}/shell/home/zshrc", dest: "{{ ZDOTDIR }}/.zshrc" }
+  - { src: "{{ DOTFILES_DIR }}/shell/home/zlogout", dest: "{{ ZDOTDIR }}/.zlogout" }
+  - { src: "{{ DOTFILES_DIR }}/shell/home/bashrc", dest: "{{ HOME }}/.bashrc" }
+  - { src: "{{ DOTFILES_DIR }}/shell/home/bash_profile", dest: "{{ HOME }}/.bash_profile" }
+  - { src: "{{ DOTFILES_DIR }}/shell/home/bash_logout", dest: "{{ HOME }}/.bash_logout" }
+
+dotfiles:
+  - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
+  - { src: "{{ DOTFILES_DIR }}/alacritty", dest: "{{ XDG_CONFIG_HOME }}/alacritty" }
+  - { src: "{{ DOTFILES_DIR }}/ghostty", dest: "{{ XDG_CONFIG_HOME }}/ghostty" }
+  - { src: "{{ DOTFILES_DIR }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
+  - { src: "{{ DOTFILES_DIR }}/starship", dest: "{{ XDG_CONFIG_HOME }}/starship" }
+  - { src: "{{ DOTFILES_DIR }}/aerospace", dest: "{{ XDG_CONFIG_HOME }}/aerospace" }
+  - { src: "{{ DOTFILES_DIR }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
+  - { src: "{{ DOTFILES_DIR }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
+  - { src: "{{ DOTFILES_DIR }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
+  - { src: "{{ DOTFILES_DIR }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }
+

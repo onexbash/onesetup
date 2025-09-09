@@ -1,22 +1,51 @@
 ---
-# Create Groups
-- name: "Group: Ensure 'wheel' exists"
+# Configure Groups
+- name: "Group: Configure 'wheel'"
   ansible.builtin.group:
     name: "wheel"
     state: present
     system: false
-- name: "Group: Ensure 'staff' exists"
+- name: "Group: Configure 'staff'"
   ansible.builtin.group:
     name: "staff"
     state: present
     system: false
-- name: "Group: Ensure 'service' exists"
+- name: "Group: Configure 'service'"
   ansible.builtin.group:
     name: "service"
     state: present
     system: true
 
-# Verify Users & Groups
+# Configure Users
+- name: "User: Configure {{ ansible_user }}"
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    comment: "{{ ansible_user }}"
+    group: "staff"
+    system: false
+    password: "{{ sudo_password }}"
+    update_password: "on_create" # whether to update password if it differs [always/on_create]
+    # set the default shell to bash
+    shell: >-
+      {{ "/opt/homebrew/bin/bash"
+         if ansible_facts['os_family'] == 'Darwin'
+         else "/bin/bash" }}
+- name: "User: Configure 'root'"
+  ansible.builtin.user:
+    name: "root"
+    comment: "root"
+    group: "wheel"
+    system: false
+    password: "{{ sudo_password }}"
+    update_password: "on_create" # whether to update password if it differs [always/on_create]
+    # set the default shell to bash
+    shell: >-
+      {{ "/opt/homebrew/bin/bash"
+         if ansible_facts['os_family'] == 'Darwin'
+         else "/bin/bash" }}
+  become: true
+
+# Verify Users & Groups Configuration
 - name: "Ensure Ansible Connect User has sudo privileges"
   block:
     - name: "Test sudo access"
