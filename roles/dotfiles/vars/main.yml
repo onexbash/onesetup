@@ -10,7 +10,6 @@ shell_global:
   - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
 
 shell_home:
-  - { src: "{{ DOTFILES_DIR }}/shell/home/config_dir", dest: "{{ XDG_CONFIG_HOME }}/shell" }
   - { src: "{{ DOTFILES_DIR }}/shell/home/zshenv", dest: "{{ ZDOTDIR }}/.zshenv" }
   - { src: "{{ DOTFILES_DIR }}/shell/home/zprofile", dest: "{{ ZDOTDIR }}/.zprofile" }
   - { src: "{{ DOTFILES_DIR }}/shell/home/zshrc", dest: "{{ ZDOTDIR }}/.zshrc" }
@@ -18,6 +17,9 @@ shell_home:
   - { src: "{{ DOTFILES_DIR }}/shell/home/bashrc", dest: "{{ HOME }}/.bashrc" }
   - { src: "{{ DOTFILES_DIR }}/shell/home/bash_profile", dest: "{{ HOME }}/.bash_profile" }
   - { src: "{{ DOTFILES_DIR }}/shell/home/bash_logout", dest: "{{ HOME }}/.bash_logout" }
+
+shell_config_dir:
+- { src: "{{ DOTFILES_DIR }}/shell/home/config_dir", dest: "{{ XDG_CONFIG_HOME }}/shell" }
 
 dotfiles:
   - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }

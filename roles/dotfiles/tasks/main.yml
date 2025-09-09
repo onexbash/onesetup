@@ -43,6 +43,17 @@
     recurse: false
   loop: "{{ shell_home }}"
 
+# File Permissions: Shell Config Dir
+- name: 'Set Permissions: Shell Config Dir'
+  ansible.builtin.file:
+    path: '{{ item.src }}'
+    state: 'directory'
+    mode: '0744'
+    owner: '{{ ansible_user }}'
+    group: 'staff'
+    recurse: true
+  loop: "{{ shell_config_dir }}"
+
 # Copy: Global Shell Files
 - name: 'Copy: Global Shell Files'
   ansible.builtin.copy:
