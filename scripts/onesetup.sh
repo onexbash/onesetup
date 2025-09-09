@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # Environment Variables
-export ONESETUP_DIR="/opt/onesetup"
+export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
 export ONESETUP_REPO="onexbash/onesetup"
-export DOTFILES_DIR="/opt/dotfiles"
+export DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
 export DOTFILES_REPO="onexbash/dotfiles"
 
 # Variables
