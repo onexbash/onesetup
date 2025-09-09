@@ -63,6 +63,7 @@
     owner: 'root'
     group: 'wheel'
     force: true
+    remote_src: true
   loop: "{{ shell_global }}"
 
 # Symlink: User Shell Files
