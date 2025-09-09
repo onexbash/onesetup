@@ -73,6 +73,7 @@
     state: 'absent'
     force: true
   loop: "{{ shell_home }}"
+  become: true
 
 # Cleanup: Dotfiles (dest)
 - name: 'Cleanup: Dotfiles'
@@ -81,6 +82,7 @@
     state: 'absent'
     force: true
   loop: "{{ dotfiles }}"
+  become: true
 
 # Symlink: User Shell Files
 - name: 'Symlink: User Shell Files'

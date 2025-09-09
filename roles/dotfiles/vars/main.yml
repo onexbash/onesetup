@@ -1,3 +1,4 @@
+---
 shell_global:
   - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
   - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
@@ -19,7 +20,7 @@ shell_home:
   - { src: "{{ DOTFILES_DIR }}/shell/home/bash_logout", dest: "{{ HOME }}/.bash_logout" }
 
 shell_config_dir:
-- { src: "{{ DOTFILES_DIR }}/shell/home/config_dir", dest: "{{ XDG_CONFIG_HOME }}/shell" }
+  - { src: "{{ DOTFILES_DIR }}/shell/home/config_dir", dest: "{{ XDG_CONFIG_HOME }}/shell" }
 
 dotfiles:
   - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
