@@ -43,30 +43,33 @@ function load_colors() {
     # usage: `echo -e "${BG_BLUE}blue background"`
     export "BG_${color^^}"="$(get_ansi_sequence "bg" "$color")"
   done 
+}
+
+function load_styles() {
   # Export Style Variables
-  export RESET="\e[0m"
-  export BOLD="\e[1m"
+  export S_RESET="\e[0m"
+  export S_BOLD="\e[1m"
 }
 
 # Load Prompt Style Variables
-function load_prompt_styles() {
+function load_prompts() {
   # ok
-  export I_OK="${FG_BLACK}[${FG_GREEN}  OK  ${FG_BLACK}] ${RESET}"       
+  export I_OK="${FG_BLACK}[${FG_GREEN}  OK  ${FG_BLACK}] ${S_RESET}"       
   # warning
-  export I_WARN="${FG_BLACK}[${FG_YELLOW} WARNING ${FG_BLACK}] ${RESET}" 
+  export I_WARN="${FG_BLACK}[${FG_YELLOW} WARNING ${FG_BLACK}] ${S_RESET}" 
   # error
-  export I_ERR="${FG_BLACK}[${FG_RED} ERROR ${FG_BLACK}] ${RESET}"    
+  export I_ERR="${FG_BLACK}[${FG_RED} ERROR ${FG_BLACK}] ${S_RESET}"    
   # info
-  export I_INFO="${FG_BLACK}[${FG_PURPLE} INFO ${FG_BLACK}] ${RESET}"    
+  export I_INFO="${FG_BLACK}[${FG_MAGENTA} INFO ${FG_BLACK}] ${S_RESET}"    
   # do
-  export I_DO="${FG_BLACK}[${FG_PURPLE}  ...  ${FG_BLACK}] ${RESET}"     
+  export I_DO="${FG_BLACK}[${FG_MAGENTA}  ...  ${FG_BLACK}] ${S_RESET}"     
   # ask user for anything
-  export I_ASK="${FG_BLACK}[${FG_BLUE} ? ${FG_BLACK}] ${RESET}"          
+  export I_ASK="${FG_BLACK}[${FG_BLUE} ? ${FG_BLACK}] ${S_RESET}"          
   # ask user for yes or no
-  export I_ASK_YN="${FG_BLACK}[${FG_BLUE} [Y/N] ${FG_BLACK}] ${RESET}"   
+  export I_ASK_YN="${FG_BLACK}[${FG_BLUE} [Y/N] ${FG_BLACK}] ${S_RESET}"   
 }
 
-# Set Script modes (exit behaviour etc.)
+# -- SET SCRIPT MODES -- #
 function set_modes() {
   # Exit on error & pipe failures
   set -eo pipefail
@@ -83,32 +86,60 @@ function set_modes() {
   fi
 }
 
-# Get Working Directory where a script is located.
-function get_script_pwd() {
-  SOURCE="${BASH_SOURCE[0]}"
-  while [ -L "$SOURCE" ]; do
-    DIR="$(cd -P -- "$(dirname -- "$SOURCE")" >/dev/null 2>&1 && pwd)"
-    SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-  done
-  # this directory
-  THIS_DIR="$(cd -P -- "$(dirname -- "$SOURCE")" >/dev/null 2>&1 && pwd)" && export THIS_DIR="$THIS_DIR"
-  # parent directory of this directory
-  PARENT_DIR="$(dirname "$THIS_DIR")" && export PARENT_DIR="$PARENT_DIR"
-  # repository root (only works inside of a git repository)
-  REPO_ROOT="$(git rev-parse --show-toplevel)" && export REPO_ROOT="$REPO_ROOT"
-}
-
-# Accepts a directory as parameter & loads variables from all .env files inside of it.
-# usage: load_env_file "/path/to/project/directory"
-function load_env_file() {
-  local env_dir="$1"
-  if [ -f "$env_dir/.env" ]; then
-    set -a
-    source "$env_dir/.env"
-    set +a
-  else
-    echo "No .env file found in $env_dir" >&2
+# -- GET DYNAMIC PATHS -- #
+function get_paths() {
+  export THIS_FILE=$(realpath "$0")
+  export THIS_DIR=$(dirname "$(realpath "$0")")
+  if git rev-parse --git-dir > /dev/null 2>&1; then
+    export REPO_ROOT="$(git rev-parse --show-toplevel)"
   fi
 }
 
+# -- LOAD ENV FILES -- #
+# usage: load_env_file "/path/to/.env" "/path/to/.env2" "/path/to/.env3" ...
+function load_env_file() {
+  # Check if .env files provided
+  if [ $# -eq 0 ]; then
+    echo -e "${I_ERR}No .env files provided."
+    echo -e "${I_INFO}Usage: load_env_file 'path/to/.env' 'path/to/.env2' 'path/to/.env3'"
+    return 1
+  fi
+  # Counter for provided, existing & missing env file paths
+  local count_args=0 # overall .env file paths passed to the function
+  local count_existing=0 # existing .env file paths
+  local count_missing=0 # non-existing .env file paths
+  # Source env files 
+  for env_file in "$@"; do
+    ((count_args++))
+    if [ -f "$env_file" ]; then
+      ((count_existing++))
+      source "$env_file" && echo -e "${I_OK}Sourced: ${env_file}!" || echo -e "${I_ERR}Failed to Source: ${env_file}!"
+    else
+      ((count_missing++))
+    fi
+  done
+  echo -e "${I_INFO}You passed ${FG_BLUE}$count_args${RESET} .env file where ${FG_GREEN}$count_existing${RESET} exist and ${FG_RED}$count_missing${RESET} don't exist."
+  
+  # Return exit code
+  if [ $count_missing -gt 0 ]; then
+    return 1 # failure
+  else
+    return 0 # success
+  fi
+}
+
+
+# -- DETECT OPERATING SYSTEM -- #
+function detect_os() {
+  case "$(uname -s)" in
+    Linux*)  echo "linux";;
+    Darwin*) echo "macos";;
+    *)       echo "unknown";;
+  esac
+}
+function detect_linux_dist() {
+  if [ -f "/etc/os-release" ]; then
+    source "/etc/os-release"
+    echo "$NAME" # function returns only the linux distribution name
+  fi
+}
