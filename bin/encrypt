@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+
+# Load Helper Script
+function load_helper() {
+  local repo_root="$(git rev-parse --show-toplevel)"
+  local helper_script="${repo_root}/scripts/helper.sh"
+  source "$helper_script" && echo -e "${I_OK}Helper Script Loaded!" || echo -e "${I_ERR}Failed to load Helper Script."
+  load_colors
+  load_prompts
+  set_modes
+  get_paths
+}
+
+function main() {
+  # Variables
+  vault_id="onesetup"
+
+  # Function Calls
+  load_helper && install_deps
+  prompt_user
+}
+
+# Get User Input to decide which encrypt function to run
+function prompt_user(){
+  choice=$(gum choose "Encrypt String" "Encrypt File Content" \
+    --cursor.foreground "#cba6f7" \
+    --header.foreground "#cba6f7" \
+    --selected.foreground "#cba6f7" \
+    --header "Choose:" \
+    --no-show-help \
+    --ordered
+  )
+  case "$choice" in
+    "Encrypt String")
+      encrypt_string
+      ;;
+    "Encrypt File Content")
+      # get filepath by user selection
+      local filepath=$(gum file "$HOME" \
+        --cursor.foreground "#cba6f7" \
+        --header.foreground "#cba6f7" \
+        --selected.foreground "#cba6f7" \
+        --all \
+        --height=100
+        )
+      # get file name
+      local filename=$(basename "$filepath")
+      # replace dots (.) in filename with underscores (_)
+      local filename_fmt="${filename//./_}"
+      # get var_name by user selection
+      local var_name=$(gum input \
+        --cursor.foreground "#cba6f7" \
+        --header.foreground "#cba6f7" \
+        --prompt.foreground "#cba6f7" \
+        --value "$filename_fmt" \
+        --header "Adjust variable name (or press Enter to keep default):" \
+        --placeholder "$filename_fmt" \
+        --width 50
+      )
+      # Validate $var_name for invalid characters
+      if [[ ! "$var_name" =~ ^[a-zA-Z0-9_]+$ ]]; then
+        echo -e "${I_ERR}Invalid Characters in Variable Name"
+        echo -e "${I_INFO}Allowed Characters: Letters[a-z|A-Z], Numbers[0-9], Underscores[_]"
+        return 1
+      fi
+
+      # call encrypt_file() with args
+      encrypt_file "$filepath" "$var_name"
+      ;;
+  esac
+}
+
+function install_deps() {
+  echo -e "${I_INFO}Installing missing dependencies.."
+  declare -a pkg_list
+  pkg_list=("gum" "ansible")
+  local os="$(detect_os)"
+ 
+  for pkg in "${pkg_list[@]}"; do
+    linux() {
+      sudo apt install "$pkg" || sudo dnf install "$pkg" || sudo pacman -S "$pkg" || echo -e "${I_ERR}Tried installing $pkg via apt, dnf & pacman. None of these succeeded. Other package managers are not supported." && exit 1
+    }
+    macos() {
+      if ! command -v "brew" &>/dev/null; then
+        echo -e "${I_ERR}Homebrew is not installed on your system. Please install & re-run this script."
+        echo -e "${I_INFO}To install Homebrew, run the install command from the official website: ${FG_BLUE}https://brew.sh${S_RESET}"
+        exit 1
+      fi
+      if ! command -v "$pkg" &>/dev/null; then
+        echo -e "${I_INFO}Dependency missing: ${FG_RED}$pkg${S_RESET} Installing.."
+        brew install "$pkg" || echo -e "${I_ERR}Failed to install: $pkg" && exit 1
+      else
+        echo -e "${I_OK}Dependency already installed: ${FG_GREEN}$pkg${S_RESET}"
+      fi
+    }
+    unknown() {
+      echo -e "${I_ERR}Unsupported OS." && exit 1
+    }
+    $os
+  done
+}
+
+# Encrypt String with Ansible-Vault
+function encrypt_string() {
+  printf "%b" "${I_ASK}Secret to Encrypt: "
+  read -r secret
+  printf "%b" "${I_ASK}Variable Name: "
+  read -r varname
+
+  ansible-vault encrypt_string \
+    --show-input \
+    --vault-id "$vault_id@prompt" \
+    --encrypt-vault-id "$vault_id" \
+    --name "$varname" \
+    "$secret" | pbcopy
+  echo -e "${I_OK}Encrypted string copied to clipboard."
+}
+# Encrypt File Content with Ansible-Vault
+function encrypt_file() {
+  local filepath="$1"
+  local var_name="$2"
+
+  # Check if file exists
+  if [[ ! -f "$filepath" ]]; then
+    echo -e "${I_ERR}File not found: $filepath"
+    return 1
+  fi
+
+  # Read the file content into a variable
+  local filecontent=$(<"$filepath")
+
+  # Encrypt and copy to clipboard
+  ansible-vault encrypt_string \
+    --show-input \
+    --vault-id "$vault_id@prompt" \
+    --encrypt-vault-id "$vault_id" \
+    --name "$var_name" \
+    "$filecontent" | pbcopy
+  echo -e "${I_OK}Encrypted Content of [ ${FG_MAGENTA}$filepath${S_RESET} ] copied to clipboard with Ansible Variable [ ${FG_MAGENTA}$var_name${S_RESET} ]"
+}
+
+# Call main function
+main

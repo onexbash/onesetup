@@ -101,6 +101,30 @@ function install() {
   # Set permissions
   sudo chmod 774 "$ONESETUP_DIR" && echo -e "${I_OK}Permissions on installation directory set! (744): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set permissions on installation directory! (744): $ONESETUP_DIR"
   sudo chown -R "$USER:wheel" "$ONESETUP_DIR" && echo -e "${I_OK}Ownership on installation directory set! ($USER:wheel): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set ownership on installation directory! ($USER:wheel): $ONESETUP_DIR"
+  
+  # Check which Bin Directory to use
+  local bin_dir
+  if [[ -d "/usr/local/bin" ]]; then
+    bin_dir="/usr/local/bin"
+    echo -e "${I_OK}User Bin Directory found at: [ ${FG_GREEN}/usr/local/bin${S_RESET} ]"
+  elif [[ -d "/usr/bin" ]]; then
+    bin_dir="/usr/bin"
+    echo -e "${I_OK}User Bin Directory found at: [ ${FG_GREEN}/usr/bin${S_RESET} ]"
+  elif [[ -d "/bin" ]]; then
+    echo -e "${I_WARN}No User Bin Directory found at: [ ${FG_RED}/usr/local/bin${S_RESET} ] or [ ${FG_RED}/usr/bin${S_RESET} ]"
+    echo -e "${I_INFO}Falling back to System Bin Directory: [ ${FG_GREEN}/bin${S_RESET} ]"
+    bin_dir="/bin"
+  else
+    echo -e "${I_ERR}No bin directory found. Please ensure one of the following directories exists with ${S_BOLD}${FG_BLUE}rwx${S_RESET} permissions for the root user: [ ${FG_RED}/usr/local/bin${S_RESET} ] [ ${FG_RED}/usr/bin${S_RESET} ] [ ${FG_RED}/bin${S_RESET} ]"
+    exit 1
+  fi
+  # Rollout executables to bin_dir
+  for file in ${ONESETUP_DIR}/bin/*; do
+    if [[ -f "$file" ]]; then
+      local filename=$(basename "$file")
+      sudo cp "$file" "$bin_dir" && echo -e "${I_OK}${FG_GREEN}$filename${S_RESET} copied to ${FG_GREEN}$bin_dir${S_RESET}" || echo -e "${I_ERR}Failed to copy ${FG_RED}$filename${S_RESET} to ${FG_RED}$bin_dir${S_RESET}"
+    fi
+  done
 }
 # Build & Run Control-Node Container
 function run() {
