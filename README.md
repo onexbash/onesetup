@@ -11,7 +11,7 @@ Additionally we use some scripts & container files for automatically setting up 
 - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
 ## Getting Started
-Run the following command on the machine that should act as the :
+Run the following command on the machine that should act as the Control-Node:
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
 ```
