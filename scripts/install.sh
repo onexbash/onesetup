@@ -28,23 +28,6 @@ function helper() {
   set +a
 }
 
-# Detect Operating System
-function detect_os() {
-  OS="$(uname -s)"
-  case "$OS" in
-  Linux*) PLATFORM="linux" ;;
-  Darwin*) PLATFORM="macos" ;;
-  Windows*) PLATFORM="windows" ;;
-  *) PLATFORM="unknown" ;;
-  esac
-  case "$PLATFORM" in
-  linux) echo -e "${I_OK}Supported platform detected: $PLATFORM" ;;
-  macos) echo -e "${I_OK}Supported platform detected: $PLATFORM" ;;
-  windows) echo -e "${I_ERR}haha, windows is not supported you fcking looser" && exit 1 ;;
-  *) echo -e "Whatever this sh*t you're running this on is, it's not supported!: $OS" && exit 1 ;;
-  esac
-}
-
 # Ensure prerequisites are satisfied
 function prerequisites() {
   # homebrew

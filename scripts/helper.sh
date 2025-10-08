@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
-# (1) load_colors
-function load_colors() {
+# (1) Set Shell-Script Modes
+function set_modes() {
+  # Exit on error & pipe failures
+  set -eo pipefail
+  # Prompt whether script should run in debug-mode when $TOGGLE_SCRIPT_DEBUG_MODE env var is not set.
+  if [[ -z $TOGGLE_SCRIPT_DEBUG_MODE ]]; then
+    read -p "$(echo -e "${I_ASK_YN}Run Script in Debug Mode? ")" -r answer
+    case "$answer" in
+    [Yy]) TOGGLE_SCRIPT_DEBUG_MODE=1 ;;
+    *) TOGGLE_SCRIPT_DEBUG_MODE=0 ;;
+    esac
+    if [[ $TOGGLE_SCRIPT_DEBUG_MODE -eq 1 ]]; then
+      set -x && echo -e "${I_OK}Running Script in Debug Mode"
+    fi
+  fi
+}
+
+# (2) Set TTY Style Variables (colors, prompts, ..)
+function tty_styles() {
   # Define Ansi Color Codes
   local -A colors
   colors=(
@@ -21,81 +38,85 @@ function load_colors() {
     ["background"]="48"
     ["colorspace"]="5"
   )
-
-  # Construct Ansi Escape Sequence
-  get_ansi_sequence() {
-    local type="$1"  # "fg" or "bg"
-    local color="$2" # color name from colors array
-    echo "\e[${controls[$type]};${controls["colorspace"]};${colors[$color]}m"
-  }
+  # Define Font Styles
+  local -A styles
+  styles=(
+    ["reset"]="\e[0m"
+    ["bold"]="\e[1m"
+    ["dim"]="\e[2m"
+    ["italic"]="\e[3m"
+    ["underline"]="\e[4m"
+    ["blink"]="\e[5m"
+    ["inverse"]="\e[7m"
+    ["hidden"]="\e[8m"
+    ["strikethrough"]="\e[9m"
+  )
+  # Define Prompt Colors & Contents
+  local -A prompts
+  prompts=(
+    ["ok"]="green|OK"
+    ["warn"]="yellow|WARN"
+    ["err"]="red|ERR"
+    ["info"]="magenta|INFO"
+    ["do"]="blue|.."
+    ["ask"]="cyan|?"
+    ["ask_yn"]="cyan|[Y/N]"
+    ["list"]="cyan|-"
+  )
 
   # Construct & Export Color Variables
-  for color in "${!colors[@]}"; do
-    # Format Color Name to uppercase
-    local color_fmt
-    color_fmt=$(echo "$color" | tr '[:lower:]' '[:upper:]')
-    # Export Foreground Colors - usage: `echo -e "${FG_RED}red text"`
-    export "FG_${color_fmt}"="$(get_ansi_sequence "foreground" "$color")"
-    # Export Background Colors - usage: `echo -e "${BG_RED}red background"`
-    export "BG_${color_fmt}"="$(get_ansi_sequence "background" "$color")"
-  done
+  load_colors() {
+    # Construct Ansi Escape Sequence
+    get_ansi_sequence() {
+      local type="$1"  # "fg" or "bg"
+      local color="$2" # color name from colors array
+      echo "\e[${controls[$type]};${controls["colorspace"]};${colors[$color]}m"
+    }
+    # Export Variables
+    for color in "${!colors[@]}"; do
+      # Format Color Name to uppercase
+      local color_fmt
+      color_fmt=$(echo "$color" | tr '[:lower:]' '[:upper:]')
+      # Export Foreground Colors - usage: `echo -e "${FG_RED}red text"`
+      export "FG_${color_fmt}"="$(get_ansi_sequence "foreground" "$color")"
+      # Export Background Colors - usage: `echo -e "${BG_RED}red background"`
+      export "BG_${color_fmt}"="$(get_ansi_sequence "background" "$color")"
+    done
+  }
+
+  # Construct & Export Font Style Variables
+  load_font_styles() {
+    for style in "${!styles[@]}"; do
+      # transform name to uppercase
+      local style_fmt="${style^^}"
+      # construct & export based on $styles array
+      export "S_${style_fmt}"="${styles[$style]}"
+    done
+  }
+
+  # Define & Export Prompt Variables
+  load_prompts() {
+    for prompt in "${!prompts[@]}"; do
+      local color
+      local color_fmt
+      local content
+      local value
+      # read values from prompts array (seperated by `|`)
+      IFS='|' read -r color content <<<"${prompts[$prompt]}"
+      color_fmt="FG_${color^^}"
+      # construct & export based on $prompts array
+      value="${FG_BLACK}[${!color_fmt}  ${content}  ${FG_BLACK}] ${S_RESET}"
+      export "I_${prompt^^}"="${value}"
+    done
+  }
+
+  # Sub-Function Calls
+  load_colors
+  load_font_styles
+  load_prompts
 }
 
-# (2) Load Font Style Variables
-function load_styles() {
-  # Define Variables
-  S_RESET="\e[0m"
-  S_BOLD="\e[1m"
-  # Export Variables
-  export S_RESET
-  export S_BOLD
-}
-
-# (3) Load Prompt Variables
-function load_prompts() {
-  # Define Variables
-  # ok
-  I_OK="${FG_BLACK}[${FG_GREEN}  OK  ${FG_BLACK}] ${S_RESET}"
-  # warning
-  I_WARN="${FG_BLACK}[${FG_YELLOW} WARNING ${FG_BLACK}] ${S_RESET}"
-  # error
-  I_ERR="${FG_BLACK}[${FG_RED} ERROR ${FG_BLACK}] ${S_RESET}"
-  # info
-  I_INFO="${FG_BLACK}[${FG_MAGENTA} INFO ${FG_BLACK}] ${S_RESET}"
-  # do
-  I_DO="${FG_BLACK}[${FG_MAGENTA}  ...  ${FG_BLACK}] ${S_RESET}"
-  # ask user for anything
-  I_ASK="${FG_BLACK}[${FG_BLUE} ? ${FG_BLACK}] ${S_RESET}"
-  # ask user for yes or no
-  I_ASK_YN="${FG_BLACK}[${FG_BLUE} [Y/N] ${FG_BLACK}] ${S_RESET}"
-  # Export Variables
-  export I_OK
-  export I_WARN
-  export I_ERR
-  export I_INFO
-  export I_DO
-  export I_ASK
-  export I_ASK_YN
-}
-
-# (4) Set Shell-Script Modes
-function set_modes() {
-  # Exit on error & pipe failures
-  set -eo pipefail
-  # Prompt whether script should run in debug-mode when $TOGGLE_SCRIPT_DEBUG_MODE env var is not set.
-  if [[ -z $TOGGLE_SCRIPT_DEBUG_MODE ]]; then
-    read -p "$(echo -e "${I_ASK_YN}Run Script in Debug Mode? ")" -r answer
-    case "$answer" in
-    [Yy]) TOGGLE_SCRIPT_DEBUG_MODE=1 ;;
-    *) TOGGLE_SCRIPT_DEBUG_MODE=0 ;;
-    esac
-    if [[ $TOGGLE_SCRIPT_DEBUG_MODE -eq 1 ]]; then
-      set -x && echo -e "${I_OK}Running Script in Debug Mode"
-    fi
-  fi
-}
-
-# (4) Set Shell-Script Modes
+# (3) Get Dynamic Directory Paths
 function get_paths() {
   THIS_FILE=$(realpath "$0")
   THIS_DIR=$(dirname "$(realpath "$0")")
@@ -111,7 +132,28 @@ function get_paths() {
   fi
 }
 
-# -- LOAD ENV FILES -- #
+# (4) Detect Operating System
+function detect_os() {
+  local platform
+  platform=$(uname -s)
+
+  case "$platform" in
+  Linux*)
+    export OS="linux"
+    ;;
+  Darwin*)
+    export OS="macos"
+    ;;
+  CYGWIN* | MINGW* | MSYS*)
+    export OS="windows"
+    ;;
+  *)
+    export OS="unsupported"
+    ;;
+  esac
+}
+
+# (5) Load Env Files
 # usage: load_env_file "/path/to/.env" "/path/to/.env2" "/path/to/.env3" ...
 function load_env_file() {
   # Check if .env files provided
@@ -144,14 +186,12 @@ function load_env_file() {
   fi
 }
 
-# -- DETECT OPERATING SYSTEM -- #
-function detect_os() {
-  case "$(uname -s)" in
-  Linux*) echo "linux" ;;
-  Darwin*) echo "macos" ;;
-  *) echo "unknown" ;;
-  esac
-}
+# Default Function Calls
+set_modes && echo -e "${I_OK}Successfully set Script Modes." || echo -e "${I_WARN}Failed to set Script Modes."
+tty_styles && echo -e "${I_OK}Successfully loaded TTY Styles." || echo -e "${I_WARN}Failed to load TTY Styles."
+get_paths && echo -e "${I_OK}Successfully loaded Dynamic Directory Paths." || echo -e "${I_WARN}Failed to load Dynamic Directory Paths."
+detect_os && echo -e "${I_OK}Successfully detected Operating System." || echo -e "${I_WARN}Failed to detect Operating System."
 
-# Call Default Functions
-load_colors && load_styles && load_prompts && set_modes
+# Log Optional Utility Functions that can be used
+echo -e "${I_INFO}The onexhelper script provides the following utility functions that can be used:"
+echo -e "${I_LIST}load_env_file()"
