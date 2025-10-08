@@ -5,11 +5,14 @@
 
 # Helper Functions
 function helper() {
+  echo "ONESETUP_REPO: $ONESETUP_REPO"
+  echo "ONESETUP_REPO_RAW: $ONESETUP_REPO_RAW"
+
   # Load helper script
-  source <(curl -s "$ONESETUP_REPO_RAW/scripts/helper.sh") && echo -e "${I_OK}Helper Script loaded!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
+  source "$ONESETUP_DIR/scripts/helper.sh" && echo -e "${I_OK}Helper Script loaded!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
   # Load .env.public
   set -a
-  source <(curl -s "$ONESETUP_REPO_RAW/.env.public") && echo -e "${I_OK}Environment Variables Loaded from .env.public!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
+  source "$ONESETUP_DIR/.env.public" && echo -e "${I_OK}Environment Variables Loaded from .env.public!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
   set +a
 }
 

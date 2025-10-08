@@ -13,12 +13,18 @@ DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
 DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
 
 # Load Scripts
-function load_scripts() {
-  # Load helper script
-  source <(curl -s "$ONESETUP_REPO_RAW/scripts/helper.sh") && echo -e "${I_OK}Helper Script loaded!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
-  # Load .env.public
+function helper() {
+  # Create temp dir
+  local tmp_dir
+  tmp_dir=$(mktemp --directory --tmpdir "onesetup-XXXXXX")
+  echo "tmp_dir: $tmp_dir"
+  # Curl initially required files from repository & store as tmp files
+  curl -fs "$ONESETUP_REPO_RAW/scripts/helper.sh" -o "$tmp_dir/helper.sh"
+  curl -fs "$ONESETUP_REPO_RAW/.env.public" -o "$tmp_dir/.env.public"
+  # Source tmp files
+  source "$tmp_dir/helper.sh" && echo -e "${I_OK}Helper Script Loaded." || echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1
   set -a
-  source <(curl -s "$ONESETUP_REPO_RAW/.env.public") && echo -e "${I_OK}Environment Variables Loaded from .env.public!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
+  source "$tmp_dir/.env.public" && echo -e "${I_OK}Environment Variables Loaded from .env.public!" || echo -e "${I_ERR}Failed to load public Environment Variables. Please ensure your installation was correct."
   set +a
 }
 
@@ -134,6 +140,6 @@ function install() {
 }
 
 # Function Calls
-load_scripts
+helper
 prerequisites && echo -e "${I_OK}Prerequesites checked!"
 install && echo -e "${I_OK}Onesetup installed!"
