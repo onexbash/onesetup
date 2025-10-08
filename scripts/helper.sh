@@ -1,7 +1,6 @@
-#!/usr/bin/env bash
 function load_colors() {
   # -- DEFINE ANSI CODES -- #
-  declare -A colorcodes
+  local -A colorcodes
   colorcodes=(
     ["black"]="0"
     ["red"]="1" 
@@ -23,25 +22,39 @@ function load_colors() {
   get_ansi_sequence() {
     local type="$1"    # "fg" or "bg"
     local color="$2"   # color name from colorcodes array
+    local code_type
 
     if [[ "$type" == "fg" ]]; then
-      type="$foreground"
+      code_type="$foreground"
     elif [[ "$type" == "bg" ]]; then
-      type="$background"
+      code_type="$background"
+    else
+      code_type="$type"
     fi
+    
     # return constructed ansi escape sequence
-    echo "\e[${type};${colorspace};${colorcodes[$color]}m"
+    echo "\e[${code_type};${colorspace};${colorcodes[$color]}m"
   }
  
   # -- EXPORT VARIABLES -- #
+  # Get array keys in a compatible way
+  local color_keys
+  if [[ -n "$ZSH_VERSION" ]]; then
+    # Zsh: get keys from associative array
+    color_keys=("${(@k)colorcodes}")
+  else
+    # Bash: get keys from associative array
+    color_keys=("${!colorcodes[@]}")
+  fi
+
   # Export Color Variables
-  for color in "${!colorcodes[@]}"; do
+  for color in "${color_keys[@]}"; do
     # Foreground Colors
     # usage: `echo -e "${FG_BLUE}blue text"`
-    export "FG_${color^^}"="$(get_ansi_sequence "fg" "$color")"
+    export "FG_${(U)color}"="$(get_ansi_sequence "fg" "$color")"
     # Background Colors
     # usage: `echo -e "${BG_BLUE}blue background"`
-    export "BG_${color^^}"="$(get_ansi_sequence "bg" "$color")"
+    export "BG_${(U)color}"="$(get_ansi_sequence "bg" "$color")"
   done 
 }
 
@@ -118,7 +131,7 @@ function load_env_file() {
       ((count_missing++))
     fi
   done
-  echo -e "${I_INFO}You passed ${FG_BLUE}$count_args${RESET} .env file where ${FG_GREEN}$count_existing${RESET} exist and ${FG_RED}$count_missing${RESET} don't exist."
+  echo -e "${I_INFO}You passed ${FG_BLUE}$count_args${S_RESET} .env file where ${FG_GREEN}$count_existing${S_RESET} exist and ${FG_RED}$count_missing${S_RESET} don't exist."
   
   # Return exit code
   if [ $count_missing -gt 0 ]; then
@@ -128,7 +141,6 @@ function load_env_file() {
   fi
 }
 
-
 # -- DETECT OPERATING SYSTEM -- #
 function detect_os() {
   case "$(uname -s)" in
@@ -137,9 +149,6 @@ function detect_os() {
     *)       echo "unknown";;
   esac
 }
-function detect_linux_dist() {
-  if [ -f "/etc/os-release" ]; then
-    source "/etc/os-release"
-    echo "$NAME" # function returns only the linux distribution name
-  fi
-}
+
+# Call Default Functions
+load_colors && load_styles && load_prompts && set_modes
