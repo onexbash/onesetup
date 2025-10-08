@@ -11,7 +11,6 @@ ENV DOTFILES_DIR=$DOTFILES_DIR \
     ONESETUP_REPO=$ONESETUP_REPO
 
 # Install packages with cleanup & registry update
-# dnf update -y && \
 RUN dnf install -y "git" "ansible" "curl" "sshpass" && \
     dnf clean all
 
@@ -24,5 +23,9 @@ USER onesetup
 # Create working directory
 WORKDIR /home/onesetup/src
 
+# Copy onesetup binary to container
+COPY ./bin/onesetup /usr/local/bin/onesetup
+# COPY ./bin/* /usr/local/bin/onesetup
+
 # Run Control-Node entrypoint script
-CMD ["./scripts/controller.sh"]
+CMD ["/usr/local/bin/onesetup controller entrypoint"]

@@ -3,20 +3,18 @@
 # --   ONESETUP EXECUTABLE   -- #
 # --                         -- #
 
-# Helper Functions
+# -- Helper Functions -- #
 function helper() {
-  echo "ONESETUP_REPO: $ONESETUP_REPO"
-  echo "ONESETUP_REPO_RAW: $ONESETUP_REPO_RAW"
-
-  # Load helper script
-  source "$ONESETUP_DIR/scripts/helper.sh" && echo -e "${I_OK}Helper Script loaded!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
-  # Load .env.public
+  # Load Helper Script
+  source "$ONESETUP_DIR/scripts/helper.sh" && echo -e "${I_OK}Helper Script Loaded." || echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1
+  # Load .env File
+  # load_env_file "$ONESETUP_DIR/.env.public"
   set -a
-  source "$ONESETUP_DIR/.env.public" && echo -e "${I_OK}Environment Variables Loaded from .env.public!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
+  source "$ONESETUP_DIR/.env.public" && echo -e "${I_OK}Environment Variables Loaded from '.env.public'." || echo -e "${I_WARN}Failed to load Environment Variables from $ONESETUP_DIR/.env.public'."
   set +a
 }
 
-# Main Function
+# -- Main Function -- #
 function main() {
   # Environment Variables
   export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
@@ -33,58 +31,62 @@ function main() {
   # Call Helper Function
   helper
   # Subcommand Handler
+  echo "test"
   echo "$@"
   echo "$1"
   case "${1:-}" in
+  # CMD: `onesetup encrypt [COMMAND] [ARGS]`
   encrypt)
     shift
     encrypt "$@"
     ;;
-  run)
+  # CMD: `onesetup controller [COMMAND] [OPTIONS]`
+  controller)
     shift
-    run "$@"
+    controller "$@"
     ;;
+  # CMD: `onesetup --help`
   help | --help | -h)
-    show_help
+    help_pages
     ;;
+  # CMD: `onesetup --version`
   version | --version | -v)
-    show_version
+    version
     ;;
-  "")
-    show_help
-    exit 1
-    ;;
+  # CMD: Invalid Command Usage
   *)
-    echo "Error: Unknown command '$1'"
-    echo "Run '$SCRIPT_NAME help' for usage information"
+    echo -e "${I_ERR}Unknown Command: '$1'"
+    echo -e "${I_INFO}Run '$SCRIPT_NAME --help' for usage information"
     exit 1
     ;;
   esac
 }
 
-# CMD: onesetup --help
-function show_help() {
-  cat <<EOF
-Usage: $SCRIPT_NAME [COMMAND] [OPTIONS]
+# -- Help Pages -- #
+# CMD: `onesetup [COMMAND] --help`
 
+# Help Page: General
+function help_main() {
+  cat <<EOF
+----
 A utility for managing one-time setups with encryption.
 
-Commands:
-    encrypt    Encrypt files or directories
-    run        Run a setup script or command
-    help       Show this help message
-    version    Show version information
+Usage: $SCRIPT_NAME [COMMAND] [OPTIONS]
+Help: $SCRIPT_NAME [COMMAND] --help
 
-Examples:
-    $SCRIPT_NAME help
-    $SCRIPT_NAME encrypt /path/to/file
-    $SCRIPT_NAME run
+Commands:
+  controller Execute Logic on the Ansible Control-Node
+  encrypt    Encrypt files or directories
+  help       Show this help message
+  version    Show version information
+----
 EOF
 }
 
-# CMD: onesetup encrypt --help
-function show_help_encrypt() {
+# Help Page: Encrypt
+function help_encrypt() {
   cat <<EOF
+----
 This subcommand can be used to encrypt files/strings via Ansible Vault.
 
 Usage: $SCRIPT_NAME encrypt [OPTIONS] [ARGS]
@@ -97,18 +99,20 @@ $SCRIPT_NAME encrypt --string "plaintext-password"
 $SCRIPT_NAME encrypt --file ~/.config/ssh/id_ed25519.pub
 $SCRIPT_NAME encrypt --string
 $SCRIPT_NAME encrypt --file
+----
 EOF
-
 }
 
-# CMD: onesetup --version
-function show_version() {
+# -- Version Info -- #
+# CMD: `onesetup version`
+function version() {
   echo -e "${I_INFO}$SCRIPT_NAME version $VERSION"
 }
 
-# Encrypt Function `onesetup encrypt`
+# -- Encrypt -- #
+# CMD: `onesetup encrypt [OPTIONS] [ARGS]`
 function encrypt() {
-  # Encrypt String Function `onesetup encrypt --string [ARGS]`
+  # Encrypt String
   function encrypt_string() {
     printf "%b" "${I_ASK}Secret to Encrypt: "
     read -r secret
@@ -122,7 +126,7 @@ function encrypt() {
       "$secret" | pbcopy
     echo -e "${I_OK}Encrypted string copied to clipboard."
   }
-  # Encrypt File Function `onesetup encrypt --file [ARGS]`
+  # Encrypt File
   function encrypt_file() {
     local filepath="$1"
     local var_name="$2"
@@ -142,69 +146,15 @@ function encrypt() {
       "$filecontent" | pbcopy
     echo -e "${I_OK}Encrypted Content of [ ${FG_MAGENTA}$filepath${S_RESET} ] copied to clipboard with Ansible Variable [ ${FG_MAGENTA}$var_name${S_RESET} ]"
   }
-  function user_input() {
-    local choice=$(
-      gum choose "Encrypt String" "Encrypt File Content" \
-        --cursor.foreground "#cba6f7" \
-        --header.foreground "#cba6f7" \
-        --selected.foreground "#cba6f7" \
-        --header "Choose:" \
-        --no-show-help \
-        --ordered
-    )
-    case "$choice" in
-    "Encrypt String")
-      encrypt_string
-      ;;
-    "Encrypt File Content")
-      # get filepath by user selection
-      local filepath=$(
-        gum file "$HOME" \
-          --cursor.foreground "#cba6f7" \
-          --header.foreground "#cba6f7" \
-          --selected.foreground "#cba6f7" \
-          --all \
-          --height=100
-      )
-      # get file name
-      local filename=$(basename "$filepath")
-      # replace dots (.) in filename with underscores (_)
-      local filename_fmt="${filename//./_}"
-      # get var_name by user selection
-      local var_name=$(
-        gum input \
-          --cursor.foreground "#cba6f7" \
-          --header.foreground "#cba6f7" \
-          --prompt.foreground "#cba6f7" \
-          --value "$filename_fmt" \
-          --header "Adjust variable name (or press Enter to keep default):" \
-          --placeholder "$filename_fmt" \
-          --width 50
-      )
-      # Validate $var_name for invalid characters
-      if [[ ! "$var_name" =~ ^[a-zA-Z0-9_]+$ ]]; then
-        echo -e "${I_ERR}Invalid Characters in Variable Name"
-        echo -e "${I_INFO}Allowed Characters: Letters[a-z|A-Z], Numbers[0-9], Underscores[_]"
-        return 1
-      fi
-
-      # call encrypt_file() with args
-      encrypt_file "$filepath" "$var_name"
-      ;;
-    esac
-  }
-  args_count="$#"
-  echo $args_count
-
-  # handle subcommand
+  # Handle [OPTIONS] of encrypt command
   case "${1:-}" in
   --string | -s)
     shift
-    encrypt_file "$@"
+    encrypt_string "$@"
     ;;
   --file | -f)
     shift
-    encrypt_string "$@"
+    encrypt_file "$@"
     ;;
   --help | -h)
     encrypt_help
@@ -215,10 +165,23 @@ function encrypt() {
   esac
 }
 
-# Run command
-function run() {
-  # TODO: finish function
-  echo -e "${I_INFO}coming soon.. sry!"
+# -- CONTROL NODE -- #
+# CMD: `onesetup controller [COMMAND]`
+
+function controller() {
+  # Install Modules from Ansible Galaxy
+  if [ -f "requirements.yml" ]; then
+    ansible-galaxy role install -r "requirements.yml"
+  else
+    echo "WARN: requirements.yml not found. Nothing will be installed from Ansible Galaxy."
+  fi
+  # Run the Ansible playbook once initially
+  if [ -f "main.yml" ]; then
+    ansible-playbook --ask-vault-password "main.yml"
+  else
+    echo "ERROR: main.yml not found. Skipping initial playbook run."
+  fi
+  exec /bin/bash
 }
 
 # Call Main Function with args
