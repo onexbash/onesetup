@@ -61,6 +61,13 @@ function prerequisites() {
     macos) brew install podman podman-compose && echo -e "${I_OK}podman installed!" || echo -e "${I_ERR}failed to install podman!" ;;
     esac
   fi
+  # gum
+  if ! command -v "gum" &>/dev/null; then
+    case "$PLATFORM" in
+    linux) sudo dnf install -y "gum" && echo -e "${I_OK}gum installed!" || echo -e "${I_ERR}failed to install gum!" ;;
+    macos) brew install "gum" && echo -e "${I_OK}gum installed!" || echo -e "${I_ERR}failed to install gum!" ;;
+    esac
+  fi
 }
 
 function install() {

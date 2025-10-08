@@ -1,0 +1,222 @@
+#!/usr/bin/env bash
+# --                         -- #
+# --   ONESETUP EXECUTABLE   -- #
+# --                         -- #
+
+# Helper Functions
+function helper() {
+  # Load helper script
+  source <(curl -s "$ONESETUP_REPO_RAW/scripts/helper.sh") && echo -e "${I_OK}Helper Script loaded!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
+  # Load .env.public
+  set -a
+  source <(curl -s "$ONESETUP_REPO_RAW/.env.public") && echo -e "${I_OK}Environment Variables Loaded from .env.public!" || echo -e "${I_ERR}Please make sure you are connected to the internet and try again."
+  set +a
+}
+
+# Main Function
+function main() {
+  # Environment Variables
+  export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
+  export ONESETUP_REPO="onexbash/onesetup"
+  export DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
+  export DOTFILES_REPO="onexbash/dotfiles"
+  # Variables
+  VERSION="1.0.0"
+  SCRIPT_NAME=$(basename "$0")
+  ONESETUP_REPO_HTTPS="https://github.com/${ONESETUP_REPO}.git"
+  ONESETUP_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
+  DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
+  DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
+  # Call Helper Function
+  helper
+  # Subcommand Handler
+  echo "$@"
+  echo "$1"
+  case "${1:-}" in
+  encrypt)
+    shift
+    encrypt "$@"
+    ;;
+  run)
+    shift
+    run "$@"
+    ;;
+  help | --help | -h)
+    show_help
+    ;;
+  version | --version | -v)
+    show_version
+    ;;
+  "")
+    show_help
+    exit 1
+    ;;
+  *)
+    echo "Error: Unknown command '$1'"
+    echo "Run '$SCRIPT_NAME help' for usage information"
+    exit 1
+    ;;
+  esac
+}
+
+# CMD: onesetup --help
+function show_help() {
+  cat <<EOF
+Usage: $SCRIPT_NAME [COMMAND] [OPTIONS]
+
+A utility for managing one-time setups with encryption.
+
+Commands:
+    encrypt    Encrypt files or directories
+    run        Run a setup script or command
+    help       Show this help message
+    version    Show version information
+
+Examples:
+    $SCRIPT_NAME help
+    $SCRIPT_NAME encrypt /path/to/file
+    $SCRIPT_NAME run
+EOF
+}
+
+# CMD: onesetup encrypt --help
+function show_help_encrypt() {
+  cat <<EOF
+This subcommand can be used to encrypt files/strings via Ansible Vault.
+
+Usage: $SCRIPT_NAME encrypt [OPTIONS] [ARGS]
+
+Options:
+  --string [ARGS: <filepath>]
+  --file [ARGS: <string>]
+Examples:
+$SCRIPT_NAME encrypt --string "plaintext-password"
+$SCRIPT_NAME encrypt --file ~/.config/ssh/id_ed25519.pub
+$SCRIPT_NAME encrypt --string
+$SCRIPT_NAME encrypt --file
+EOF
+
+}
+
+# CMD: onesetup --version
+function show_version() {
+  echo -e "${I_INFO}$SCRIPT_NAME version $VERSION"
+}
+
+# Encrypt Function `onesetup encrypt`
+function encrypt() {
+  # Encrypt String Function `onesetup encrypt --string [ARGS]`
+  function encrypt_string() {
+    printf "%b" "${I_ASK}Secret to Encrypt: "
+    read -r secret
+    printf "%b" "${I_ASK}Variable Name: "
+    read -r varname
+    ansible-vault encrypt_string \
+      --show-input \
+      --vault-id "$vault_id@prompt" \
+      --encrypt-vault-id "$vault_id" \
+      --name "$varname" \
+      "$secret" | pbcopy
+    echo -e "${I_OK}Encrypted string copied to clipboard."
+  }
+  # Encrypt File Function `onesetup encrypt --file [ARGS]`
+  function encrypt_file() {
+    local filepath="$1"
+    local var_name="$2"
+    # Check if file exists
+    if [[ ! -f "$filepath" ]]; then
+      echo -e "${I_ERR}File not found: $filepath"
+      return 1
+    fi
+    # Read file content
+    local filecontent=$(<"$filepath")
+    # Encrypt and copy to clipboard
+    ansible-vault encrypt_string \
+      --show-input \
+      --vault-id "$vault_id@prompt" \
+      --encrypt-vault-id "$vault_id" \
+      --name "$var_name" \
+      "$filecontent" | pbcopy
+    echo -e "${I_OK}Encrypted Content of [ ${FG_MAGENTA}$filepath${S_RESET} ] copied to clipboard with Ansible Variable [ ${FG_MAGENTA}$var_name${S_RESET} ]"
+  }
+  function user_input() {
+    local choice=$(
+      gum choose "Encrypt String" "Encrypt File Content" \
+        --cursor.foreground "#cba6f7" \
+        --header.foreground "#cba6f7" \
+        --selected.foreground "#cba6f7" \
+        --header "Choose:" \
+        --no-show-help \
+        --ordered
+    )
+    case "$choice" in
+    "Encrypt String")
+      encrypt_string
+      ;;
+    "Encrypt File Content")
+      # get filepath by user selection
+      local filepath=$(
+        gum file "$HOME" \
+          --cursor.foreground "#cba6f7" \
+          --header.foreground "#cba6f7" \
+          --selected.foreground "#cba6f7" \
+          --all \
+          --height=100
+      )
+      # get file name
+      local filename=$(basename "$filepath")
+      # replace dots (.) in filename with underscores (_)
+      local filename_fmt="${filename//./_}"
+      # get var_name by user selection
+      local var_name=$(
+        gum input \
+          --cursor.foreground "#cba6f7" \
+          --header.foreground "#cba6f7" \
+          --prompt.foreground "#cba6f7" \
+          --value "$filename_fmt" \
+          --header "Adjust variable name (or press Enter to keep default):" \
+          --placeholder "$filename_fmt" \
+          --width 50
+      )
+      # Validate $var_name for invalid characters
+      if [[ ! "$var_name" =~ ^[a-zA-Z0-9_]+$ ]]; then
+        echo -e "${I_ERR}Invalid Characters in Variable Name"
+        echo -e "${I_INFO}Allowed Characters: Letters[a-z|A-Z], Numbers[0-9], Underscores[_]"
+        return 1
+      fi
+
+      # call encrypt_file() with args
+      encrypt_file "$filepath" "$var_name"
+      ;;
+    esac
+  }
+  args_count="$#"
+  echo $args_count
+
+  # handle subcommand
+  case "${1:-}" in
+  --string | -s)
+    shift
+    encrypt_file "$@"
+    ;;
+  --file | -f)
+    shift
+    encrypt_string "$@"
+    ;;
+  --help | -h)
+    encrypt_help
+    ;;
+  *)
+    echo -e "${I_ERR}Wrong command usage. See: 'onesetup encrypt --help'"
+    ;;
+  esac
+}
+
+# Run command
+function run() {
+  # TODO: finish function
+  echo -e "${I_INFO}coming soon.. sry!"
+}
+
+# Call Main Function with args
+main "$@"
