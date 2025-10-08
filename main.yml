@@ -30,6 +30,8 @@
   pre_tasks:
     - import_tasks: pre_tasks/user.yml
     - import_tasks: pre_tasks/filesystem.yml
+  tasks:
+    - import_tasks: tasks/settings.yml
   # -- Roles -- #
   roles:
     - role: elliotweiser.osx-command-line-tools
