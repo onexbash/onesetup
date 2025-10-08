@@ -15,3 +15,7 @@ tmp/
 # -- IDE Files -- #
 .vscode
 .idea
+
+
+# -- Ansible Files -- #
+.ansible/
