@@ -22,10 +22,8 @@ function helper() {
   curl -fs "$ONESETUP_REPO_RAW/scripts/helper.sh" -o "$tmp_dir/helper.sh"
   curl -fs "$ONESETUP_REPO_RAW/.env.public" -o "$tmp_dir/.env.public"
   # Source tmp files
-  source "$tmp_dir/helper.sh" && echo -e "${I_OK}Helper Script Loaded." || echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1
-  set -a
-  source "$tmp_dir/.env.public" && echo -e "${I_OK}Environment Variables Loaded from .env.public!" || echo -e "${I_ERR}Failed to load public Environment Variables. Please ensure your installation was correct."
-  set +a
+  { source "$tmp_dir/helper.sh" && echo -e "${I_OK}Helper Script Loaded."; } || { echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1; }
+  { set -a && source "$tmp_dir/.env.public" && set +a && echo -e "${I_OK}Environment Variables Loaded from .env.public!"; } || { echo -e "${I_ERR}Failed to load public Environment Variables. Please ensure your installation was correct."; }
 }
 
 # Ensure prerequisites are satisfied
@@ -117,7 +115,7 @@ function install() {
   for file in ${ONESETUP_DIR}/bin/*; do
     if [[ -f "$file" ]]; then
       local filename=$(basename "$file")
-      sudo cp "$file" "$bin_dir" && echo -e "${I_OK}${FG_GREEN}$filename${S_RESET} copied to ${FG_GREEN}$bin_dir${S_RESET}" || echo -e "${I_ERR}Failed to copy ${FG_RED}$filename${S_RESET} to ${FG_RED}$bin_dir${S_RESET}"
+      sudo cp -f "$file" "$bin_dir" && echo -e "${I_OK}${FG_GREEN}$filename${S_RESET} copied to ${FG_GREEN}$bin_dir${S_RESET}" || echo -e "${I_ERR}Failed to copy ${FG_RED}$filename${S_RESET} to ${FG_RED}$bin_dir${S_RESET}"
     fi
   done
 }

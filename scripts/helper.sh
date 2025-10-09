@@ -191,7 +191,3 @@ set_modes && echo -e "${I_OK}Successfully set Script Modes." || echo -e "${I_WAR
 tty_styles && echo -e "${I_OK}Successfully loaded TTY Styles." || echo -e "${I_WARN}Failed to load TTY Styles."
 get_paths && echo -e "${I_OK}Successfully loaded Dynamic Directory Paths." || echo -e "${I_WARN}Failed to load Dynamic Directory Paths."
 detect_os && echo -e "${I_OK}Successfully detected Operating System." || echo -e "${I_WARN}Failed to detect Operating System."
-
-# Log Optional Utility Functions that can be used (prefixed with `*`)
-echo -e "${I_INFO}The onexhelper script provides the following utility functions that can be used:"
-echo -e "${I_LIST}load_env_file()"
