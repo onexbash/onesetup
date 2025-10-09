@@ -15,18 +15,15 @@ ENV DOTFILES_DIR=$DOTFILES_DIR \
 # Set Working Directory
 WORKDIR /home/onesetup/src
 
-# Ensure bin dirs exist in $PATH
-# ENV PATH="/home/onesetup/src/bin:${PATH}"
-
-# Install packages
-RUN dnf install -y "git" "ansible" "curl" "sshpass" && \
-  dnf clean all
-
 # Create service user with sudo privileges
 RUN useradd -ms "/bin/bash" "onesetup" && \
   echo 'onesetup ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
   usermod -aG "wheel" "onesetup"
 USER onesetup
+
+# Install packages
+RUN dnf install -y "git" "ansible" "curl" "sshpass" && \
+  dnf clean all
 
 # Run Control-Node entrypoint script
 CMD ["scripts/entrypoint.sh"]
