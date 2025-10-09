@@ -120,16 +120,16 @@ function tty_styles() {
 function get_paths() {
   THIS_FILE=$(realpath "$0")
   THIS_DIR=$(dirname "$(realpath "$0")")
-  REPO_ROOT="$(git rev-parse --show-toplevel)"
-  # Export Default Path Variables
-  export THIS_FILE
-  export THIS_DIR
-  # Export Git Path Variables
+  # Git Directory Paths
   if git rev-parse --git-dir >/dev/null 2>&1; then
-    export REPO_ROOT
+    REPO_ROOT="$(git rev-parse --show-toplevel)"
   else
     echo -e "${I_WARN}The REPO_ROOT variable can only be detected inside of a git repository."
   fi
+  # Export Variables
+  export THIS_FILE
+  export THIS_DIR
+  export REPO_ROOT
 }
 
 # (4) Detect Operating System
