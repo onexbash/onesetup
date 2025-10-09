@@ -29,4 +29,4 @@ RUN useradd -ms "/bin/bash" "onesetup" && \
 USER onesetup
 
 # Run Control-Node entrypoint script
-CMD ["./bin/onesetup", "controller", "entrypoint"]
+CMD ["bin/onesetup", "controller", "entrypoint"]
