@@ -61,9 +61,8 @@ function run() {
 function prompt() {
   # Prompt Menu
   function show_menu() {
-    echo -e "\n🤖 Control-Node Management"
+    echo -e "\n🤖 Onesetup Control-Node"
     echo "========================================"
-    echo "What would you like to do?"
     echo ""
     echo "  1) Run Playbook"
     echo "  2) Open Container CLI"
