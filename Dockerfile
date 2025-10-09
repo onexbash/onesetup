@@ -12,12 +12,6 @@ ENV DOTFILES_DIR=$DOTFILES_DIR \
 # Set Working Directory
 WORKDIR /home/onesetup/src
 
-# Create service user with sudo privileges
-# RUN useradd -ms "/bin/bash" "onesetup" && \
-#   echo 'onesetup ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-#   usermod -aG "wheel" "onesetup"
-# USER onesetup
-
 # Add onesetup bin dir to $PATH
 ENV PATH="/home/onesetup/src/bin:${PATH}"
 
