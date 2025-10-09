@@ -25,7 +25,6 @@ services:
       - ONESETUP_REPO=${ONESETUP_REPO}
       - DOTFILES_DIR=${DOTFILES_DIR}
       - DOTFILES_REPO=${DOTFILES_REPO}
-    env_file: ${ONESETUP_DIR}/.env.public
     tty: true
     stdin_open: true
 networks:
