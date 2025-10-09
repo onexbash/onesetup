@@ -28,6 +28,7 @@ services:
       - DOTFILES_REPO=${DOTFILES_REPO}
       - ANSIBLE_DEBUG=${ANSIBLE_DEBUG}
       - ANSIBLE_HOME="/home/src/onesetup"
+      - ANSIBLE_CONFIG="/home/src/onesetup/ansible.cfg"
     tty: true
     stdin_open: true
 networks:
