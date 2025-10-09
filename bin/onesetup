@@ -36,9 +36,6 @@ function main() {
   # Call Helper Function
   helper
   # Subcommand Handler
-  echo "test"
-  echo "$@"
-  echo "$1"
   case "${1:-}" in
   # CMD: `onesetup encrypt [COMMAND] [ARGS]`
   encrypt)
@@ -107,6 +104,22 @@ $SCRIPT_NAME encrypt --file
 ----
 EOF
 }
+function help_controller() {
+  cat <<EOF
+----
+This subcommand can be used to encrypt files/strings via Ansible Vault.
+
+Usage: $SCRIPT_NAME encrypt [OPTIONS] [ARGS]
+
+Options:
+  --string [ARGS: <filepath>]
+  --file [ARGS: <string>]
+Examples:
+$SCRIPT_NAME controller init
+$SCRIPT_NAME controller run
+----
+EOF
+}
 
 # -- Version Info -- #
 # CMD: `onesetup version`
@@ -125,8 +138,8 @@ function encrypt() {
     read -r varname
     ansible-vault encrypt_string \
       --show-input \
-      --vault-id "$vault_id@prompt" \
-      --encrypt-vault-id "$vault_id" \
+      --vault-id "onesetup@prompt" \
+      --encrypt-vault-id "onesetup" \
       --name "$varname" \
       "$secret" | pbcopy
     echo -e "${I_OK}Encrypted string copied to clipboard."
@@ -141,12 +154,13 @@ function encrypt() {
       return 1
     fi
     # Read file content
-    local filecontent=$(<"$filepath")
+    local filecontent
+    filecontent=$(<"$filepath")
     # Encrypt and copy to clipboard
     ansible-vault encrypt_string \
       --show-input \
-      --vault-id "$vault_id@prompt" \
-      --encrypt-vault-id "$vault_id" \
+      --vault-id "onesetup@prompt" \
+      --encrypt-vault-id "onesetup" \
       --name "$var_name" \
       "$filecontent" | pbcopy
     echo -e "${I_OK}Encrypted Content of [ ${FG_MAGENTA}$filepath${S_RESET} ] copied to clipboard with Ansible Variable [ ${FG_MAGENTA}$var_name${S_RESET} ]"
@@ -171,22 +185,86 @@ function encrypt() {
 }
 
 # -- CONTROL NODE -- #
-# CMD: `onesetup controller [COMMAND]`
-
+# CMD: `onesetup controller`
 function controller() {
-  # Install Modules from Ansible Galaxy
-  if [ -f "requirements.yml" ]; then
-    ansible-galaxy role install -r "requirements.yml"
-  else
-    echo "WARN: requirements.yml not found. Nothing will be installed from Ansible Galaxy."
-  fi
-  # Run the Ansible playbook once initially
-  if [ -f "main.yml" ]; then
-    ansible-playbook --ask-vault-password "main.yml"
-  else
-    echo "ERROR: main.yml not found. Skipping initial playbook run."
-  fi
-  exec /bin/bash
+  function controller_entrypoint() {
+    # Install Modules from Ansible Galaxy
+    if [ -f "requirements.yml" ]; then
+      ansible-galaxy role install -r "requirements.yml"
+    else
+      echo "WARN: requirements.yml not found. Nothing will be installed from Ansible Galaxy."
+    fi
+    # Run the Ansible playbook once initially
+    if [ -f "main.yml" ]; then
+      ansible-playbook --ask-vault-password "main.yml"
+    else
+      echo "ERROR: main.yml not found. Skipping initial playbook run."
+    fi
+    exec /bin/bash
+
+  }
+  function controller_init() {
+    # check if a podman machine with name "onesetup" exists
+    if podman machine list --format "{{.Name}}" | grep -q "^onesetup$"; then
+      echo -e "${I_OK}Podman Machine [onesetup] exists!"
+    else
+      podman machine init "onesetup" \
+        --cpus 4 \
+        --memory 4096 \
+        --disk-size 10 \
+        --rootful=false \
+        --now &&
+        echo -e "${I_OK}Podman Machine [onesetup] has been created & started!"
+    fi
+    # check if the machine is running
+    if podman machine inspect "onesetup" 2>/dev/null | jq -e '.[0].State == "running"' >/dev/null; then
+      echo -e "${I_OK}Podman Machine [onesetup] is running!"
+    else
+      podman machine start "onesetup"
+    fi
+  }
+  function controller_run() {
+    # specify container engine to use
+    export CONTAINER_CONNECTION="onesetup"
+    # build
+    podman-compose \
+      -f "$ONESETUP_DIR/docker-compose.yml" build \
+      --build-arg "ONESETUP_DIR=$ONESETUP_DIR" \
+      --build-arg "DOTFILES_DIR=$DOTFILES_DIR" \
+      --build-arg "ONESETUP_REPO=$ONESETUP_REPO" \
+      --build-arg "DOTFILES_REPO=$DOTFILES_REPO" \
+      "onesetup" &&
+      echo -e "${I_OK}Control-Node image built successfully!" ||
+      echo -e "${I_ERR}Control-Node Container Image failed to build!"
+    # run
+    podman-compose \
+      -f "$ONESETUP_DIR/docker-compose.yml" run \
+      "onesetup" &&
+      echo -e "${I_OK}Control-Node Container successfully running!" ||
+      echo -e "${I_ERR}Control-Node Container failed to run!"
+  }
+
+  # Handle [OPTIONS] of controller command
+  case "${1:-}" in
+  entrypoint)
+    shift
+    controller_entrypoint "$@"
+    ;;
+  init)
+    shift
+    controller_init "$@"
+    ;;
+  run)
+    shift
+    controller_run "$@"
+    ;;
+  --help | -h)
+    controller_help
+    ;;
+  *)
+    echo -e "${I_ERR}Wrong command usage. See: 'onesetup controller --help'"
+    ;;
+  esac
 }
 
 # Call Main Function with args

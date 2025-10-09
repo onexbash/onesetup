@@ -77,8 +77,10 @@ function install() {
   # Check if installation directory is up-to-date
   if [[ -d "$ONESETUP_DIR" ]]; then
     git -C "$ONESETUP_DIR" fetch
-    local behind_count=$(git -C "$ONESETUP_DIR" rev-list --count HEAD..@{u})
-    local ahead_count=$(git -C "$ONESETUP_DIR" rev-list --count @{u}..HEAD)
+    local behind_count
+    local ahead_count
+    behind_count=$(git -C "$ONESETUP_DIR" rev-list --count HEAD..@{u})
+    ahead_count=$(git -C "$ONESETUP_DIR" rev-list --count @{u}..HEAD)
     if (($behind_count > 0)) || (($ahead_count > 0)); then
       if (($behind_count > 0)) && (($ahead_count > 0)); then
         echo -e "${I_WARN}The installation directory is $behind_count commits behind and $ahead_count commits ahead of the remote (https://github.com/$ONESETUP_REPO)."
@@ -109,12 +111,12 @@ function install() {
   local bin_dir
   if [[ -d "/usr/local/bin" ]]; then
     bin_dir="/usr/local/bin"
-    echo -e "${I_OK}User Bin Directory found at: [ ${FG_GREEN}/usr/local/bin${S_RESET} ]"
+    echo -e "${I_OK}Bin Directory found at: [ ${FG_GREEN}/usr/local/bin${S_RESET} ]"
   elif [[ -d "/usr/bin" ]]; then
     bin_dir="/usr/bin"
-    echo -e "${I_OK}User Bin Directory found at: [ ${FG_GREEN}/usr/bin${S_RESET} ]"
+    echo -e "${I_OK}Bin Directory found at: [ ${FG_GREEN}/usr/bin${S_RESET} ]"
   elif [[ -d "/bin" ]]; then
-    echo -e "${I_WARN}No User Bin Directory found at: [ ${FG_RED}/usr/local/bin${S_RESET} ] or [ ${FG_RED}/usr/bin${S_RESET} ]"
+    echo -e "${I_WARN}No Bin Directory found at: [ ${FG_RED}/usr/local/bin${S_RESET} ] or [ ${FG_RED}/usr/bin${S_RESET} ]"
     echo -e "${I_INFO}Falling back to System Bin Directory: [ ${FG_GREEN}/bin${S_RESET} ]"
     bin_dir="/bin"
   else
@@ -122,9 +124,10 @@ function install() {
     exit 1
   fi
   # Rollout executables to bin_dir
-  for file in ${ONESETUP_DIR}/bin/*; do
+  for file in "${ONESETUP_DIR}"/bin/*; do
     if [[ -f "$file" ]]; then
-      local filename=$(basename "$file")
+      local filename
+      filename=$(basename "$file")
       sudo cp -f "$file" "$bin_dir" && echo -e "${I_OK}${FG_GREEN}$filename${S_RESET} copied to ${FG_GREEN}$bin_dir${S_RESET}" || echo -e "${I_ERR}Failed to copy ${FG_RED}$filename${S_RESET} to ${FG_RED}$bin_dir${S_RESET}"
     fi
   done

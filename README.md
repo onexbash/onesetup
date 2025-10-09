@@ -14,7 +14,7 @@ Additionally we use some scripts & container files for automatically setting up 
 ## Installation
 Run the installation script on the machine that should act as the [Control-Node](https://docs.ansible.com/ansible/latest/network/getting_started/basic_concepts.html#control-node):
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/install.sh)"
 ```
 Under the hood, this will:
 - ensure prerequesites are satisfied (dependencies, user permissions)
@@ -22,10 +22,20 @@ Under the hood, this will:
 - clone the onesetup repository
 - rollout the onesetup binary
 
-## Getting Started
-Run the following command on the machine that should act as the [Control-Node](https://docs.ansible.com/ansible/latest/network/getting_started/basic_concepts.html#control-node):
+## Usage
+After Installation, the `onesetup` command should be available on your machine.
+This command provides all functionality you need. *See: `onesetup --help`*
+
+For a minimum, you want to do the following:
+**1. Apply Configuration**
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
+onesetup controller run
+```
+
+### Encrypt Secrets with Ansible Vault
+```bash
+onesetup encrypt
+onesetup controller
 ```
 This script will automatically spin-up the Ansible Control-Node in a container and applies the Ansible Playbook to the [Remote Targets](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html).
 This Control-Node serves the purpose of applying the Desired States of all playbook tasks to the Remote Targets specified in [inventory.toml](./inventory.toml)
@@ -41,11 +51,11 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/s
 ## Environment Variables
 The following Environment Variables can be set:
 ```bash
-export ONESETUP_DIR="[...]" # sets the installation directory
-export DOTFILES_DIR="[...]" # sets the dotfiles storage (original files that are later symlinked)
-export ONESETUP_REPO="[...]" # sets the onesetup repository shortname (e.g: onexbash/onesetup)
-export DOTFILES_REPO="[...]" # sets the dotfiles repository shortname (e.g: onexbash/dotfiles)
-export ANSIBLE_DEBUG="[0/1]" # advanced ansible logs for debugging
+export ONESETUP_DIR="[...]" # sets the installation directory (default: ~/.local/share/onesetup)
+export DOTFILES_DIR="[...]" # sets the dotfiles directory (default: ~/.local/share/dotfiles)
+export ONESETUP_REPO="[...]" # sets the onesetup repository shortname (default: onexbash/onesetup)
+export DOTFILES_REPO="[...]" # sets the dotfiles repository shortname (default: onexbash/dotfiles)
+export ANSIBLE_DEBUG="[0/1]" # advanced ansible logs for debugging (default: 0)
 ```
 
 ## Dotfiles
