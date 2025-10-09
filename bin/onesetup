@@ -29,10 +29,6 @@ function main() {
 
   # Variables
   SCRIPT_NAME=$(basename "$0")
-  ONESETUP_REPO_HTTPS="https://github.com/${ONESETUP_REPO}.git"
-  ONESETUP_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
-  DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
-  DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
 
   # Call Helper Function
   helper

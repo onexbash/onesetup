@@ -1,27 +1,36 @@
 #!/usr/bin/env bash
 
-# Environment Variables (only set if unset)
-if [[ -z "${ONESETUP_DIR:-}" ]]; then
-  export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
-fi
-if [[ -z "${ONESETUP_REPO:-}" ]]; then
-  export ONESETUP_REPO="onexbash/onesetup"
-fi
-if [[ -z "${DOTFILES_DIR:-}" ]]; then
-  export DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
-fi
-if [[ -z "${DOTFILES_REPO:-}" ]]; then
-  export DOTFILES_REPO="onexbash/dotfiles"
-fi
-if [[ -z "${ANSIBLE_DEBUG:-}" ]]; then
-  export ANSIBLE_DEBUG=0
-fi
+function main() {
+  # Environment Variable Defaults (overwritten if set by user)
+  if [[ -z "${ONESETUP_DIR:-}" ]]; then
+    export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
+  fi
+  if [[ -z "${ONESETUP_REPO:-}" ]]; then
+    export ONESETUP_REPO="onexbash/onesetup"
+  fi
+  if [[ -z "${DOTFILES_DIR:-}" ]]; then
+    export DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
+  fi
+  if [[ -z "${DOTFILES_REPO:-}" ]]; then
+    export DOTFILES_REPO="onexbash/dotfiles"
+  fi
+  if [[ -z "${ANSIBLE_DEBUG:-}" ]]; then
+    export ANSIBLE_DEBUG=0
+  fi
 
-# Variables
-ONESETUP_REPO_HTTPS="https://github.com/${ONESETUP_REPO}.git"
-ONESETUP_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
-DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
-DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
+  # Variables
+  local onesetup_uri_raw="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
+  local onesetup_uri_https="https://github.com/${ONESETUP_REPO}.git"
+  local onesetup_uri_ssh="git@github.com:${ONESETUP_REPO}.git"
+  local dotfiles_uri_raw="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
+  local dotfiles_uri_https="https://github.com/${DOTFILES_REPO}.git"
+  local dotfiles_uri_ssh="git@github.com:${DOTFILES_REPO}.git"
+
+  # Function Calls
+  { helper && echo -e "${I_OK}Helper Script Loaded!"; } || echo -e "${I_WARN}Failed to load Helper Script from [$onesetup_uri_raw]"
+  { prerequisites && echo -e "${I_OK}Prerequesites satisfied!"; } || echo -e "${I_WARN}Failed to ensure that prerequesites are satisfied."
+  { install && echo -e "${I_OK}Onesetup Installed"; } || { echo -e "${I_ERR}Failed to install Onesetup." && exit 1; }
+}
 
 # Load Helper Script
 function helper() {
@@ -30,7 +39,7 @@ function helper() {
   tmp_dir=$(mktemp --directory --tmpdir "onesetup-XXXXXX")
   echo "tmp_dir: $tmp_dir"
   # Curl helper script from repository & store as tmp file
-  curl -fs "$ONESETUP_REPO_RAW/scripts/helper.sh" -o "$tmp_dir/helper.sh"
+  curl -fs "$onesetup_uri_raw/scripts/helper.sh" -o "$tmp_dir/helper.sh"
   # Source helper script
   { source "$tmp_dir/helper.sh" && echo -e "${I_OK}Helper Script Loaded."; } || { echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1; }
   sudo rm -rf "$tmp_dir" || echo -e "${I_WARN}Failed to cleanup temp directory: $tmp_dir"
@@ -91,7 +100,7 @@ function install() {
       elif (($behind_count > 0)); then
         echo -e "${I_INFO}The installation directory is $behind_count commits behind of the remote (https://github.com/$ONESETUP_REPO)."
         echo -e "${I_INFO}Updating.."
-        sudo rm -rf "$ONESETUP_DIR" && sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR"
+        sudo rm -rf "$ONESETUP_DIR" && sudo git clone "$onesetup_uri_https" "$ONESETUP_DIR"
       fi
     else
       echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$ONESETUP_REPO)."
@@ -101,7 +110,7 @@ function install() {
   # Install only if directory is empty.
   if [[ ! -d "$ONESETUP_DIR" ]]; then
     echo -e "${I_INFO}Onesetup is not installed yet. Installing to ${ONESETUP_DIR} .." && sleep 1
-    sudo git clone "$ONESETUP_REPO_HTTPS" "$ONESETUP_DIR" && echo -e "${I_OK}Installation complete!"
+    sudo git clone "$onesetup_uri_https" "$ONESETUP_DIR" && echo -e "${I_OK}Installation complete!"
   fi
   # Set permissions
   sudo chmod 774 "$ONESETUP_DIR" && echo -e "${I_OK}Permissions on installation directory set! (744): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set permissions on installation directory! (744): $ONESETUP_DIR"
@@ -133,7 +142,5 @@ function install() {
   done
 }
 
-# Function Calls
-helper
-prerequisites && echo -e "${I_OK}Prerequesites satisfied!" || echo -e "${I_ERR}Failed to ensure that prerequesites are satisfied."
-install && echo -e "${I_OK}Onesetup Installed" || echo -e "${I_ERR}Failed to install Onesetup."
+# Call Main Function with args
+main "$@"
