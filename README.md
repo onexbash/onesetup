@@ -10,8 +10,20 @@ Additionally we use some scripts & container files for automatically setting up 
 - [Git](https://git-scm.com/downloads)
 - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
+
+## Installation
+Run the installation script on the machine that should act as the [Control-Node](https://docs.ansible.com/ansible/latest/network/getting_started/basic_concepts.html#control-node):
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
+```
+Under the hood, this will:
+- ensure prerequesites are satisfied (dependencies, user permissions)
+- prepare the filesystem (ensure proper permissions & existance of used directories)
+- clone the onesetup repository
+- rollout the onesetup binary
+
 ## Getting Started
-Run the following command on the machine that should act as the Control-Node:
+Run the following command on the machine that should act as the [Control-Node](https://docs.ansible.com/ansible/latest/network/getting_started/basic_concepts.html#control-node):
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/onesetup.sh)"
 ```
