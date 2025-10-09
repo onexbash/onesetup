@@ -7,9 +7,9 @@
 function main() {
   # Set Path to the mounted volume on the Container
   export CONTAINER_MOUNT="${CONTAINER_MOUNT:-/home/onesetup/src}"
+
   # Call init function
   init
-  echo "INFO: Hii, this is the Onesetup Control-Node Container. Exciting isnt it? :3"
 
   # Handle Arguments
   if [[ $# -gt 0 ]]; then

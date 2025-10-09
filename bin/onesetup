@@ -123,8 +123,8 @@ function encrypt() {
     echo -e "${I_OK}Encrypted string copied to clipboard."
   }
 
-  # Encrypt File
-  function encrypt_file() {
+  # Encrypt File Content
+  function encrypt_filecontent() {
     local filepath="$1"
     local var_name="$2"
     # Check if file exists
@@ -145,6 +145,12 @@ function encrypt() {
     echo -e "${I_OK}Encrypted Content of [ ${FG_MAGENTA}$filepath${S_RESET} ] copied to clipboard with Ansible Variable [ ${FG_MAGENTA}$var_name${S_RESET} ]"
   }
 
+  # Created Ansible Vault Encrypted File
+  function encrypt_vaultfile() {
+    echo "coming soon.."
+    # ansible-vault create --vault-id "onesetup@prompt" --encrypt-vault-id "onesetup" host_vars/onexmac-cratos/vault.yml
+  }
+
   # Handle [OPTIONS] of encrypt command
   case "${1:-}" in
   --string | -s)
@@ -153,7 +159,11 @@ function encrypt() {
     ;;
   --file | -f)
     shift
-    encrypt_file "$@"
+    encrypt_filecontent "$@"
+    ;;
+  --vaultfile | -v)
+    shift
+    encrypt_vaultfile "$@"
     ;;
   --help | -h)
     encrypt_help

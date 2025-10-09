@@ -12,43 +12,43 @@ function load_helper() {
 }
 
 function main() {
-  # Variables
-  vault_id="onesetup"
-
   # Function Calls
   load_helper && install_deps
   prompt_user
 }
 
 # Get User Input to decide which encrypt function to run
-function prompt_user(){
-  choice=$(gum choose "Encrypt String" "Encrypt File Content" \
-    --cursor.foreground "#cba6f7" \
-    --header.foreground "#cba6f7" \
-    --selected.foreground "#cba6f7" \
-    --header "Choose:" \
-    --no-show-help \
-    --ordered
+function prompt_user() {
+  choice=$(
+    gum choose "Encrypt String" "Encrypt File Content" \
+      --cursor.foreground "#cba6f7" \
+      --header.foreground "#cba6f7" \
+      --selected.foreground "#cba6f7" \
+      --header "Choose:" \
+      --no-show-help \
+      --ordered
   )
   case "$choice" in
-    "Encrypt String")
-      encrypt_string
-      ;;
-    "Encrypt File Content")
-      # get filepath by user selection
-      local filepath=$(gum file "$HOME" \
+  "Encrypt String")
+    encrypt_string
+    ;;
+  "Encrypt File Content")
+    # get filepath by user selection
+    local filepath=$(
+      gum file "$HOME" \
         --cursor.foreground "#cba6f7" \
         --header.foreground "#cba6f7" \
         --selected.foreground "#cba6f7" \
         --all \
         --height=100
-        )
-      # get file name
-      local filename=$(basename "$filepath")
-      # replace dots (.) in filename with underscores (_)
-      local filename_fmt="${filename//./_}"
-      # get var_name by user selection
-      local var_name=$(gum input \
+    )
+    # get file name
+    local filename=$(basename "$filepath")
+    # replace dots (.) in filename with underscores (_)
+    local filename_fmt="${filename//./_}"
+    # get var_name by user selection
+    local var_name=$(
+      gum input \
         --cursor.foreground "#cba6f7" \
         --header.foreground "#cba6f7" \
         --prompt.foreground "#cba6f7" \
@@ -56,17 +56,17 @@ function prompt_user(){
         --header "Adjust variable name (or press Enter to keep default):" \
         --placeholder "$filename_fmt" \
         --width 50
-      )
-      # Validate $var_name for invalid characters
-      if [[ ! "$var_name" =~ ^[a-zA-Z0-9_]+$ ]]; then
-        echo -e "${I_ERR}Invalid Characters in Variable Name"
-        echo -e "${I_INFO}Allowed Characters: Letters[a-z|A-Z], Numbers[0-9], Underscores[_]"
-        return 1
-      fi
+    )
+    # Validate $var_name for invalid characters
+    if [[ ! "$var_name" =~ ^[a-zA-Z0-9_]+$ ]]; then
+      echo -e "${I_ERR}Invalid Characters in Variable Name"
+      echo -e "${I_INFO}Allowed Characters: Letters[a-z|A-Z], Numbers[0-9], Underscores[_]"
+      return 1
+    fi
 
-      # call encrypt_file() with args
-      encrypt_file "$filepath" "$var_name"
-      ;;
+    # call encrypt_file() with args
+    encrypt_file "$filepath" "$var_name"
+    ;;
   esac
 }
 
@@ -75,7 +75,7 @@ function install_deps() {
   declare -a pkg_list
   pkg_list=("gum" "ansible")
   local os="$(detect_os)"
- 
+
   for pkg in "${pkg_list[@]}"; do
     linux() {
       sudo apt install "$pkg" || sudo dnf install "$pkg" || sudo pacman -S "$pkg" || echo -e "${I_ERR}Tried installing $pkg via apt, dnf & pacman. None of these succeeded. Other package managers are not supported." && exit 1
@@ -109,8 +109,8 @@ function encrypt_string() {
 
   ansible-vault encrypt_string \
     --show-input \
-    --vault-id "$vault_id@prompt" \
-    --encrypt-vault-id "$vault_id" \
+    --vault-id "onesetup@prompt" \
+    --encrypt-vault-id "onesetup" \
     --name "$varname" \
     "$secret" | pbcopy
   echo -e "${I_OK}Encrypted string copied to clipboard."
@@ -132,8 +132,8 @@ function encrypt_file() {
   # Encrypt and copy to clipboard
   ansible-vault encrypt_string \
     --show-input \
-    --vault-id "$vault_id@prompt" \
-    --encrypt-vault-id "$vault_id" \
+    --vault-id "onesetup@prompt" \
+    --encrypt-vault-id "onesetup" \
     --name "$var_name" \
     "$filecontent" | pbcopy
   echo -e "${I_OK}Encrypted Content of [ ${FG_MAGENTA}$filepath${S_RESET} ] copied to clipboard with Ansible Variable [ ${FG_MAGENTA}$var_name${S_RESET} ]"
