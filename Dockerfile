@@ -12,13 +12,11 @@ ENV DOTFILES_DIR=$DOTFILES_DIR \
   ONESETUP_REPO=$ONESETUP_REPO \
   ANSIBLE_DEBUG=$ANSIBLE_DEBUG
 
-# Ensure bin dirs exist in $PATH
-ENV PATH="/home/onesetup/src/bin:${PATH}"
-
 # Set Working Directory
 WORKDIR /home/onesetup/src
 
-RUN ls -a "/home/onesetup/src/bin"
+# Ensure bin dirs exist in $PATH
+# ENV PATH="/home/onesetup/src/bin:${PATH}"
 
 # Install packages
 RUN dnf install -y "git" "ansible" "curl" "sshpass" && \
@@ -31,4 +29,4 @@ RUN useradd -ms "/bin/bash" "onesetup" && \
 USER onesetup
 
 # Run Control-Node entrypoint script
-CMD ["onesetup controller entrypoint"]
+CMD ["./bin/onesetup", "controller", "entrypoint"]
