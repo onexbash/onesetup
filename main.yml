@@ -3,12 +3,10 @@
   hosts:
     - workstation
   connection: ssh
-  gather_facts: false
+  gather_facts: true
   # -- Variables -- #
   vars:
     # ansible variables
-    ansible_become_password: "{{ sudo_password }}"
-    ansible_password: "{{ sudo_password }}"
     ansible_facts_parallel: true # allow parallel facts gathering
     # environment variables
     HOME: "/Users/{{ ansible_user }}"

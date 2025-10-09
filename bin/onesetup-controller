@@ -3,6 +3,38 @@
 # -- CONTAINER ENTRYPOINT SCRIPT -- #
 # --                             -- #
 
+# Main Function
+function main() {
+  # Set Path to the mounted volume on the Container
+  export CONTAINER_MOUNT="${CONTAINER_MOUNT:-/home/onesetup/src}"
+  # Call init function
+  init
+  echo "INFO: Hii, this is the Onesetup Control-Node Container. Exciting isnt it? :3"
+
+  # Handle Arguments
+  if [[ $# -gt 0 ]]; then
+    case "${1:-}" in
+    entrypoint | --entrypoint | -e)
+      shift
+      entrypoint "$@"
+      ;;
+    run | --run | -r)
+      shift
+      run "$@"
+      ;;
+    --help | -h)
+      help
+      ;;
+    *)
+      echo -e "${I_ERR}Wrong command usage. See: 'onesetup controller --help'"
+      return 1 # exit with error
+      ;;
+    esac
+  else
+    prompt # prompt user if no args passed
+  fi
+}
+
 # Load Helper Script
 function helper() {
   { source "/home/src/onesetup/scripts/helper.sh" && echo -e "${I_OK}Helper Script Loaded"; } || { echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1; }
@@ -83,38 +115,6 @@ function prompt() {
     *) echo -e "${I_ERR}Invalid Input. It can only be one of the options above. ${S_RESET}" ;;
     esac
   done
-}
-
-# Main Function
-function main() {
-  # Set Path to the mounted volume on the Container
-  export CONTAINER_MOUNT="${CONTAINER_MOUNT:-/home/onesetup/src}"
-  # Call init function
-  init
-  echo "INFO: Hii, this is the Onesetup Control-Node Container. Exciting isnt it? :3"
-
-  # Handle Arguments
-  if [[ $# -gt 0 ]]; then
-    case "${1:-}" in
-    entrypoint | --entrypoint | -e)
-      shift
-      entrypoint "$@"
-      ;;
-    run | --run | -r)
-      shift
-      run "$@"
-      ;;
-    --help | -h)
-      help
-      ;;
-    *)
-      echo -e "${I_ERR}Wrong command usage. See: 'onesetup controller --help'"
-      return 1 # exit with error
-      ;;
-    esac
-  else
-    prompt # prompt user if no args passed
-  fi
 }
 
 # Call Main Function with args
