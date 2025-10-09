@@ -187,22 +187,6 @@ function encrypt() {
 # -- CONTROL NODE -- #
 # CMD: `onesetup controller`
 function controller() {
-  function controller_entrypoint() {
-    # Install Modules from Ansible Galaxy
-    if [ -f "requirements.yml" ]; then
-      ansible-galaxy role install -r "requirements.yml"
-    else
-      echo "WARN: requirements.yml not found. Nothing will be installed from Ansible Galaxy."
-    fi
-    # Run the Ansible playbook once initially
-    if [ -f "main.yml" ]; then
-      ansible-playbook --ask-vault-password "main.yml"
-    else
-      echo "ERROR: main.yml not found. Skipping initial playbook run."
-    fi
-    exec /bin/bash
-
-  }
   function controller_init() {
     # check if a podman machine with name "onesetup" exists
     if podman machine list --format "{{.Name}}" | grep -q "^onesetup$"; then
@@ -246,10 +230,6 @@ function controller() {
 
   # Handle [OPTIONS] of controller command
   case "${1:-}" in
-  entrypoint)
-    shift
-    controller_entrypoint "$@"
-    ;;
   init)
     shift
     controller_init "$@"
