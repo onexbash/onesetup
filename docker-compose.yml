@@ -12,6 +12,7 @@ services:
         - ONESETUP_REPO=${ONESETUP_REPO}
         - DOTFILES_DIR=${DOTFILES_DIR}
         - DOTFILES_REPO=${DOTFILES_REPO}
+        - ANSIBLE_DEBUG=${ANSIBLE_DEBUG}
     volumes:
       # Mount installation directory
       - ${ONESETUP_DIR}:/home/onesetup/src
@@ -25,6 +26,8 @@ services:
       - ONESETUP_REPO=${ONESETUP_REPO}
       - DOTFILES_DIR=${DOTFILES_DIR}
       - DOTFILES_REPO=${DOTFILES_REPO}
+      - ANSIBLE_DEBUG=${ANSIBLE_DEBUG}
+      - ANSIBLE_HOME="/home/src/onesetup"
     tty: true
     stdin_open: true
 networks:
