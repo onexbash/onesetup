@@ -26,6 +26,16 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/s
 ```
 
 
+## Environment Variables
+The following Environment Variables can be set:
+```bash
+export ONESETUP_DIR="[...]" # sets the installation directory
+export DOTFILES_DIR="[...]" # sets the dotfiles storage (original files that are later symlinked)
+export ONESETUP_REPO="[...]" # sets the onesetup repository shortname (e.g: onexbash/onesetup)
+export DOTFILES_REPO="[...]" # sets the dotfiles repository shortname (e.g: onexbash/dotfiles)
+export ANSIBLE_DEBUG="[0/1]" # advanced ansible logs for debugging
+```
+
 ## Dotfiles
 Dotfiles are installed to a source directory and symlinked to the expected location on all targets.
 Your Dotfiles need to be published to a separate Repository *e.g:* [onexbash - dotfiles](https://github.com/onexbash/dotfiles).
