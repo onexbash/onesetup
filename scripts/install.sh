@@ -1,10 +1,21 @@
 #!/usr/bin/env bash
 
-# Environment Variables
-export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
-export ONESETUP_REPO="onexbash/onesetup"
-export DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
-export DOTFILES_REPO="onexbash/dotfiles"
+# Environment Variables (only set if unset)
+if [[ -z "${ONESETUP_DIR:-}" ]]; then
+  export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
+fi
+if [[ -z "${ONESETUP_REPO:-}" ]]; then
+  export ONESETUP_REPO="onexbash/onesetup"
+fi
+if [[ -z "${DOTFILES_DIR:-}" ]]; then
+  export DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
+fi
+if [[ -z "${DOTFILES_REPO:-}" ]]; then
+  export DOTFILES_REPO="onexbash/dotfiles"
+fi
+if [[ -z "${ANSIBLE_DEBUG:-}" ]]; then
+  export ANSIBLE_DEBUG=0
+fi
 
 # Variables
 ONESETUP_REPO_HTTPS="https://github.com/${ONESETUP_REPO}.git"
@@ -12,18 +23,17 @@ ONESETUP_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
 DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
 DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
 
-# Load Scripts
+# Load Helper Script
 function helper() {
   # Create temp dir
   local tmp_dir
   tmp_dir=$(mktemp --directory --tmpdir "onesetup-XXXXXX")
   echo "tmp_dir: $tmp_dir"
-  # Curl initially required files from repository & store as tmp files
+  # Curl helper script from repository & store as tmp file
   curl -fs "$ONESETUP_REPO_RAW/scripts/helper.sh" -o "$tmp_dir/helper.sh"
-  curl -fs "$ONESETUP_REPO_RAW/.env.public" -o "$tmp_dir/.env.public"
-  # Source tmp files
+  # Source helper script
   { source "$tmp_dir/helper.sh" && echo -e "${I_OK}Helper Script Loaded."; } || { echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1; }
-  { set -a && source "$tmp_dir/.env.public" && set +a && echo -e "${I_OK}Environment Variables Loaded from .env.public!"; } || { echo -e "${I_ERR}Failed to load public Environment Variables. Please ensure your installation was correct."; }
+  sudo rm -rf "$tmp_dir" || echo -e "${I_WARN}Failed to cleanup temp directory: $tmp_dir"
 }
 
 # Ensure prerequisites are satisfied
