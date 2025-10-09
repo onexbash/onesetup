@@ -18,9 +18,12 @@ WORKDIR /home/onesetup/src
 #   usermod -aG "wheel" "onesetup"
 # USER onesetup
 
+# Add onesetup bin dir to $PATH
+ENV PATH="/home/onesetup/src/bin:${PATH}"
+
 # Install packages
 RUN dnf install -y "git" "ansible" "curl" "sshpass" && \
   dnf clean all
 
 # Run Control-Node entrypoint script
-CMD ["scripts/entrypoint.sh"]
+CMD ["bin/onesetup-controller", "--entrypoint"]

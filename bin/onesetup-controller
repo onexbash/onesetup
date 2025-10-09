@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# --                             -- #
+# -- CONTAINER ENTRYPOINT SCRIPT -- #
+# --                             -- #
+
+# Load Helper Script
+function helper() {
+  { source "/home/src/onesetup/scripts/helper.sh" && echo -e "${I_OK}Helper Script Loaded"; } || { echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1; }
+}
+
+# Help Page
+function help() {
+  cat <<EOF
+----
+This subcommand can be used to encrypt files/strings via Ansible Vault.
+
+Usage: $SCRIPT_NAME encrypt [OPTIONS] [ARGS]
+
+Options:
+  --string [ARGS: <filepath>]
+  --file [ARGS: <string>]
+Examples:
+$SCRIPT_NAME controller entrypoint
+$SCRIPT_NAME controller run
+$SCRIPT_NAME controller init
+----
+EOF
+}
+
+# Initialize Container
+function init() {
+  # Check if mounted volume can be accessed
+  if [[ ! -d "$CONTAINER_MOUNT" ]]; then
+    echo "ERR: Mounted Volume not found on the container: $CONTAINER_MOUNT"
+  fi
+  # Install Modules from Ansible Galaxy
+  if [ -f "$CONTAINER_MOUNT/requirements.yml" ]; then
+    ansible-galaxy role install -r "$CONTAINER_MOUNT/requirements.yml"
+  else
+    echo "WARN: $CONTAINER_MOUNT/requirements.yml not found. Nothing will be installed from Ansible Galaxy."
+  fi
+
+}
+
+# Container Entrypoint
+function entrypoint() {
+  exec /bin/bash
+}
+
+# Run Playbook on Control-Node Container
+function run() {
+  # Run the Ansible playbook once initially
+  if [ -f "$CONTAINER_MOUNT/main.yml" ]; then
+    ansible-playbook --ask-vault-password "$CONTAINER_MOUNT/main.yml"
+  else
+    echo "ERROR: Main Playbook File not found at $CONTAINER_MOUNT/main.yml. Playbook was NOT applied!"
+  fi
+}
+
+# User Prompt
+function prompt() {
+  # Prompt Menu
+  function show_menu() {
+    echo -e "\n🤖 Control-Node Management"
+    echo "========================================"
+    echo "What would you like to do?"
+    echo ""
+    echo "  1) Run Playbook"
+    echo "  2) Open Container CLI"
+    echo "  3) Exit Container"
+    echo ""
+    echo "========================================"
+  }
+  # Get User Input
+  while true; do
+    show_menu
+    echo -ne "${FG_CYAN}❯ Select option [1-3]: ${S_RESET}"
+    read -r answer
+
+    case $answer in
+    1) run ;;
+    2) entrypoint ;;
+    3) exit 0 ;;
+    *) echo -e "${I_ERR}Invalid Input. It can only be one of the options above. ${S_RESET}" ;;
+    esac
+  done
+}
+
+# Main Function
+function main() {
+  # Set Path to the mounted volume on the Container
+  export CONTAINER_MOUNT="${CONTAINER_MOUNT:-/home/onesetup/src}"
+  # Call init function
+  init
+  echo "INFO: Hii, this is the Onesetup Control-Node Container. Exciting isnt it? :3"
+
+  # Handle Arguments
+  if [[ $# -gt 0 ]]; then
+    case "${1:-}" in
+    entrypoint | --entrypoint | -e)
+      shift
+      entrypoint "$@"
+      ;;
+    run | --run | -r)
+      shift
+      run "$@"
+      ;;
+    --help | -h)
+      help
+      ;;
+    *)
+      echo -e "${I_ERR}Wrong command usage. See: 'onesetup controller --help'"
+      return 1 # exit with error
+      ;;
+    esac
+  else
+    prompt # prompt user if no args passed
+  fi
+}
+
+# Call Main Function with args
+main "$@"
