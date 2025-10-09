@@ -26,13 +26,14 @@ function main() {
   if [[ -z "${ANSIBLE_DEBUG:-}" ]]; then
     export ANSIBLE_DEBUG=0
   fi
+
   # Variables
-  VERSION="1.0.0"
   SCRIPT_NAME=$(basename "$0")
   ONESETUP_REPO_HTTPS="https://github.com/${ONESETUP_REPO}.git"
   ONESETUP_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
   DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
   DOTFILES_REPO_HTTPS="https://github.com/${DOTFILES_REPO}.git"
+
   # Call Helper Function
   helper
   # Subcommand Handler
@@ -42,18 +43,14 @@ function main() {
     shift
     encrypt "$@"
     ;;
-  # CMD: `onesetup controller [COMMAND] [OPTIONS]`
-  controller)
+  # CMD: `onesetup run [COMMAND] [OPTIONS]`
+  run)
     shift
     controller "$@"
     ;;
   # CMD: `onesetup --help`
   help | --help | -h)
     help_pages
-    ;;
-  # CMD: `onesetup --version`
-  version | --version | -v)
-    version
     ;;
   # CMD: Invalid Command Usage
   *)
@@ -80,7 +77,6 @@ Commands:
   controller Execute Logic on the Ansible Control-Node
   encrypt    Encrypt files or directories
   help       Show this help message
-  version    Show version information
 ----
 EOF
 }
@@ -104,27 +100,13 @@ $SCRIPT_NAME encrypt --file
 ----
 EOF
 }
-function help_controller() {
+function help_run() {
   cat <<EOF
 ----
-This subcommand can be used to encrypt files/strings via Ansible Vault.
-
-Usage: $SCRIPT_NAME encrypt [OPTIONS] [ARGS]
-
-Options:
-  --string [ARGS: <filepath>]
-  --file [ARGS: <string>]
-Examples:
-$SCRIPT_NAME controller init
-$SCRIPT_NAME controller run
+This subcommand can be used to apply your Playbook Configuration on the Remote Targets.
+Usage: $SCRIPT_NAME run
 ----
 EOF
-}
-
-# -- Version Info -- #
-# CMD: `onesetup version`
-function version() {
-  echo -e "${I_INFO}$SCRIPT_NAME version $VERSION"
 }
 
 # -- Encrypt -- #
@@ -144,6 +126,7 @@ function encrypt() {
       "$secret" | pbcopy
     echo -e "${I_OK}Encrypted string copied to clipboard."
   }
+
   # Encrypt File
   function encrypt_file() {
     local filepath="$1"
@@ -165,6 +148,7 @@ function encrypt() {
       "$filecontent" | pbcopy
     echo -e "${I_OK}Encrypted Content of [ ${FG_MAGENTA}$filepath${S_RESET} ] copied to clipboard with Ansible Variable [ ${FG_MAGENTA}$var_name${S_RESET} ]"
   }
+
   # Handle [OPTIONS] of encrypt command
   case "${1:-}" in
   --string | -s)
@@ -184,67 +168,48 @@ function encrypt() {
   esac
 }
 
-# -- CONTROL NODE -- #
-# CMD: `onesetup controller`
-function controller() {
-  function controller_init() {
-    # check if a podman machine with name "onesetup" exists
-    if podman machine list --format "{{.Name}}" | grep -q "^onesetup$"; then
-      echo -e "${I_OK}Podman Machine [onesetup] exists!"
-    else
-      podman machine init "onesetup" \
-        --cpus 4 \
-        --memory 4096 \
-        --disk-size 10 \
-        --rootful=false \
-        --now &&
-        echo -e "${I_OK}Podman Machine [onesetup] has been created & started!"
-    fi
-    # check if the machine is running
-    if podman machine inspect "onesetup" 2>/dev/null | jq -e '.[0].State == "running"' >/dev/null; then
-      echo -e "${I_OK}Podman Machine [onesetup] is running!"
-    else
-      podman machine start "onesetup"
-    fi
-  }
-  function controller_run() {
-    # specify container engine to use
-    export CONTAINER_CONNECTION="onesetup"
-    # build
-    podman-compose \
-      -f "$ONESETUP_DIR/docker-compose.yml" build \
-      --build-arg "ONESETUP_DIR=$ONESETUP_DIR" \
-      --build-arg "DOTFILES_DIR=$DOTFILES_DIR" \
-      --build-arg "ONESETUP_REPO=$ONESETUP_REPO" \
-      --build-arg "DOTFILES_REPO=$DOTFILES_REPO" \
-      "onesetup" &&
-      echo -e "${I_OK}Control-Node image built successfully!" ||
-      echo -e "${I_ERR}Control-Node Container Image failed to build!"
-    # run
-    podman-compose \
-      -f "$ONESETUP_DIR/docker-compose.yml" run \
-      "onesetup" &&
-      echo -e "${I_OK}Control-Node Container successfully running!" ||
-      echo -e "${I_ERR}Control-Node Container failed to run!"
-  }
+# -- RUN -- #
+# CMD: `onesetup run`
+function run() {
+  # Specify container engine to use
+  export CONTAINER_CONNECTION="onesetup"
 
-  # Handle [OPTIONS] of controller command
-  case "${1:-}" in
-  init)
-    shift
-    controller_init "$@"
-    ;;
-  run)
-    shift
-    controller_run "$@"
-    ;;
-  --help | -h)
-    controller_help
-    ;;
-  *)
-    echo -e "${I_ERR}Wrong command usage. See: 'onesetup controller --help'"
-    ;;
-  esac
+  # Check if a podman machine with name "onesetup" exists
+  if podman machine list --format "{{.Name}}" | grep -q "^onesetup$"; then
+    echo -e "${I_OK}Podman Machine [onesetup] exists!"
+  else
+    { podman machine init "onesetup" \
+      --cpus 4 \
+      --memory 4096 \
+      --disk-size 10 \
+      --rootful=false \
+      --now &&
+      echo -e "${I_OK}Podman Machine [onesetup] has been created & started!"; } || echo -e "${I_ERR}Failed to create Podman Machine [onesetup]"
+  fi
+
+  # Check if the container engine is running
+  if podman machine inspect "onesetup" 2>/dev/null | jq -e '.[0].State == "running"' >/dev/null; then
+    echo -e "${I_OK}Podman Machine [onesetup] is running!"
+  else
+    podman machine start "onesetup" || echo -e "${I_ERR}Failed to start Podman Machine [onesetup]"
+  fi
+
+  # Build Control-Node Container
+  podman-compose \
+    -f "$ONESETUP_DIR/docker-compose.yml" build \
+    --build-arg "ONESETUP_DIR=$ONESETUP_DIR" \
+    --build-arg "DOTFILES_DIR=$DOTFILES_DIR" \
+    --build-arg "ONESETUP_REPO=$ONESETUP_REPO" \
+    --build-arg "DOTFILES_REPO=$DOTFILES_REPO" \
+    "onesetup" &&
+    echo -e "${I_OK}Control-Node image built successfully!" ||
+    echo -e "${I_ERR}Control-Node Container Image failed to build!"
+  # Run Control-Node Container
+  podman-compose \
+    -f "$ONESETUP_DIR/docker-compose.yml" run \
+    "onesetup" &&
+    echo -e "${I_OK}Control-Node Container successfully running!" ||
+    echo -e "${I_ERR}Control-Node Container failed to run!"
 }
 
 # Call Main Function with args
