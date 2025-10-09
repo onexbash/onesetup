@@ -6,16 +6,14 @@
 # -- Helper Functions -- #
 function helper() {
   # Load Helper Script
-  source "$ONESETUP_DIR/scripts/helper.sh" && echo -e "${I_OK}Helper Script Loaded." || echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1
-  # Load .env File
-  # load_env_file "$ONESETUP_DIR/.env.public"
-  set -a
-  source "$ONESETUP_DIR/.env.public" && echo -e "${I_OK}Environment Variables Loaded from '.env.public'." || echo -e "${I_WARN}Failed to load Environment Variables from $ONESETUP_DIR/.env.public'."
-  set +a
+  { source "$ONESETUP_DIR/scripts/helper.sh" && echo -e "${I_OK}Helper Script Loaded."; } || { echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1; }
+  # Load Environment Variables
+  { set -a && source "$ONESETUP_DIR/.env.public" && set +a && echo -e "${I_OK}Environment Variables Loaded from '.env.public'."; } || { echo -e "${I_WARN}Failed to load Environment Variables from $ONESETUP_DIR/.env.public'."; }
 }
 
 # -- Main Function -- #
 function main() {
+  echo "$TEST_VAR"
   # Environment Variables
   export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
   export ONESETUP_REPO="onexbash/onesetup"

@@ -187,7 +187,7 @@ function load_env_file() {
 }
 
 # Default Function Calls
-set_modes && echo -e "${I_OK}Successfully set Script Modes." || echo -e "${I_WARN}Failed to set Script Modes."
-tty_styles && echo -e "${I_OK}Successfully loaded TTY Styles." || echo -e "${I_WARN}Failed to load TTY Styles."
-get_paths && echo -e "${I_OK}Successfully loaded Dynamic Directory Paths." || echo -e "${I_WARN}Failed to load Dynamic Directory Paths."
-detect_os && echo -e "${I_OK}Successfully detected Operating System." || echo -e "${I_WARN}Failed to detect Operating System."
+set_modes || echo -e "${I_WARN}Failed to set Script Modes."
+tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
+get_paths || echo -e "${I_WARN}Failed to load Dynamic Directory Paths."
+detect_os || echo -e "${I_WARN}Failed to detect Operating System."
