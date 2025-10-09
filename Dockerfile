@@ -13,7 +13,12 @@ ENV DOTFILES_DIR=$DOTFILES_DIR \
   ANSIBLE_DEBUG=$ANSIBLE_DEBUG
 
 # Ensure bin dirs exist in $PATH
-ENV PATH="/usr/local/bin:/usr/bin:/bin:${PATH}"
+ENV PATH="/home/onesetup/src/bin:${PATH}"
+
+# Set Working Directory
+WORKDIR /home/onesetup/src
+
+RUN ls -a "/home/onesetup/src/bin"
 
 # Install packages
 RUN dnf install -y "git" "ansible" "curl" "sshpass" && \
@@ -24,12 +29,6 @@ RUN useradd -ms "/bin/bash" "onesetup" && \
   echo 'onesetup ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
   usermod -aG "wheel" "onesetup"
 USER onesetup
-
-# Create working directory
-WORKDIR /home/onesetup/src
-
-# Copy binaries to container
-COPY ./bin/* /usr/local/bin
 
 # Run Control-Node entrypoint script
 CMD ["onesetup controller entrypoint"]
