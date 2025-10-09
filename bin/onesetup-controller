@@ -83,7 +83,11 @@ function entrypoint() {
 function run() {
   # Run the Ansible playbook once initially
   if [ -f "$CONTAINER_MOUNT/main.yml" ]; then
-    ansible-playbook --ask-vault-password "$CONTAINER_MOUNT/main.yml"
+    ansible-playbook "$CONTAINER_MOUNT/main.yml" \
+      --ask-vault-password \
+      --extra-vars "ansible_user={{ sudo_user }}" \
+      --extra-vars "ansible_become_password={{ sudo_password }}" \
+      --extra-vars "ansible_password={{ sudo_password }}"
   else
     echo "ERROR: Main Playbook File not found at $CONTAINER_MOUNT/main.yml. Playbook was NOT applied!"
   fi

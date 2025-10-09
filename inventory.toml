@@ -2,13 +2,13 @@
 # --     INVENTORY     -- #
 # -- -- -- -- -- -- -- -- #
 
-# -- WORKSTATION -- #
-# variables
-[workstation.vars]
-ansible_user = "{{ sudo_user }}"                # set in host_vars/<hostname>.yml
-ansible_become_password = "{{ sudo_password }}" # set in host_vars/<hostname>.yml
-ansible_password = "{{ sudo_password }}"        # set in host_vars/<hostname>.yml
+# -- DEFAULT: variables -- #
+# note: per host variables are set in host_vars/<hostname>.yml
+[all.vars]
+ansible_connection = "ssh"
 ansible_port = 22
+
+# -- WORKSTATION -- #
 # hosts
 [workstation.hosts]
 onexmac-cratos = { ansible_host = "100.65.55.179" }
