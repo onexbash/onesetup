@@ -46,11 +46,11 @@ function main() {
   # CMD: `onesetup run [COMMAND] [OPTIONS]`
   run)
     shift
-    controller "$@"
+    run "$@"
     ;;
   # CMD: `onesetup --help`
   help | --help | -h)
-    help_pages
+    help_general
     ;;
   # CMD: Invalid Command Usage
   *)
@@ -65,7 +65,7 @@ function main() {
 # CMD: `onesetup [COMMAND] --help`
 
 # Help Page: General
-function help_main() {
+function help_general() {
   cat <<EOF
 ----
 A utility for managing one-time setups with encryption.
