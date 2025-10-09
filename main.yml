@@ -3,7 +3,7 @@
   hosts:
     - workstation
   connection: ssh
-  gather_facts: true
+  gather_facts: false
   # -- Variables -- #
   vars:
     # ansible variables
@@ -24,8 +24,11 @@
     DOTFILES_REPO: '{{ lookup("env", "DOTFILES_REPO") }}'
     ONESETUP_REPO_SSH: "git@github.com:{{ ONESETUP_REPO }}.git"
     ONESETUP_REPO_HTTPS: "https://github.com/{{ ONESETUP_REPO }}.git"
+    ONESETUP_REPO_RAW: "https://raw.githubusercontent.com/{{ ONESETUP_REPO }}/main"
     DOTFILES_REPO_SSH: "git@github.com:{{ DOTFILES_REPO }}.git"
     DOTFILES_REPO_HTTPS: "https://github.com/{{ DOTFILES_REPO }}.git"
+    DOTFILES_REPO_RAW: "https://raw.githubusercontent.com/{{ DOTFILES_REPO }}/main"
+
   # -- Pre Tasks -- #
   pre_tasks:
     - import_tasks: pre_tasks/user.yml
