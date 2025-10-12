@@ -23,7 +23,7 @@
     comment: "{{ ansible_user }}"
     group: "staff"
     system: false
-    password: "{{ sudo_password }}"
+    password: "{{ su_password }}"
     update_password: "on_create" # whether to update password if it differs [always/on_create]
     # set the default shell to bash
     shell: >-
@@ -36,7 +36,7 @@
     comment: "root"
     group: "wheel"
     system: false
-    password: "{{ sudo_password }}"
+    password: "{{ su_password }}"
     update_password: "on_create" # whether to update password if it differs [always/on_create]
     # set the default shell to bash
     shell: >-
