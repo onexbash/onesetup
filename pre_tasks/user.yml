@@ -1,23 +1,23 @@
 ---
 # Configure Groups
-- name: "Group: Configure 'wheel'"
+- name: "Setup Group: wheel"
   ansible.builtin.group:
     name: "wheel"
     state: present
     system: false
-- name: "Group: Configure 'staff'"
+- name: "Setup Group: staff"
   ansible.builtin.group:
     name: "staff"
     state: present
     system: false
-- name: "Group: Configure 'service'"
+- name: "Setup Group: service"
   ansible.builtin.group:
     name: "service"
     state: present
     system: true
 
 # Configure Users
-- name: "User: Configure {{ ansible_user }}"
+- name: "Setup User: {{ ansible_user }}"
   ansible.builtin.user:
     name: "{{ ansible_user }}"
     comment: "{{ ansible_user }}"
@@ -27,10 +27,8 @@
     update_password: "on_create" # whether to update password if it differs [always/on_create]
     # set the default shell to bash
     shell: >-
-      {{ "/opt/homebrew/bin/bash"
-         if ansible_facts['os_family'] == 'Darwin'
-         else "/bin/bash" }}
-- name: "User: Configure 'root'"
+      {{ "/opt/homebrew/bin/zsh" if ansible_facts['os_family'] == 'Darwin' }}
+- name: "Setup User: root"
   ansible.builtin.user:
     name: "root"
     comment: "root"
@@ -40,21 +38,15 @@
     update_password: "on_create" # whether to update password if it differs [always/on_create]
     # set the default shell to bash
     shell: >-
-      {{ "/opt/homebrew/bin/bash"
-         if ansible_facts['os_family'] == 'Darwin'
-         else "/bin/bash" }}
+      {{ "/opt/homebrew/bin/zsh" if ansible_facts['os_family'] == 'Darwin' }}
   become: true
 
-# Verify Users & Groups Configuration
-- name: "Ensure Ansible Connect User has sudo privileges"
-  block:
-    - name: "Test sudo access"
-      become: true
-      command: "whoami"
-      register: sudo_check
-    - debug:
-        msg: "✓ SUCCESS: User has sudo privileges (whoami returned: {{ sudo_check.stdout }})"
-  rescue:
-    - debug:
-        msg: "✗ FAILED: User does not have sudo privileges"
-
+# Check if Ansible User has Sudo Privileges
+- name: "Log User has Sudo Privileges"
+  debug:
+    msg: "OK: {{ ansible_user }} has Sudo Privileges"
+  when: check_sudo.stdout == 'root'
+- name: "Log User lacks Sudo Privileges"
+  debug:
+    msg: "ERROR: {{ ansible_user }} doesnt have Sudo Privileges"
+  when: check_sudo.stdout != 'root'
