@@ -1,5 +1,5 @@
 ---
-- name: "onesetup - Remote Target Playbook"
+- name: "onesetup: Main Playbook"
   hosts:
     - workstation
   gather_facts: true
@@ -29,6 +29,8 @@
   pre_tasks:
     - import_tasks: pre_tasks/user.yml
     - import_tasks: pre_tasks/filesystem.yml
+    - import_tasks: pre_tasks/osx.yml
+      when: ansible_facts['os_family'] == 'Darwin'
   tasks:
     - import_tasks: tasks/settings.yml
   # -- Roles -- #

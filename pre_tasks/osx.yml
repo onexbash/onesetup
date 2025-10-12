@@ -1,0 +1,5 @@
+- name: "Accept XCode License"
+  ansible.builtin.shell: "xcodebuild -license accept"
+  become: true
+  changed_when: false
+  failed_when: false
