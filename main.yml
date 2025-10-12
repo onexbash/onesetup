@@ -25,7 +25,6 @@
     DOTFILES_REPO_SSH: "git@github.com:{{ DOTFILES_REPO }}.git"
     DOTFILES_REPO_HTTPS: "https://github.com/{{ DOTFILES_REPO }}.git"
     DOTFILES_REPO_RAW: "https://raw.githubusercontent.com/{{ DOTFILES_REPO }}/main"
-
   # -- Pre Tasks -- #
   pre_tasks:
     - import_tasks: pre_tasks/user.yml

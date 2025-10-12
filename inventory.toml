@@ -7,6 +7,9 @@
 [all.vars]
 ansible_connection = "ssh"
 ansible_port = 22
+ansible_user = "{{ su_username }}"
+ansible_become_password = "{{ su_password }}"
+ansible_password = "{{ su_password }}"
 
 # -- WORKSTATION -- #
 # hosts
