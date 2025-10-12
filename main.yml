@@ -27,14 +27,17 @@
     DOTFILES_REPO_RAW: "https://raw.githubusercontent.com/{{ DOTFILES_REPO }}/main"
   # -- Pre Tasks -- #
   pre_tasks:
-    - import_tasks: pre_tasks/osx.yml
-      when: ansible_facts['os_family'] == 'Darwin'
     - import_tasks: pre_tasks/user.yml
+      tags: bootstrap
     - import_tasks: pre_tasks/filesystem.yml
+      tags: bootstrap
   tasks:
     - import_tasks: tasks/settings.yml
+      tags: settings
   # -- Roles -- #
   roles:
     - role: elliotweiser.osx-command-line-tools
       when: ansible_facts['os_family'] == 'Darwin'
-    - role: 'dotfiles'
+      tags: bootstrap
+    - role: dotfiles
+      tags: dotfiles
