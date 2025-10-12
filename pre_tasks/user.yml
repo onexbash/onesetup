@@ -42,11 +42,11 @@
   become: true
 
 # Check if Ansible User has Sudo Privileges
-- name: "Log User has Sudo Privileges"
+- name: "Check if Ansible User has Sudo Privileges [{{ ansible_user }}]"
+  ansible.builtin.command: "whoami"
+  become: true
+  register: check_sudo
+  ignore_errors: true
+- name: "Log whether Ansible User has Sudo Privileges [{{ ansible_user }}]"
   debug:
-    msg: "OK: {{ ansible_user }} has Sudo Privileges"
-  when: check_sudo.stdout == 'root'
-- name: "Log User lacks Sudo Privileges"
-  debug:
-    msg: "ERROR: {{ ansible_user }} doesnt have Sudo Privileges"
-  when: check_sudo.stdout != 'root'
+    msg: "{{ 'OK: ' + ansible_user + ' has Sudo Privileges' if check_sudo.stdout == 'root' else 'ERROR: ' + ansible_user + ' doesnt have Sudo Privileges' }}"
