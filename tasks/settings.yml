@@ -1,30 +1,180 @@
 # -- -- -- -- -- -- -- --  -- #
 # -- MACOS SYSTEM SETTINGS -- #
 # -- -- -- -- -- -- -- --  -- #
-
-# -- DOCK -- #
-- name: Configure macOS Dock settings
+# Check this list of supported settings: https://macos-defaults.com/finder/fxdefaultsearchscope.html
+- name: "MacOS Settings: Apply Configuration"
   community.general.osx_defaults:
-    domain: com.apple.dock
+    domain: "{{ item.domain }}"
     key: "{{ item.key }}"
     type: "{{ item.type }}"
     value: "{{ item.value }}"
   loop:
-    # dock: position
-    - { key: "orientation", type: "string", value: "bottom" }
-    # dock: icon size
-    - { key: "tilesize", type: "int", value: 36 }
-    # dock: autohide
-    - { key: "autohide", type: "bool", value: true }
-    # dock: autohide animation time
-    - { key: "autohide-time-modifier", type: "float", value: 0.2 }
-    # dock: autohide delay
-    - { key: "autohide-delay", type: "float", value: 0.1 }
-    # dock: show-recents
-    - { key: "show-recents", type: "bool", value: false }
-    # dock: minimize effect
-    - { key: "mineffect", type: "string", value: "scale" }
-    # dock: scroll to exposé
-    - { key: "scroll-to-open", type: "bool", value: true }
-- name: "Restart Dock daemon"
-  ansible.builtin.command: killall Dock
+    # -- DOCK -- #
+    # Position
+    - { domain: "com.apple.dock", key: "orientation", type: "string", value: "bottom" }
+    # Icon Size
+    - { domain: "com.apple.dock", key: "tilesize", type: "int", value: 36 }
+    # Toggle Autohide
+    - { domain: "com.apple.dock", key: "autohide", type: "bool", value: true }
+    # Autohide Animation Time
+    - { domain: "com.apple.dock", key: "autohide-time-modifier", type: "float", value: 0.2 }
+    # Autohide Delay
+    - { domain: "com.apple.dock", key: "autohide-delay", type: "float", value: 0.1 }
+    # Show recents
+    - { domain: "com.apple.dock", key: "show-recents", type: "bool", value: false }
+    # Window Minimize Animation
+    - { domain: "com.apple.dock", key: "mineffect", type: "string", value: "scale" }
+    # Show Pinned Apps
+    - { domain: "com.apple.dock", key: "static-only", type: "bool", value: false }
+    # Scroll to Exposé
+    - { domain: "com.apple.dock", key: "scroll-to-open", type: "bool", value: true }
+    # Enable Spring loading for Dock Items (drag a file over a dock item to open it in app)
+    - { domain: "com.apple.dock", key: "enable-spring-load-actions-on-all-items", type: "bool", value: true }
+
+    # -- SCREENSHOTS -- #
+    # Disable Shadow
+    - { domain: "com.apple.screencapture", key: "disable-shadow", type: "bool", value: false }
+    # Include Date in Filename
+    - { domain: "com.apple.screencapture", key: "include-date", type: "bool", value: true }
+    # Default Storage Location
+    - { domain: "com.apple.screencapture", key: "location", type: "string", value: "~/Pictures/" }
+    # Display Thumbnail
+    - { domain: "com.apple.screencapture", key: "show-thumbnail", type: "bool", value: true }
+    # File Type
+    - { domain: "com.apple.screencapture", key: "type", type: "string", value: "png" }
+    
+    # -- FINDER -- #
+    # Show quit button
+    - { domain: "com.apple.finder", key: "QuitMenuItem", type: "bool", value: false }
+    # Show file extensions
+    - { domain: "NSGlobalDomain", key: "AppleShowAllExtensions", type: "bool", value: true }
+    # Show hidden files
+    - { domain: "com.apple.finder", key: "AppleShowAllFiles", type: "bool", value: true }
+    # Show path bar
+    - { domain: "com.apple.finder", key: "ShowPathbar", type: "bool", value: true }
+    # Default view style (clmv/Nlsv/glyv/icnv)
+    - { domain: "com.apple.finder", key: "FXPreferredViewStyle", type: "string", value: "Nlsv" }
+    # Keep directories on top
+    - { domain: "com.apple.finder", key: "_FXSortFoldersFirst", type: "bool", value: true }
+    # Open in new tab
+    - { domain: "com.apple.finder", key: "FinderSpawnTab", type: "bool", value: true }
+    # Default search scope (SCcf/SCsp/SCev)
+    - { domain: "com.apple.finder", key: "FXDefaultSearchScope", type: "string", value: "SCcf" }
+    # Automatically empty bin after 30days
+    - { domain: "com.apple.finder", key: "FXRemoveOldTrashItems", type: "bool", value: true }
+    # File extension modify warning
+    - { domain: "com.apple.finder", key: "FXEnableExtensionChangeWarning", type: "bool", value: false }
+    # Use iCloud to save documents
+    - { domain: "NSGlobalDomain", key: "NSDocumentSaveNewDocumentsToCloud", type: "bool", value: false }
+    # Show titlebar icon (TODO: check for issues as setting this requires full disk access of the terminal)
+    - { domain: "com.apple.universalaccess", key: "showWindowTitlebarIcons", type: "bool", value: true }
+    # Titlebar icon hover delay
+    - { domain: "NSGlobalDomain", key: "NSToolbarTitleViewRolloverDelay", type: "float", value: 0 }
+    # Titlebar icon size (1/2/3)
+    - { domain: "NSGlobalDomain", key: "NSTableViewDefaultSizeMode", type: "int", value: 2 }
+    
+    # -- DESKTOP -- #
+    # Keep directories on top
+    - { domain: "com.apple.finder", key: "_FXSortFoldersFirstOnDesktop", type: "bool", value: true }
+    # Show icons
+    - { domain: "com.apple.finder", key: "CreateDesktop", type: "bool", value: false }
+    # Show hard drives
+    - { domain: "com.apple.finder", key: "ShowHardDrivesOnDesktop", type: "bool", value: false }
+    # Show external hard drives
+    - { domain: "com.apple.finder", key: "ShowExternalHardDrivesOnDesktop", type: "bool", value: false }
+    # Show removable media (CDs, DVDs, ..)
+    - { domain: "com.apple.finder", key: "ShowRemovableMediaOnDesktop", type: "bool", value: false }
+    # Show connected servers
+    - { domain: "com.apple.finder", key: "ShowMountedServersOnDesktop", type: "bool", value: false }
+    
+    # -- MENUBAR -- #
+    # Time seperator blink effect
+    - { domain: "com.apple.menuextra.clock", key: "FlashDateSeparators", type: "bool", value: false }
+    # Time format
+    - { domain: "com.apple.menuextra.clock", key: "DateFormat", type: "string", value: "\"EEE d MMM HH:mm\"" }
+    
+    # -- MOUSE & TRACKPAD -- #
+    # Mouse acceleration
+    - { domain: "NSGlobalDomain", key: "com.apple.mouse.linear", type: "bool", value: true }
+    # Mouse speed (0-3)
+    - { domain: "NSGlobalDomain", key: "com.apple.mouse.scaling", type: "float", value: 1.5 }
+    # Focus follows mouse
+    - { domain: "com.apple.Terminal", key: "FocusFollowsMouse", type: "bool", value: true }
+    # Trackpad click weight (1: light, 2: medium, 3: firm)
+    - { domain: "com.apple.AppleMultitouchTrackpad", key: "FirstClickThreshold", type: "int", value: 1 }
+    # Trackpad 3 finger drag
+    - { domain: "com.apple.AppleMultitouchTrackpad", key: "TrackpadThreeFingerDrag", type: "bool", value: true }
+    
+    # -- KEYBOARD -- #
+    # Disable Accents Menu when a key is held down
+    - { domain: "NSGlobalDomain", key: "ApplePressAndHoldEnabled", type: "bool", value: false }
+    # Show Emojis & Symbols on Fn key
+    - { domain: "com.apple.HIToolbox", key: "AppleFnUsageType", type: "int", value: 2 }
+    # Use Default Function Keys (F1, F2, ..)
+    - { domain: "NSGlobalDomain", key: "com.apple.keyboard.fnState", type: "bool", value: true }
+    # Keyboard Navigation
+    - { domain: "NSGlobalDomain", key: "AppleKeyboardUIMode", type: "int", value: 2 }
+    # Show language indicator while switching input sources
+    - { domain: "kCFPreferencesAnyApplication", key: "TSMLanguageIndicatorEnabled", type: "bool", value: true }
+    
+    # -- MISSION CONTROL -- #
+    # Arrange Spaces based on most recent use
+    - { domain: "com.apple.dock", key: "mru-spaces", type: "bool", value: true }
+    # Group Windows of the same Application together
+    - { domain: "com.apple.dock", key: "expose-group-apps", type: "bool", value: true }
+    # Switch to Space with open windows
+    - { domain: "NSGlobalDomain", key: "AppleSpacesSwitchOnActivate", type: "bool", value: true }
+    # Displays have seperate Spaces
+    - { domain: "com.apple.spaces", key: "spans-displays", type: "bool", value: false }
+    
+    # -- BUILT-IN APPS -- #
+    # Safari: Show Full URL in Search Field
+    - { domain: "com.apple.safari", key: "ShowFullURLInSmartSearchField", type: "bool", value: true }
+    # XCode: Add Counterpart Suffixes
+    - { domain: "com.apple.dt.Xcode", key: "IDEAdditionalCounterpartSuffixes", type: "array", value: ["ViewModel", "View", "Router", "Interactor", "Builder"] }
+    # XCode: Show Build Durations
+    - { domain: "com.apple.dt.Xcode", key: "ShowBuildOperationDuration", type: "bool", value: true }
+    # Simulator: Screenshot Location
+    - { domain: "com.apple.iphonesimulator", key: "ScreenShotSaveLocation", type: "string", value: "~/Pictures" }
+    # TextEdit: Set Default Document Format to Plaintext (disables Richtext)
+    - { domain: "com.apple.TextEdit", key: "RichText", type: "bool", value: false }
+    # TextEdit: Disable Smart Quotes
+    - { domain: "com.apple.TextEdit", key: "SmartQuotes", type: "bool", value: false }
+    # Time Machine: Disable prompt to use newly connected disk for Time Machine backups
+    - { domain: "com.apple.TimeMachine", key: "DoNotOfferNewDisksForBackup", type: "bool", value: true }
+    # Activity Monitor: Update Frequency (1-5 seconds)
+    - { domain: "com.apple.ActivityMonitor", key: "UpdatePeriod", type: "int", value: 1 }
+    # Activity Monitor: Show Network Usage in Dock
+    - { domain: "com.apple.ActivityMonitor", key: "IconType", type: "int", value: 2 }
+    # Messages: Disable Subject Field
+    - { domain: "com.apple.MobileSMS", key: "MMSShowSubject", type: "bool", value: false }
+    # Apple Music: Disable Music song notifications
+    - { domain: "com.apple.Music", key: "userWantsPlaybackNotifications", type: "bool", value: false }
+    
+    # -- MISCELLANEOUS -- #
+    # Enable Apple Intelligence
+    - { domain: "com.apple.CloudSubscriptionFeatures.optIn", key: "545129924", type: "bool", value: true }
+    # Prevent Help Menu from hiding behind other Windows
+    - { domain: "com.apple.helpviewer", key: "DevMode", type: "bool", value: false }
+    # Disable application quarantine message
+    - { domain: "com.apple.LaunchServices", key: "LSQuarantine", type: "bool", value: false }
+    # Ask to Save Changes when closing documents
+    - { domain: "NSGlobalDomain", key: "NSCloseAlwaysConfirmsChanges", type: "bool", value: false }
+    # Restore Windows when re-opening an Application
+    - { domain: "NSGlobalDomain", key: "NSQuitAlwaysKeepsWindow", type: "bool", value: true }
+    # disable gathering large files when submitting a report
+    - { domain: "com.apple.appleseed.FeedbackAssistant", key: "Autogather", type: "bool", value: false }
+    
+- name: "MacOS Settings: Restart Daemons"
+  ansible.builtin.command: "killall {{ item }}"
+  loop:
+    - "Dock"
+    - "SystemUIServer"
+    - "Safari"
+    - "Finder"
+    - "Terminal"
+    - "Xcode"
+    - "TextEdit"
+    - "Activity Monitor"
+    - "Messages"
+  failed_when: false
