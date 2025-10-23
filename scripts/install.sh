@@ -34,6 +34,8 @@ function main() {
 
 # Load Helper Script
 function helper() {
+  # Ensure $TMPDIR is set
+  export TMPDIR="${TMPDIR:-/tmp}"
   # Create temp dir
   local tmp_dir
   tmp_dir=$(mktemp --directory --tmpdir "onesetup-XXXXXX")
