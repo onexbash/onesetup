@@ -9,11 +9,20 @@ Additionally we use some scripts & container files for automatically setting up 
 - [Homebrew](https://brew.sh/) *(MacOS)*
 - [Git](https://git-scm.com/downloads)
 - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-
+### Bash
+On MacOS & some Linux Distros, the preinstalled bash version is outdated and therefore some functions throw errors where no errors are.
+So before you can run the installation script, please install the latest bash version.
+```bash
+# MacOS (homebrew)
+brew install bash
+```
 
 ## Installation
 Run the installation script on the machine that should act as the [Control-Node](https://docs.ansible.com/ansible/latest/network/getting_started/basic_concepts.html#control-node):
 ```bash
+# MacOS
+$(brew --prefix)/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/install.sh)"
+# Linux
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/install.sh)"
 ```
 Under the hood, this will:

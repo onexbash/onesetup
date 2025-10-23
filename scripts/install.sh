@@ -55,15 +55,6 @@ function prerequisites() {
       echo -e "${I_ERR}Homebrew not available. Please install from 'https://brew.sh' & re-run script"
     fi
   fi
-  # bash
-  local shell
-  shell="$(which bash)"
-  if ! brew list "bash" >/dev/null 2>&1; then
-    brew install "bash" && echo -e "${I_OK}Homebrew Version of Bash has been installed to be on the latest version." || echo -e "${I_ERR}Failed to install Homebrew Version of Bash."
-  fi
-  if [[ "$shell" != *"brew"* ]]; then
-    exec "$(brew --prefix)/bin/bash" && echo -e "${I_OK}Re-Executed Install Script with latest bash version."
-  fi
   # git
   if ! command -v "git" &>/dev/null; then
     case "$OS" in
