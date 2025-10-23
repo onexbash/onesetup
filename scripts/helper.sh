@@ -5,14 +5,10 @@ function set_modes() {
   set -eo pipefail
   # Prompt whether script should run in debug-mode when $TOGGLE_SCRIPT_DEBUG_MODE env var is not set.
   if [[ -z $TOGGLE_SCRIPT_DEBUG_MODE ]]; then
-    read -p "$(echo -e "${I_ASK_YN}Run Script in Debug Mode? ")" -r answer
-    case "$answer" in
-    [Yy]) TOGGLE_SCRIPT_DEBUG_MODE=1 ;;
-    *) TOGGLE_SCRIPT_DEBUG_MODE=0 ;;
-    esac
-    if [[ $TOGGLE_SCRIPT_DEBUG_MODE -eq 1 ]]; then
-      set -x && echo -e "${I_OK}Running Script in Debug Mode"
-    fi
+    export TOGGLE_SCRIPT_DEBUG_MODE=0 # disabled by default
+  fi
+  if [[ $TOGGLE_SCRIPT_DEBUG_MODE -eq 1 ]]; then
+    set -x && echo -e "${I_OK}Running Script in Debug Mode"
   fi
 }
 
