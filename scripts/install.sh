@@ -36,12 +36,15 @@ function main() {
 function helper() {
   # Ensure $TMPDIR is set
   export TMPDIR="${TMPDIR:-/tmp}"
+
   # Create temp dir
   local tmp_dir
   tmp_dir=$(mktemp --directory --tmpdir "onesetup-XXXXXX")
   echo "tmp_dir: $tmp_dir"
+
   # Curl helper script from repository & store as tmp file
   curl -fs "$onesetup_uri_raw/scripts/helper.sh" -o "$tmp_dir/helper.sh"
+
   # Source helper script
   { source "$tmp_dir/helper.sh" && echo -e "${I_OK}Helper Script Loaded."; } || { echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1; }
   sudo rm -rf "$tmp_dir" || echo -e "${I_WARN}Failed to cleanup temp directory: $tmp_dir"
@@ -55,6 +58,7 @@ function prerequisites() {
       echo -e "${I_ERR}Homebrew not available. Please install from 'https://brew.sh' & re-run script"
     fi
   fi
+
   # git
   if ! command -v "git" &>/dev/null; then
     case "$OS" in
@@ -62,6 +66,7 @@ function prerequisites() {
     macos) brew install git ;;
     esac
   fi
+
   # podman
   if ! command -v "podman" &>/dev/null; then
     case "$OS" in
@@ -69,6 +74,7 @@ function prerequisites() {
     macos) brew install podman podman-compose && echo -e "${I_OK}podman installed!" || echo -e "${I_ERR}failed to install podman!" ;;
     esac
   fi
+
   # gum
   if ! command -v "gum" &>/dev/null; then
     case "$OS" in
@@ -85,6 +91,7 @@ function install() {
       sudo rm -rf "$ONESETUP_DIR" && echo -e "${I_INFO}There was a broken installation at $ONESETUP_DIR. Deletion complete."
     fi
   fi
+
   # Check if installation directory is up-to-date
   if [[ -d "$ONESETUP_DIR" ]]; then
     git -C "$ONESETUP_DIR" fetch
@@ -109,11 +116,13 @@ function install() {
       echo -e "${I_INFO}Skipping installation.."
     fi
   fi
+
   # Install only if directory is empty.
   if [[ ! -d "$ONESETUP_DIR" ]]; then
     echo -e "${I_INFO}Onesetup is not installed yet. Installing to ${ONESETUP_DIR} .." && sleep 1
     sudo git clone "$onesetup_uri_https" "$ONESETUP_DIR" && echo -e "${I_OK}Installation complete!"
   fi
+
   # Set permissions
   sudo chmod 774 "$ONESETUP_DIR" && echo -e "${I_OK}Permissions on installation directory set! (744): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set permissions on installation directory! (744): $ONESETUP_DIR"
   sudo chown -R "$USER:wheel" "$ONESETUP_DIR" && echo -e "${I_OK}Ownership on installation directory set! ($USER:wheel): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set ownership on installation directory! ($USER:wheel): $ONESETUP_DIR"
@@ -123,8 +132,15 @@ function install() {
   if [[ -d "$bin_dir" ]]; then
     echo -e "${I_OK}Bin Directory found at: [ ${FG_GREEN}$bin_dir${S_RESET} ]"
   else
-    sudo mkdir "$bin_dir"
+    sudo mkdir -p "$bin_dir"
     echo -e "${I_OK}Bin Directory not found and therefore created at: [ ${FG_GREEN}$bin_dir${S_RESET} ]"
+  fi
+
+  # Ensure container directory exists (required by podman)
+  local container_dir="$HOME/.local/share/containers"
+  if [[ ! -d "$container_dir" ]]; then
+    sudo mkdir -p "$container_dir"
+    echo -e "${I_OK}Container Directory created at: [ ${FG_GREEN}$container_dir${S_RESET} ]"
   fi
 
   # Rollout executables to bin_dir
