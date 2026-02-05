@@ -118,16 +118,19 @@ function install() {
   sudo chmod 774 "$ONESETUP_DIR" && echo -e "${I_OK}Permissions on installation directory set! (744): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set permissions on installation directory! (744): $ONESETUP_DIR"
   sudo chown -R "$USER:wheel" "$ONESETUP_DIR" && echo -e "${I_OK}Ownership on installation directory set! ($USER:wheel): $ONESETUP_DIR" || echo -e "${I_ERR}Failed to set ownership on installation directory! ($USER:wheel): $ONESETUP_DIR"
 
-  # Check which Bin Directory to use
-  local bin_dir
-  if [[ -d "/usr/local/bin" ]]; then
-    bin_dir="/usr/local/bin"
-    echo -e "${I_OK}Bin Directory found at: [ ${FG_GREEN}/usr/local/bin${S_RESET} ]"
+  # Ensure bin directory exists
+  local bin_dir="/usr/local/bin"
+  if [[ -d "$bin_dir" ]]; then
+    echo -e "${I_OK}Bin Directory found at: [ ${FG_GREEN}$bin_dir${S_RESET} ]"
   else
-    sudo mkdir "/usr/local/bin"
-    echo -e "${I_OK}Bin Directory not found and therefore created at: [ ${FG_GREEN}/usr/local/bin${S_RESET} ]"
+    sudo mkdir "$bin_dir"
+    echo -e "${I_OK}Bin Directory not found and therefore created at: [ ${FG_GREEN}$bin_dir${S_RESET} ]"
   fi
+
   # Rollout executables to bin_dir
+  if [[ -z "${ONESETUP_DIR:-}" ]]; then
+    export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
+  fi
   for file in "${ONESETUP_DIR}"/bin/*; do
     if [[ -f "$file" ]]; then
       local filename
