@@ -123,16 +123,9 @@ function install() {
   if [[ -d "/usr/local/bin" ]]; then
     bin_dir="/usr/local/bin"
     echo -e "${I_OK}Bin Directory found at: [ ${FG_GREEN}/usr/local/bin${S_RESET} ]"
-  elif [[ -d "/usr/bin" ]]; then
-    bin_dir="/usr/bin"
-    echo -e "${I_OK}Bin Directory found at: [ ${FG_GREEN}/usr/bin${S_RESET} ]"
-  elif [[ -d "/bin" ]]; then
-    echo -e "${I_WARN}No Bin Directory found at: [ ${FG_RED}/usr/local/bin${S_RESET} ] or [ ${FG_RED}/usr/bin${S_RESET} ]"
-    echo -e "${I_INFO}Falling back to System Bin Directory: [ ${FG_GREEN}/bin${S_RESET} ]"
-    bin_dir="/bin"
   else
-    echo -e "${I_ERR}No bin directory found. Please ensure one of the following directories exists with ${S_BOLD}${FG_BLUE}rwx${S_RESET} permissions for the root user: [ ${FG_RED}/usr/local/bin${S_RESET} ] [ ${FG_RED}/usr/bin${S_RESET} ] [ ${FG_RED}/bin${S_RESET} ]"
-    exit 1
+    sudo mkdir "/usr/local/bin"
+    echo -e "${I_OK}Bin Directory not found and therefore created at: [ ${FG_GREEN}/usr/local/bin${S_RESET} ]"
   fi
   # Rollout executables to bin_dir
   for file in "${ONESETUP_DIR}"/bin/*; do
