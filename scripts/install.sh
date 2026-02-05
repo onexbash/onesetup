@@ -137,7 +137,7 @@ function install() {
   fi
 
   # Ensure container directory exists (required by podman)
-  local container_dir="$HOME/.local/share/containers"
+  local container_dir="$HOME/.local/share/containers/podman"
   if [[ ! -d "$container_dir" ]]; then
     sudo mkdir -p "$container_dir"
     echo -e "${I_OK}Container Directory created at: [ ${FG_GREEN}$container_dir${S_RESET} ]"
