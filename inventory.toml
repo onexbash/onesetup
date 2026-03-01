@@ -14,4 +14,5 @@ ansible_password = "{{ su_password }}"
 # -- WORKSTATION -- #
 # hosts
 [workstation.hosts]
-onexmac-cratos = { ansible_host = "100.65.55.179" }
+# onexmac-cratos = { ansible_host = "100.65.55.179" }
+onexmac = { ansible_host = "192.168.188.95" }

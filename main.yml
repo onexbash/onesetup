@@ -31,9 +31,6 @@
       tags: bootstrap
     - import_tasks: pre_tasks/filesystem.yml
       tags: bootstrap
-  tasks:
-    - import_tasks: tasks/settings.yml
-      tags: settings
   # -- Roles -- #
   roles:
     - role: elliotweiser.osx-command-line-tools
@@ -41,3 +38,5 @@
       tags: bootstrap
     - role: dotfiles
       tags: dotfiles
+    - role: settings
+      tags: settings
