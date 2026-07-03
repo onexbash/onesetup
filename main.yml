@@ -30,17 +30,17 @@
     # osx
     - name: "pre_tasks | osx - prerequisites"
       include_tasks: pre_tasks/osx/prerequisites.yml
-      when: ansible_os_family == "Darwin"
+      when: ansible_facts['os_family'] == "Darwin"
     - name: "pre_tasks | osx - tbd"
       include_tasks: pre_tasks/osx/tbd.yml
-      when: ansible_os_family == "Darwin"
+      when: ansible_facts['os_family'] == "Darwin"
     # fedora
     - name: "pre_tasks | fedora - prerequisites"
       include_tasks: pre_tasks/fedora/prerequisites.yml
-      when: ansible_os_family == "RedHat"
+      when: ansible_facts['os_family'] == "RedHat"
     - name: "pre_tasks | fedora - tbd"
       include_tasks: pre_tasks/fedora/tbd.yml
-      when: ansible_os_family == "RedHat"
+      when: ansible_facts['os_family'] == "RedHat"
     # -- INCLUDE GROUP_VARS -- #
     # osx
     - name: "group_vars | osx"
@@ -48,14 +48,14 @@
         dir: group_vars/osx
         extensions:
           - yml
-      when: ansible_os_family == "Darwin"
+      when: ansible_facts['os_family'] == "Darwin"
     # fedora linux
     - name: "group_vars | fedora"
       include_vars:
         dir: group_vars/fedora
         extensions:
           - yml
-      when: ansible_os_family == "RedHat"
+      when: ansible_facts['os_family'] == "RedHat"
   # -- INCLUDE ROLES -- #
   # order of the roles is crucial, as some roles depend on the successful execution of preceding roles
   roles:
