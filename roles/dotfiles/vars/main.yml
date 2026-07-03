@@ -1,5 +1,4 @@
 ---
-shell_config_dir: "{{ XDG_CONFIG_HOME }}/shell"
 shell_global:
   - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
   - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
@@ -17,37 +16,9 @@ shell_global:
     }
   - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
 
-shell_home:
-  - {
-      src: "{{ DOTFILES_DIR }}/shell/home/zshenv",
-      dest: "{{ shell_config_dir }}/.zshenv",
-    }
-  - {
-      src: "{{ DOTFILES_DIR }}/shell/home/zprofile",
-      dest: "{{ shell_config_dir }}/.zprofile",
-    }
-  - {
-      src: "{{ DOTFILES_DIR }}/shell/home/zshrc",
-      dest: "{{ shell_config_dir }}/.zshrc",
-    }
-  - {
-      src: "{{ DOTFILES_DIR }}/shell/home/zlogout",
-      dest: "{{ shell_config_dir }}/.zlogout",
-    }
-  - {
-      src: "{{ DOTFILES_DIR }}/shell/home/bashrc",
-      dest: "{{ shell_config_dir }}/.bashrc",
-    }
-  - {
-      src: "{{ DOTFILES_DIR }}/shell/home/bash_profile",
-      dest: "{{ shell_config_dir }}/.bash_profile",
-    }
-  - {
-      src: "{{ DOTFILES_DIR }}/shell/home/bash_logout",
-      dest: "{{ shell_config_dir }}/.bash_logout",
-    }
-
 dotfiles:
+  # shell
+  - { src: "{{ DOTFILES_DIR }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/shell" }
   # nvim
   - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
   # alacritty

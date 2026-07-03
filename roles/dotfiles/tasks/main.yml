@@ -11,18 +11,10 @@
     recursive: true # whether submodules should be included/skipped
   become: true
 
-# Ensure Directories exist
-- name: "Ensure XDG_CONFIG_HOME exists"
+# Ensure Config Directory exists
+- name: "Ensure Config Directory exists"
   ansible.builtin.file:
     path: "{{ XDG_CONFIG_HOME }}"
-    state: directory
-    mode: "0744"
-    owner: "{{ USER }}"
-    group: "staff"
-  become: true
-- name: "Ensure Shell Config Directory exists"
-  ansible.builtin.file:
-    path: "{{ shell_config_dir }}"
     state: directory
     mode: "0744"
     owner: "{{ USER }}"
@@ -40,19 +32,6 @@
     force: true
     remote_src: true
   loop: "{{ shell_global }}"
-  become: true
-
-# Copy: User Shell Files
-- name: "Copy: User Shell Files"
-  ansible.builtin.copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    mode: "0744"
-    owner: "{{ USER }}"
-    group: "staff"
-    force: true
-    remote_src: true
-  loop: "{{ shell_home }}"
   become: true
 
 # Cleanup: Dotfiles (dest)
