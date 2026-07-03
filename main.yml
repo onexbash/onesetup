@@ -43,19 +43,19 @@
       when: ansible_facts['os_family'] == "RedHat"
     # -- INCLUDE GROUP_VARS -- #
     # osx
-    # - name: "group_vars | osx"
-    #   include_vars:
-    #     dir: group_vars/osx
-    #     extensions:
-    #       - yml
-    #   when: ansible_facts['os_family'] == "Darwin"
+    - name: "group_vars | osx"
+      include_vars:
+        dir: group_vars/osx
+        extensions:
+          - yml
+      when: ansible_facts['os_family'] == "Darwin"
     # fedora linux
-    # - name: "group_vars | fedora"
-    #   include_vars:
-    #     dir: group_vars/fedora
-    #     extensions:
-    #       - yml
-    #   when: ansible_facts['os_family'] == "RedHat"
+    - name: "group_vars | fedora"
+      include_vars:
+        dir: group_vars/fedora
+        extensions:
+          - yml
+      when: ansible_facts['os_family'] == "RedHat"
   # -- INCLUDE ROLES -- #
   # order of the roles is crucial, as some roles depend on the successful execution of preceding roles
   roles:
