@@ -32,6 +32,7 @@
     group: "wheel"
     recurse: false
   loop: "{{ shell_global }}"
+  become: true
 
 # File Permissions: User Shell Files
 - name: "Set Permissions: User Shell Files"
@@ -43,6 +44,7 @@
     group: "staff"
     recurse: false
   loop: "{{ shell_home }}"
+  become: true
 
 # File Permissions: Shell Config Dir
 - name: "Set Permissions: Shell Config Dir"
@@ -54,6 +56,7 @@
     group: "staff"
     recurse: true
   loop: "{{ shell_config_dir }}"
+  become: true
 
 # Copy: Global Shell Files
 - name: "Copy: Global Shell Files"
