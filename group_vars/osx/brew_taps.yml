@@ -1,9 +1,0 @@
----
-brew_taps:
-  - powershell/tap # powershll
-  - azure/functions # azure functions coreutils
-  - infisical/get-cli # infisical secret management
-  - FelixKratz/formulae
-  - hashicorp/tap # terraform
-  - sdkman/tap # java version manager
-  - felangel/mason # mason (nvim pkg manager)

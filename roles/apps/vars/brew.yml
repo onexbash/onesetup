@@ -1,4 +1,42 @@
 ---
+# Casks
+brew_casks:
+  - alacritty # terminal emulator
+  - alt-tab # alt-tab replacement
+  - appcleaner # app uninstaller
+  - chatgpt
+  - nvidia-geforce-now # nvidia cloud gaming
+  - cleanshot # screenshot tool (paid)
+  - deepl
+  - discord
+  - session # onion routed messenger
+  - tor-browser
+  - firefox # firefox default
+  - firefox@developer-edition # firefox developer edition
+  - gimp # image editor
+  - git-credential-manager # required by git for https auth.
+  - keepassxc # password manager (.kdbx based)
+  - pdfelement # pdf editor
+  - insomnia # HTTP & GraphQL Client (similar to postman)
+  - proton-drive
+  - proton-mail
+  - protonvpn
+  - proton-pass # password manager
+  - raycast # spotlight replacement
+  - spotify
+  - utm # virtual machine manager
+  - visual-studio-code
+  - sublime-text # light weight text editor
+  - wireshark # network tool
+  - canva
+  - figma
+  - obs # streaming software
+  - keka # compression tool
+  - kekaexternalhelper # helper utility for keka compression tool
+  - whatsapp # whatsapp desktop client
+  - karabiner-elements # keyboard remapping tool
+
+# Formulaes
 brew_formulaes:
   # -- LANGUAGES -- #
   - typescript
@@ -129,3 +167,15 @@ brew_formulaes:
   - fzf # fuzzy finder
   - kubectl # kubernetes cli
   - atuin # shell history tool
+  - podman
+  - podman-compose
+
+# Taps
+brew_taps:
+  - powershell/tap # powershll
+  - azure/functions # azure functions coreutils
+  - infisical/get-cli # infisical secret management
+  - FelixKratz/formulae
+  - hashicorp/tap # terraform
+  - sdkman/tap # java version manager
+  - felangel/mason # mason (nvim pkg manager)
