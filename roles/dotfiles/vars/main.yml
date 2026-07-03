@@ -1,4 +1,5 @@
 ---
+shell_config_dir: "{{ XDG_CONFIG_HOME }}/shell"
 shell_global:
   - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
   - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
@@ -19,31 +20,31 @@ shell_global:
 shell_home:
   - {
       src: "{{ DOTFILES_DIR }}/shell/home/zshenv",
-      dest: "{{ XDG_CONFIG_HOME }}/zsh/.zshenv",
+      dest: "{{ shell_config_dir }}/.zshenv",
     }
   - {
       src: "{{ DOTFILES_DIR }}/shell/home/zprofile",
-      dest: "{{ XDG_CONFIG_HOME }}/zsh/.zprofile",
+      dest: "{{ shell_config_dir }}/.zprofile",
     }
   - {
       src: "{{ DOTFILES_DIR }}/shell/home/zshrc",
-      dest: "{{ XDG_CONFIG_HOME }}/zsh/.zshrc",
+      dest: "{{ shell_config_dir }}/.zshrc",
     }
   - {
       src: "{{ DOTFILES_DIR }}/shell/home/zlogout",
-      dest: "{{ XDG_CONFIG_HOME }}/zsh/.zlogout",
+      dest: "{{ shell_config_dir }}/.zlogout",
     }
   - {
       src: "{{ DOTFILES_DIR }}/shell/home/bashrc",
-      dest: "{{ XDG_CONFIG_HOME }}/bash/.bashrc",
+      dest: "{{ shell_config_dir }}/.bashrc",
     }
   - {
       src: "{{ DOTFILES_DIR }}/shell/home/bash_profile",
-      dest: "{{ XDG_CONFIG_HOME }}/bash/.bash_profile",
+      dest: "{{ shell_config_dir }}/.bash_profile",
     }
   - {
       src: "{{ DOTFILES_DIR }}/shell/home/bash_logout",
-      dest: "{{ XDG_CONFIG_HOME }}/bash/.bash_logout",
+      dest: "{{ shell_config_dir }}/.bash_logout",
     }
 
 dotfiles:
