@@ -5,15 +5,15 @@
     path: "{{ ansible_user_dir }}/.ssh"
     state: "directory"
     mode: "0700"
-    owner: "{{ H_USER }}"
+    owner: "{{ USER }}"
   become: true
 # public keys
 - name: "decrypt & place public keys"
   copy:
-    dest: "{{ H_HOME }}/.ssh/{{ ssh_public_keys_item.key }}"
+    dest: "{{ HOME }}/.ssh/{{ ssh_public_keys_item.key }}"
     content: "{{ ssh_public_keys_item.value }}"
     mode: "0644"
-    owner: "{{ H_USER }}"
+    owner: "{{ USER }}"
   no_log: true
   loop_control:
     loop_var: ssh_public_keys_item
@@ -21,10 +21,10 @@
 # private keys
 - name: "decrypt & place private keys"
   copy:
-    dest: "{{ H_HOME }}/.ssh/{{ ssh_private_keys_item.key }}"
+    dest: "{{ HOME }}/.ssh/{{ ssh_private_keys_item.key }}"
     content: "{{ ssh_private_keys_item.value }}"
     mode: "0600"
-    owner: "{{ H_USER }}"
+    owner: "{{ USER }}"
   no_log: true
   loop_control:
     loop_var: ssh_private_keys_item
@@ -32,24 +32,24 @@
 # config
 - name: "decrypt & place config"
   copy:
-    dest: "{{ H_HOME }}/.ssh/config"
+    dest: "{{ HOME }}/.ssh/config"
     content: "{{ ssh_config }}"
     mode: "0644"
-    owner: "{{ H_USER }}"
+    owner: "{{ USER }}"
   no_log: true
 # known_hosts
 - name: "decrypt & place known_hosts"
   copy:
-    dest: "{{ H_HOME }}/.ssh/known_hosts"
+    dest: "{{ HOME }}/.ssh/known_hosts"
     content: "{{ ssh_known_hosts }}"
     mode: "0644"
-    owner: "{{ H_USER }}"
+    owner: "{{ USER }}"
   no_log: true
 # authorized_keys
 - name: "decrypt & place authorized_keys"
   copy:
-    dest: "{{ H_HOME }}/.ssh/authorized_keys"
+    dest: "{{ HOME }}/.ssh/authorized_keys"
     content: "{{ ssh_authorized_keys }}"
     mode: "0600"
-    owner: "{{ H_USER }}"
+    owner: "{{ USER }}"
   no_log: true

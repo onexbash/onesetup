@@ -1,10 +1,10 @@
 ---
 - name: "ensure fonts directory exists & has correct permissions"
   file:
-    path: "{{ H_HOME }}/Library/Fonts"
+    path: "{{ HOME }}/Library/Fonts"
     state: directory
     mode: 0755
-    owner: "{{ H_USER }}"
+    owner: "{{ USER }}"
     recurse: true
   no_log: true
   become: true
@@ -20,7 +20,7 @@
 - name: "install nerdfont .ttf files"
   copy:
     src: "{{ item.path }}"
-    dest: "{{ H_HOME }}/Library/Fonts"
+    dest: "{{ HOME }}/Library/Fonts"
     force: true
   loop: "{{ fonts.files }}"
   no_log: true

@@ -1,7 +1,7 @@
 # -- DOCK ITEMS -- #
 - name: "execute dock setup script"
   ansible.builtin.command:
-    cmd: "{{ H_XDG_CONFIG_HOME }}/scripts/set_dock_items.sh"
+    cmd: "{{ XDG_CONFIG_HOME }}/scripts/set_dock_items.sh"
 # -- -- -- -- -- -- -- -- -- -- #
 # --  MACOS SYSTEM SETTINGS  -- #
 # -- -- -- -- -- -- -- -- -- -- #
@@ -90,7 +90,6 @@
     key: DialogType
     type: string
     value: none
-
 
 # -- BROWSER -- #
 - name: "set firefox as default browser"
