@@ -26,9 +26,30 @@ export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask use
 export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
 
 # -- ENV VARS -- #
-export ONESETUP_DIR="${HOME}/.local/share/onesetup" && echo -e "${I_INFO} \$ONESETUP_DIR >>> $ONESETUP_DIR"
-export ANSIBLE_INVENTORY="${ONESETUP_DIR}/inventory.ini" && echo -e "${I_INFO} \$ANSIBLE_INVENTORY >>> $ANSIBLE_INVENTORY"
-export ANSIBLE_CONFIG="${ONESETUP_DIR}/ansible.cfg" && echo -e "${I_INFO} \$ANSIBLE_CONFIG >>> $ANSIBLE_CONFIG"
+# Environment Variable Defaults (overwritten if set by user)
+if [[ -z "${ONESETUP_DIR:-}" ]]; then
+  export ONESETUP_DIR="$HOME/.local/share}/onesetup"
+fi
+if [[ -z "${ONESETUP_REPO:-}" ]]; then
+  export ONESETUP_REPO="onexbash/onesetup"
+fi
+if [[ -z "${DOTFILES_DIR:-}" ]]; then
+  export DOTFILES_DIR="$HOME/.local/share}/dotfiles"
+fi
+if [[ -z "${DOTFILES_REPO:-}" ]]; then
+  export DOTFILES_REPO="onexbash/dotfiles"
+fi
+if [[ -z "${ANSIBLE_DEBUG:-}" ]]; then
+  export ANSIBLE_DEBUG=0
+fi
+if [[ -z "${ANSIBLE_INVENTORY:-}" ]]; then
+  export ANSIBLE_INVENTORY="${ONESETUP_DIR}/inventory.ini" &&
+    echo -e "${I_INFO} \$ANSIBLE_INVENTORY >>> $ANSIBLE_INVENTORY"
+fi
+if [[ -z "${ANSIBLE_CONFIG:-}" ]]; then
+  export ANSIBLE_CONFIG="${ONESETUP_DIR}/ansible.cfg" &&
+    echo -e "${I_INFO} \$ANSIBLE_CONFIG >>> $ANSIBLE_CONFIG"
+fi
 
 # -- FUNCTIONS -- #
 run_playbook() {

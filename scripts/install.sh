@@ -8,12 +8,6 @@ function main() {
   if [[ -z "${ONESETUP_REPO:-}" ]]; then
     export ONESETUP_REPO="onexbash/onesetup"
   fi
-  if [[ -z "${DOTFILES_DIR:-}" ]]; then
-    export DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
-  fi
-  if [[ -z "${DOTFILES_REPO:-}" ]]; then
-    export DOTFILES_REPO="onexbash/dotfiles"
-  fi
   if [[ -z "${ANSIBLE_DEBUG:-}" ]]; then
     export ANSIBLE_DEBUG=0
   fi
@@ -22,9 +16,6 @@ function main() {
   local onesetup_uri_raw="https://raw.githubusercontent.com/${ONESETUP_REPO}/main"
   local onesetup_uri_https="https://github.com/${ONESETUP_REPO}.git"
   local onesetup_uri_ssh="git@github.com:${ONESETUP_REPO}.git"
-  local dotfiles_uri_raw="https://raw.githubusercontent.com/${DOTFILES_REPO}/main"
-  local dotfiles_uri_https="https://github.com/${DOTFILES_REPO}.git"
-  local dotfiles_uri_ssh="git@github.com:${DOTFILES_REPO}.git"
 
   # Function Calls
   { helper && echo -e "${I_OK}Helper Script Loaded!"; } || echo -e "${I_WARN}Failed to load Helper Script from [$onesetup_uri_raw]"
