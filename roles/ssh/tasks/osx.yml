@@ -2,7 +2,7 @@
 # ~/.ssh directory
 - name: "ensure directory exists"
   file:
-    path: "{{ ansible_user_dir }}/.ssh"
+    path: "{{ HOME }}/.ssh"
     state: "directory"
     mode: "0700"
     owner: "{{ USER }}"
