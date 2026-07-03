@@ -10,7 +10,7 @@ automated workstation setup playbook using ansible, shell scripts & some magic
 
 1. Run installation script
 ```bash
-   "bash" -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/bin/install)"
+   "bash" -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/install.sh)"
 ```
 2. Restart Terminal to reload shell config
 3. Execute onesetup binary
