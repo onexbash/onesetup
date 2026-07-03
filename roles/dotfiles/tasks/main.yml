@@ -69,6 +69,7 @@
     force: true
     remote_src: true
   loop: "{{ shell_global }}"
+  become: true
 
 # Cleanup: User Shell Files (dest)
 - name: "Cleanup: User Shell Files"
