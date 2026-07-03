@@ -59,7 +59,6 @@ brew_formulaes:
   - lua
   - imagemagick
   - tree-sitter # exposes syntax tree used by LSPs
-  - rustup # rust toolchain
   # -- LINTER & FORMATTER -- #
   - eslint
   - flow # javascript static type checker
