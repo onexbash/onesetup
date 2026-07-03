@@ -67,14 +67,6 @@ function prerequisites() {
     esac
   fi
 
-  # podman
-  if ! command -v "podman" &>/dev/null; then
-    case "$OS" in
-    linux) sudo dnf install -y podman podman-compose && echo -e "${I_OK}podman installed!" || echo -e "${I_ERR}failed to install podman!" ;;
-    macos) brew install podman podman-compose && echo -e "${I_OK}podman installed!" || echo -e "${I_ERR}failed to install podman!" ;;
-    esac
-  fi
-
   # gum
   if ! command -v "gum" &>/dev/null; then
     case "$OS" in
@@ -134,13 +126,6 @@ function install() {
   else
     sudo mkdir -p "$bin_dir"
     echo -e "${I_OK}Bin Directory not found and therefore created at: [ ${FG_GREEN}$bin_dir${S_RESET} ]"
-  fi
-
-  # Ensure container directory exists (required by podman)
-  local container_dir="$HOME/.local/share/containers/podman"
-  if [[ ! -d "$container_dir" ]]; then
-    sudo mkdir -p "$container_dir"
-    echo -e "${I_OK}Container Directory created at: [ ${FG_GREEN}$container_dir${S_RESET} ]"
   fi
 
   # Rollout executables to bin_dir

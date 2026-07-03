@@ -53,16 +53,17 @@
   # -- INCLUDE ROLES -- #
   # order of the roles is crucial, as some roles depend on the successful execution of preceding roles
   roles:
-    - { role: aerospace, tags: ["aerospace"] }
+    # - { role: aerospace, tags: ["aerospace"] }
+    - { role: dotfiles, tags: ["dotfiles"] }
     - { role: apps, tags: ["apps"] }
-    - { role: rust, tags: ["rust"] }
-    - { role: zsh, tags: ["zsh"] }
-    - { role: git, tags: ["git"] }
-    - { role: ssh, tags: ["ssh"] }
-    - { role: scripts, tags: ["scripts"] }
-    - { role: alacritty, tags: ["alacritty"] }
-    - { role: nvim, tags: ["nvim"] }
-    - { role: starship, tags: ["starship"] }
-    - { role: fonts, tags: ["fonts"] }
+    # - { role: rust, tags: ["rust"] }
+    # - { role: zsh, tags: ["zsh"] }
+    # - { role: git, tags: ["git"] }
+    # - { role: ssh, tags: ["ssh"] }
+    # - { role: scripts, tags: ["scripts"] }
+    # - { role: alacritty, tags: ["alacritty"] }
+    # - { role: nvim, tags: ["nvim"] }
+    # - { role: starship, tags: ["starship"] }
+    # - { role: fonts, tags: ["fonts"] }
     - { role: settings, tags: ["settings"] }
-    - { role: karabiner, tags: ["karabiner"] }
+    # - { role: karabiner, tags: ["karabiner"] }
