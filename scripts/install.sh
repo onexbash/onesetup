@@ -31,7 +31,6 @@ function helper() {
   # Create temp dir
   local tmp_dir
   tmp_dir=$(mktemp --directory --tmpdir "onesetup-XXXXXX")
-  echo "tmp_dir: $tmp_dir"
 
   # Curl helper script from repository & store as tmp file
   curl -fs "$onesetup_uri_raw/scripts/helper.sh" -o "$tmp_dir/helper.sh"
