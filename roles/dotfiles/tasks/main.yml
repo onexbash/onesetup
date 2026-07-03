@@ -11,17 +11,6 @@
     recursive: true # whether submodules should be included/skipped
   become: true
 
-# File Permissions: Dotfiles
-- name: "Set File Permissions: {{ DOTFILES_DIR }}/*"
-  ansible.builtin.file:
-    path: "{{ DOTFILES_DIR }}"
-    state: directory
-    mode: "0755"
-    owner: "{{ USER }}"
-    group: "staff"
-    recurse: true
-  become: true
-
 # File Permissions: Global Shell Files
 - name: "Set Permissions: Global Shell Files"
   ansible.builtin.file:
