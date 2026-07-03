@@ -14,104 +14,29 @@ function set_modes() {
 
 # (2) Set TTY Style Variables (colors, prompts, ..)
 function tty_styles() {
-  # Define Ansi Color Codes
-  local -A colors
-  colors=(
-    ["black"]="0"
-    ["red"]="1"
-    ["green"]="2"
-    ["yellow"]="3"
-    ["blue"]="4"
-    ["magenta"]="5"
-    ["cyan"]="6"
-    ["white"]="7"
-    ["gray"]="8"
-  )
-  # Define Ansi Control Codes
-  local -A controls
-  controls=(
-    ["foreground"]="38"
-    ["background"]="48"
-    ["colorspace"]="5"
-  )
-  # Define Font Styles
-  local -A styles
-  styles=(
-    ["reset"]="\e[0m"
-    ["bold"]="\e[1m"
-    ["dim"]="\e[2m"
-    ["italic"]="\e[3m"
-    ["underline"]="\e[4m"
-    ["blink"]="\e[5m"
-    ["inverse"]="\e[7m"
-    ["hidden"]="\e[8m"
-    ["strikethrough"]="\e[9m"
-  )
-  # Define Prompt Colors & Contents
-  local -A prompts
-  prompts=(
-    ["ok"]="green|OK"
-    ["warn"]="yellow|WARN"
-    ["err"]="red|ERR"
-    ["info"]="magenta|INFO"
-    ["do"]="blue|.."
-    ["ask"]="cyan|?"
-    ["ask_yn"]="cyan|[Y/N]"
-    ["list"]="cyan|-"
-  )
+  # -- TERMINAL COLORS -- #
+  export C_BLACK='\033[1;30m'
+  export C_RED='\033[1;31m'
+  export C_GREEN='\033[1;32m'
+  export C_YELLOW='\033[1;33m'
+  export C_BLUE='\033[1;34m'
+  export C_PURPLE='\033[1;35m'
+  export C_CYAN='\033[1;36m'
+  export C_WHITE='\033[1;37m'
+  export C_GRAY='\033[1;34m'
+  export C_RESET='\033[0m'
 
-  # Construct & Export Color Variables
-  load_colors() {
-    # Construct Ansi Escape Sequence
-    get_ansi_sequence() {
-      local type="$1"  # "fg" or "bg"
-      local color="$2" # color name from colors array
-      echo "\e[${controls[$type]};${controls["colorspace"]};${colors[$color]}m"
-    }
-    # Export Variables
-    for color in "${!colors[@]}"; do
-      # Format Color Name to uppercase
-      local color_fmt
-      color_fmt=$(echo "$color" | tr '[:lower:]' '[:upper:]')
-      # Export Foreground Colors - usage: `echo -e "${FG_RED}red text"`
-      export "FG_${color_fmt}"="$(get_ansi_sequence "foreground" "$color")"
-      # Export Background Colors - usage: `echo -e "${BG_RED}red background"`
-      export "BG_${color_fmt}"="$(get_ansi_sequence "background" "$color")"
-    done
-  }
+  # -- INFO PROMPTS -- #
+  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
+  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
+  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
+  export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"     # info
+  export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"     # error
+  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
+  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
+  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
 
-  # Construct & Export Font Style Variables
-  load_font_styles() {
-    for style in "${!styles[@]}"; do
-      # transform name to uppercase
-      local style_fmt="${style^^}"
-      # construct & export based on $styles array
-      export "S_${style_fmt}"="${styles[$style]}"
-    done
-  }
-
-  # Define & Export Prompt Variables
-  load_prompts() {
-    for prompt in "${!prompts[@]}"; do
-      local color
-      local color_fmt
-      local content
-      local value
-      # read values from prompts array (seperated by `|`)
-      IFS='|' read -r color content <<<"${prompts[$prompt]}"
-      color_fmt="FG_${color^^}"
-      # construct & export based on $prompts array
-      value="${FG_BLACK}[${!color_fmt}  ${content}  ${FG_BLACK}] ${S_RESET}"
-      export "I_${prompt^^}"="${value}"
-    done
-  }
-
-  # Sub-Function Calls
-  load_colors
-  load_font_styles
-  load_prompts
 }
-
 # (3) Get Dynamic Directory Paths
 function get_paths() {
   THIS_FILE=$(realpath "$0")

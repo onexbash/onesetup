@@ -1,30 +1,5 @@
 #!/usr/bin/env bash
 
-# exit on error, undefined variables, and failed commands in pipes
-set -euo pipefail
-
-# -- TERMINAL COLORS -- #
-export C_BLACK='\033[1;30m'
-export C_RED='\033[1;31m'
-export C_GREEN='\033[1;32m'
-export C_YELLOW='\033[1;33m'
-export C_BLUE='\033[1;34m'
-export C_PURPLE='\033[1;35m'
-export C_CYAN='\033[1;36m'
-export C_WHITE='\033[1;37m'
-export C_GRAY='\033[1;34m'
-export C_RESET='\033[0m'
-
-# -- INFO PROMPTS -- #
-export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
-export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
-export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
-export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"     # info
-export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"     # error
-export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
-export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
-export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
-
 function main() {
   # Environment Variable Defaults (overwritten if set by user)
   if [[ -z "${ONESETUP_DIR:-}" ]]; then
@@ -43,28 +18,28 @@ function main() {
   local onesetup_uri_ssh="git@github.com:${ONESETUP_REPO}.git"
 
   # Function Calls
-  # { helper && echo -e "${I_OK}Helper Script Loaded!"; } || echo -e "${I_WARN}Failed to load Helper Script from [$onesetup_uri_raw]"
+  { helper && echo -e "${I_OK}Helper Script Loaded!"; } || echo -e "${I_WARN}Failed to load Helper Script from [$onesetup_uri_raw]"
   { prerequisites && echo -e "${I_OK}Prerequesites satisfied!"; } || echo -e "${I_WARN}Failed to ensure that prerequesites are satisfied."
   { install && echo -e "${I_OK}Onesetup Installed"; } || { echo -e "${I_ERR}Failed to install Onesetup." && exit 1; }
 }
 
 # Load Helper Script
-# function helper() {
-#   # Ensure $TMPDIR is set
-#   export TMPDIR="${TMPDIR:-/tmp}"
-#
-#   # Create temp dir
-#   local tmp_dir
-#   tmp_dir=$(mktemp --directory --tmpdir "onesetup-XXXXXX")
-#   echo "tmp_dir: $tmp_dir"
-#
-#   # Curl helper script from repository & store as tmp file
-#   curl -fs "$onesetup_uri_raw/scripts/helper.sh" -o "$tmp_dir/helper.sh"
-#
-#   # Source helper script
-#   { source "$tmp_dir/helper.sh" && echo -e "${I_OK}Helper Script Loaded."; } || { echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1; }
-#   sudo rm -rf "$tmp_dir" || echo -e "${I_WARN}Failed to cleanup temp directory: $tmp_dir"
-# }
+function helper() {
+  # Ensure $TMPDIR is set
+  export TMPDIR="${TMPDIR:-/tmp}"
+
+  # Create temp dir
+  local tmp_dir
+  tmp_dir=$(mktemp --directory --tmpdir "onesetup-XXXXXX")
+  echo "tmp_dir: $tmp_dir"
+
+  # Curl helper script from repository & store as tmp file
+  curl -fs "$onesetup_uri_raw/scripts/helper.sh" -o "$tmp_dir/helper.sh"
+
+  # Source helper script
+  { source "$tmp_dir/helper.sh" && echo -e "${I_OK}Helper Script Loaded."; } || { echo -e "${I_ERR}Failed to load Helper Script. Please ensure your installation was correct." && exit 1; }
+  sudo rm -rf "$tmp_dir" || echo -e "${I_WARN}Failed to cleanup temp directory: $tmp_dir"
+}
 
 # Ensure prerequisites are satisfied
 function prerequisites() {
