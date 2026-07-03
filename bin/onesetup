@@ -28,13 +28,13 @@ export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask use
 # -- ENV VARS -- #
 # Environment Variable Defaults (overwritten if set by user)
 if [[ -z "${ONESETUP_DIR:-}" ]]; then
-  export ONESETUP_DIR="$HOME/.local/share}/onesetup"
+  export ONESETUP_DIR="$HOME/.local/share/onesetup"
 fi
 if [[ -z "${ONESETUP_REPO:-}" ]]; then
   export ONESETUP_REPO="onexbash/onesetup"
 fi
 if [[ -z "${DOTFILES_DIR:-}" ]]; then
-  export DOTFILES_DIR="$HOME/.local/share}/dotfiles"
+  export DOTFILES_DIR="$HOME/.local/share/dotfiles"
 fi
 if [[ -z "${DOTFILES_REPO:-}" ]]; then
   export DOTFILES_REPO="onexbash/dotfiles"
