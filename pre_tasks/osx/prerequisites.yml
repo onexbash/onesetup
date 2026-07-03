@@ -45,5 +45,5 @@
     path: "{{ HOME }}/.config"
     state: directory
     mode: "0755"
-    owner: "{{ ansible_user_id }}"
+    owner: "{{ ansible_facts['user_id'] }}"
   become: true
