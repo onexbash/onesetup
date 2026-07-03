@@ -47,22 +47,32 @@ shell_config_dir:
     }
 
 dotfiles:
+  # nvim
   - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
+  # alacritty
   - {
       src: "{{ DOTFILES_DIR }}/alacritty",
       dest: "{{ XDG_CONFIG_HOME }}/alacritty",
     }
+  # ghostty
   - { src: "{{ DOTFILES_DIR }}/ghostty", dest: "{{ XDG_CONFIG_HOME }}/ghostty" }
+  # git
   - { src: "{{ DOTFILES_DIR }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
+  # starship
   - {
       src: "{{ DOTFILES_DIR }}/starship",
       dest: "{{ XDG_CONFIG_HOME }}/starship",
     }
+  # aerospace
   - {
       src: "{{ DOTFILES_DIR }}/aerospace",
       dest: "{{ XDG_CONFIG_HOME }}/aerospace",
     }
+  # atuin
   - { src: "{{ DOTFILES_DIR }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
+  # eza
   - { src: "{{ DOTFILES_DIR }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
+  # lazygit
   - { src: "{{ DOTFILES_DIR }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
+  # zed
   - { src: "{{ DOTFILES_DIR }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }
