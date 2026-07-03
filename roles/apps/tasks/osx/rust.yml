@@ -1,0 +1,18 @@
+---
+- name: "rust | check if rustup already installed"
+  ansible.builtin.stat:
+    path: "{{ CARGO_HOME }}/bin/rustc"
+  register: rustc_bin
+
+- name: "rust | install via rustup official script"
+  ansible.builtin.shell:
+    cmd: |
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+        --no-modify-path \
+        --default-toolchain stable \
+        --profile default
+  environment:
+    CARGO_HOME: "{{ CARGO_HOME }}"
+    RUSTUP_HOME: "{{ RUSTUP_HOME }}"
+  when: not rustc_bin.stat.exists
+  become: false
