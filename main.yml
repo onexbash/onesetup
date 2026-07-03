@@ -11,6 +11,8 @@
     ONESETUP_REPO: "{{ lookup('ansible.builtin.env', 'ONESETUP_REPO') }}"
     DOTFILES_DIR: "{{ lookup('ansible.builtin.env', 'DOTFILES_DIR') }}"
     DOTFILES_REPO: "{{ lookup('ansible.builtin.env', 'DOTFILES_REPO') }}"
+    DOTFILES_REPO_HTTPS: "https://github.com/{{ DOTFILES_REPO }}.git"
+    DOTFILES_REPO_SSH: "git@github.com:{{ DOTFILES_REPO }}.git"
     USER: "{{ lookup('ansible.builtin.env', 'USER') }}"
     HOME: "{{ lookup('ansible.builtin.env', 'HOME') }}"
     XDG_CONFIG_HOME: "{{ lookup('ansible.builtin.env', 'XDG_CONFIG_HOME', default=HOME + '/.config/') }}"
