@@ -102,7 +102,6 @@ brew_formulaes:
   - zsh # zsh (brew version)
   - powershell # microsoft powershell
   - azure-cli # cli for azure
-  - azure-functions-core-tools@4 # azure functions
   - zsh-autocomplete
   - zsh-fast-syntax-highlighting # better version of zsh-syntax-highlighting
   - zsh-autosuggestions
@@ -122,7 +121,6 @@ brew_formulaes:
   - exiftool # tool for exif metadata
   - cloudflared # cloudflare cli
   - git-filter-repo # git tool for rewriting git commit history
-  - mason # nvim pkg manager
   - infisical # secret manager
   - fontforge # font patcher / editor
   - unzip # extraction tool
@@ -172,10 +170,6 @@ brew_formulaes:
 
 # Taps
 brew_taps:
-  - powershell/tap # powershll
-  - azure/functions # azure functions coreutils
-  - infisical/get-cli # infisical secret management
   - FelixKratz/formulae
   - hashicorp/tap # terraform
   - sdkman/tap # java version manager
-  - felangel/mason # mason (nvim pkg manager)
