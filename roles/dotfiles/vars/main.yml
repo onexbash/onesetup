@@ -1,6 +1,4 @@
 ---
-zsh_config_dir: "{{ XDG_CONFIG_HOME }}/zsh"
-bash_config_dir: "{{ XDG_CONFIG_HOME }}/bash"
 shell_global:
   - { src: "{{ DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
   - { src: "{{ DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
