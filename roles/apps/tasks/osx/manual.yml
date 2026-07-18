@@ -14,7 +14,7 @@
 - name: "Download Caldigit Packages"
   ansible.builtin.get_url:
     url: "{{ item.url }}"
-    dest: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}.zip"
+    dest: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}/caldigit-{{ item.name }}.zip"
     mode: "0644"
     owner: "{{ USER }}"
     group: "staff"
@@ -24,9 +24,9 @@
     label: "{{ item.name }}"
 
 # Extract Packages
-- name: "Extract zip to tmp dir"
+- name: "Extract Caldigit Packages to tmpdir"
   ansible.builtin.unarchive:
-    src: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}.zip"
+    src: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}/caldigit-{{ item.name }}.zip"
     dest: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}"
     remote_src: true
   become: true
