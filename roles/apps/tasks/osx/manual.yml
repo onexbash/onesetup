@@ -6,12 +6,14 @@
     mode: "0644"
     owner: "{{ USER }}"
     group: "staff"
+  become: true
 
 - name: "Extract zip to tmp dir"
   ansible.builtin.unarchive:
     src: "{{ onesetup_tmpdir }}/caldigit-disk-utility.zip"
     dest: "{{ onesetup_tmpdir }}"
     remote_src: true
+  become: true
 
 - name: "Find extracted installer"
   ansible.builtin.find:
