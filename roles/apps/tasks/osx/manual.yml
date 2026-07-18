@@ -1,34 +1,60 @@
 ---
-- name: "Download Caldigit Drivers & Utility"
+# Define Download Links
+- name: "Define Caldigit Downloads"
+  ansible.builtin.set_fact:
+    caldigit_downloads:
+      - name: "disk-utility"
+        url: "https://downloads.caldigit.com/CalDigit-Docking-Station-Utility.zip"
+      - name: "firmware-updater"
+        url: "https://downloads.caldigit.com/TS5Plus/CalDigit_Thunderbolt_Firmware_Updater_v2.9.pkg.zip"
+      - name: "ports-updater"
+        url: "https://downloads.caldigit.com/TS4/CalDigit-TS4-PD-FW-Updater-v4708.zip"
+
+# Download Packages as .zip files
+- name: "Download Caldigit Packages"
   ansible.builtin.get_url:
-    url: "https://downloads.caldigit.com/CalDigit-Docking-Station-Utility.zip"
-    dest: "{{ onesetup_tmpdir }}/caldigit-disk-utility.zip"
+    url: "{{ item.url }}"
+    dest: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}.zip"
     mode: "0644"
     owner: "{{ USER }}"
     group: "staff"
   become: true
+  loop: "{{ caldigit_downloads }}"
+  loop_control:
+    label: "{{ item.name }}"
 
+# Extract Packages
 - name: "Extract zip to tmp dir"
   ansible.builtin.unarchive:
-    src: "{{ onesetup_tmpdir }}/caldigit-disk-utility.zip"
-    dest: "{{ onesetup_tmpdir }}"
+    src: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}.zip"
+    dest: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}"
     remote_src: true
   become: true
+  loop: "{{ caldigit_downloads }}"
+  loop_control:
+    label: "{{ item.name }}"
 
+# Find extracted installers
 - name: "Find extracted installer"
   ansible.builtin.find:
-    paths: "{{ onesetup_tmpdir }}"
+    paths: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}"
     patterns: "*.pkg"
     recurse: true
-  register: caldigit_pkg
+  register: caldigit_pkgs
+  loop: "{{ caldigit_downloads }}"
+  loop_control:
+    label: "{{ item.name }}"
 
-- name: "Install"
+- name: "Install Caldigit Packages"
   ansible.builtin.command:
     argv:
       - "installer"
       - "-pkg"
-      - "{{ caldigit_pkg.files[0].path }}"
+      - "{{ item.files[0].path }}"
       - "-target"
       - "/"
   become: true
-  when: caldigit_pkg.files | length > 0
+  loop: "{{ caldigit_pkgs.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: item.files | length > 0
