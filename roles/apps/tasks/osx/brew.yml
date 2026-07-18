@@ -1,33 +1,37 @@
 # -- TAPS -- #
-- name: 'tap repositories'
+- name: "tap repositories"
   community.general.homebrew_tap:
-    name: '{{ item }}'
-    path: '/usr/local/bin:/opt/homebrew/bin'
+    name: "{{ item_tap }}"
+    path: "/usr/local/bin:/opt/homebrew/bin"
     state: present
-  loop: '{{ brew_taps }}'
+  loop: "{{ brew_taps }}"
+  loop_control:
+    loop_var: item_tap
   ignore_errors: true # failed tasks should not exit the playbook (to ensure that one broken package doesnt break everything)
   register: log_tap # register output for debugging
 
 # -- FORMULAES -- #
-- name: 'install formulaes'
+- name: "install formulaes"
   community.general.homebrew:
-    name: '{{ item }}'
-    path: '/usr/local/bin:/opt/homebrew/bin'
+    name: "{{ item_formulae }}"
+    path: "/usr/local/bin:/opt/homebrew/bin"
     state: latest
     force_formula: true # avoids conflicts where a package has both cask and formulae
     update_homebrew: false # should be disabled(!) updates of the homebrew package manager itself are handled by a pre_task
     upgrade_all: false # should be disabled(!) upgrades of all brew packages are handled by a post_task (formulaes, casks & taps)
     install_options:
       - quiet # reduce output
-  loop: '{{ brew_formulaes }}'
+  loop: "{{ brew_formulaes }}"
+  loop_control:
+    loop_var: item_formulae
   ignore_errors: true # failed tasks should not exit the playbook (to ensure that one broken package doesnt break everything)
   register: log_formulae # register output for debugging
 
 # -- CASKS -- #
-- name: 'install casks'
+- name: "install casks"
   community.general.homebrew_cask:
-    name: '{{ item }}'
-    path: '/usr/local/bin:/opt/homebrew/bin'
+    name: "{{ item_cask }}"
+    path: "/usr/local/bin:/opt/homebrew/bin"
     state: latest
     accept_external_apps: true
     greedy: true
@@ -37,6 +41,8 @@
     # sudo_password: "{{ ansible_become_password }}"
     update_homebrew: false # should be disabled(!) updates of the homebrew package manager itself are handled by a pre_task
     upgrade_all: false # should be disabled(!) upgrades of all brew packages are handled by a post_task (formulaes, casks & taps)
-  loop: '{{ brew_casks }}'
+  loop: "{{ brew_casks }}"
+  loop_control:
+    loop_var: item_cask
   ignore_errors: true # failed tasks should not exit the playbook (to ensure that one broken package doesnt break everything)
   register: log_cask # register output for debugging
