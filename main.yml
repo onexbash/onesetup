@@ -16,60 +16,44 @@
     USER: "{{ lookup('ansible.builtin.env', 'USER') }}"
     HOME: "{{ lookup('ansible.builtin.env', 'HOME') }}"
     XDG_CONFIG_HOME: "{{ lookup('ansible.builtin.env', 'XDG_CONFIG_HOME', default=HOME + '/.config/') }}"
-    # ZDOTDIR: "{{ lookup('ansible.builtin.env', 'ZDOTDIR') | default(lookup('ansible.builtin.env', 'HOME') + '/.config/zsh') }}"
+    ZDOTDIR: "{{ lookup('ansible.builtin.env', 'ZDOTDIR') }}"
     CARGO_HOME: "{{ lookup('ansible.builtin.env', 'CARGO_HOME', default=HOME + '/.config/cargo') }}"
+    os_task_map:
+      Darwin: osx
+      RedHat: fedora
+      Windows: windows
   vars_files:
-    - group_vars/encrypted/ssh.yml
+    - group_vars/default/ssh.yml
   pre_tasks:
     # -- INCLUDE PRE_TASKS -- #
-    # common
-    - name: "pre_tasks | common - prerequisites"
-      include_tasks: pre_tasks/common/prerequisites.yml
-    - name: "pre_tasks | common - tbd"
-      include_tasks: pre_tasks/common/tbd.yml
-    # osx
-    - name: "pre_tasks | osx - prerequisites"
-      include_tasks: pre_tasks/osx/prerequisites.yml
-      when: ansible_facts['os_family'] == "Darwin"
-    - name: "pre_tasks | osx - tbd"
-      include_tasks: pre_tasks/osx/tbd.yml
-      when: ansible_facts['os_family'] == "Darwin"
-    # fedora
-    - name: "pre_tasks | fedora - prerequisites"
-      include_tasks: pre_tasks/fedora/prerequisites.yml
-      when: ansible_facts['os_family'] == "RedHat"
-    - name: "pre_tasks | fedora - tbd"
-      include_tasks: pre_tasks/fedora/tbd.yml
-      when: ansible_facts['os_family'] == "RedHat"
+    # Detect OS
+    - name: "Detect Operating System"
+      set_fact:
+        onesetup_os: "{{ os_task_map[ansible_facts['os_family']] }}"
+        # onesetup_os: "{{ os_task_map[ansible_facts['os_family']] | default(undef(hint='Unsupported OS: ' + ansible_facts['os_family'])) }}"
+    # Run Default pre_tasks (for every OS)
+    - name: "pre_tasks | Default"
+      include_tasks: "{{ item }}"
+      with_fileglob:
+        - "{{ playbook_dir }}/pre_tasks/default/*.yml"
+    # Run OS-Specific pre_tasks
+    - name: "pre_tasks | {{ onesetup_os }}"
+      include_tasks: "{{ item }}"
+      with_fileglob:
+        - "{{ playbook_dir }}/pre_tasks/{{ onesetup_os }}/*.yml"
     # -- INCLUDE GROUP_VARS -- #
-    # osx
-    - name: "group_vars | osx"
+    - name: "group_vars | Default"
       include_vars:
-        dir: group_vars/osx
+        dir: "group_vars/default"
         extensions:
           - yml
-      when: ansible_facts['os_family'] == "Darwin"
-    # fedora linux
-    - name: "group_vars | fedora"
+    - name: "group_vars | {{ onesetup_os }}"
       include_vars:
-        dir: group_vars/fedora
+        dir: "group_vars/{{ onesetup_os }}"
         extensions:
           - yml
-      when: ansible_facts['os_family'] == "RedHat"
   # -- INCLUDE ROLES -- #
-  # order of the roles is crucial, as some roles depend on the successful execution of preceding roles
   roles:
-    # - { role: aerospace, tags: ["aerospace"] }
     - { role: dotfiles, tags: ["dotfiles"] }
-    - { role: apps, tags: ["apps"] }
-    # - { role: rust, tags: ["rust"] }
-    # - { role: zsh, tags: ["zsh"] }
-    # - { role: git, tags: ["git"] }
-    # - { role: ssh, tags: ["ssh"] }
-    # - { role: scripts, tags: ["scripts"] }
-    # - { role: alacritty, tags: ["alacritty"] }
-    # - { role: nvim, tags: ["nvim"] }
-    # - { role: starship, tags: ["starship"] }
-    # - { role: fonts, tags: ["fonts"] }
-    - { role: settings, tags: ["settings"] }
-    # - { role: karabiner, tags: ["karabiner"] }
+    # - { role: apps, tags: ["apps"] }
+    # - { role: settings, tags: ["settings"] }

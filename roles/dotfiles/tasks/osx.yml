@@ -1,0 +1,55 @@
+---
+# Clone Dotfiles Repository
+- name: "Clone Dotfiles Repository"
+  ansible.builtin.git:
+    repo: "{{ DOTFILES_REPO_HTTPS }}"
+    clone: true
+    dest: "{{ DOTFILES_DIR }}"
+    force: false # respect local changes to prevent dotfile loss
+    remote: origin
+    update: true
+    recursive: true # whether submodules should be included/skipped
+  become: true
+
+# Ensure Config Directory exists
+- name: "Ensure Config Directory exists"
+  ansible.builtin.file:
+    path: "{{ XDG_CONFIG_HOME }}"
+    state: directory
+    mode: "0744"
+    owner: "{{ USER }}"
+    group: "staff"
+  become: true
+
+# Copy: Global Shell Files
+- name: "Copy: Global Shell Files"
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0644"
+    owner: "root"
+    group: "wheel"
+    force: true
+    remote_src: true
+  loop: "{{ shell_global }}"
+  become: true
+
+# Cleanup: Dotfiles (dest)
+- name: "Cleanup: Dotfiles"
+  ansible.builtin.file:
+    path: "{{ item.dest }}"
+    state: "absent"
+    force: true
+  loop: "{{ dotfiles }}"
+  ignore_errors: true
+  become: true
+
+# Symlink: Dotfiles
+- name: "Symlink: Dotfiles"
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: "link"
+    force: true
+  loop: "{{ dotfiles }}"
+  ignore_errors: true
