@@ -1,4 +1,12 @@
-# -- INCLUDE OS SPECIFIC TASKS -- #
 ---
-- name: "include {{ onesetup_os }} tasks"
-  include_tasks: "{{ onesetup_os }}.yml"
+# Include OS-Independent Tasks for all Operating Systems
+- name: "Include OS-Independent Tasks for all Operating Systems"
+  include_tasks: "{{ item }}"
+  with_fileglob:
+    - "{{ role_path }}/tasks/all/*.yml"
+
+# Include OS-Specific Tasks for `{{ onesetup_os }}`
+- name: "Include OS-Specific Tasks for {{ onesetup_os }}"
+  include_tasks: "{{ item }}"
+  with_fileglob:
+    - "{{ role_path }}/tasks/{{ onesetup_os }}/*.yml"

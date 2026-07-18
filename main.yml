@@ -18,36 +18,30 @@
     XDG_CONFIG_HOME: "{{ lookup('ansible.builtin.env', 'XDG_CONFIG_HOME', default=HOME + '/.config/') }}"
     ZDOTDIR: "{{ lookup('ansible.builtin.env', 'ZDOTDIR') }}"
     CARGO_HOME: "{{ lookup('ansible.builtin.env', 'CARGO_HOME', default=HOME + '/.config/cargo') }}"
-    os_task_map:
-      Darwin: osx
-      RedHat: fedora
-      Windows: windows
   vars_files:
-    - group_vars/default/ssh.yml
+    - group_vars/all/ssh.yml
   pre_tasks:
     # -- INCLUDE PRE_TASKS -- #
-    # Detect OS
-    - name: "Detect Operating System"
-      set_fact:
-        onesetup_os: "{{ os_task_map[ansible_facts['os_family']] }}"
-        # onesetup_os: "{{ os_task_map[ansible_facts['os_family']] | default(undef(hint='Unsupported OS: ' + ansible_facts['os_family'])) }}"
-    # Run Default pre_tasks (for every OS)
-    - name: "pre_tasks | Default"
+    # Include pre_task for System Discovery
+    - name: "pre_tasks | System Discovery"
+      include_tasks: "{{ playbook_dir }}/pre_tasks/system_discovery.yml"
+    # Include OS-Independent pre_tasks (for every OS)
+    - name: "pre_tasks | OS-Independent (all)"
       include_tasks: "{{ item }}"
       with_fileglob:
-        - "{{ playbook_dir }}/pre_tasks/default/*.yml"
-    # Run OS-Specific pre_tasks
-    - name: "pre_tasks | {{ onesetup_os }}"
+        - "{{ playbook_dir }}/pre_tasks/all/*.yml"
+    # Include OS-Specific pre_tasks
+    - name: "pre_tasks | OS-Specific ({{ onesetup_os }})"
       include_tasks: "{{ item }}"
       with_fileglob:
         - "{{ playbook_dir }}/pre_tasks/{{ onesetup_os }}/*.yml"
     # -- INCLUDE GROUP_VARS -- #
-    - name: "group_vars | Default"
+    - name: "group_vars | OS-Independent (all)"
       include_vars:
-        dir: "group_vars/default"
+        dir: "group_vars/all"
         extensions:
           - yml
-    - name: "group_vars | {{ onesetup_os }}"
+    - name: "group_vars | OS-Specific ({{ onesetup_os }})"
       include_vars:
         dir: "group_vars/{{ onesetup_os }}"
         extensions:

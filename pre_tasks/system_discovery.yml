@@ -1,0 +1,17 @@
+---
+- name: "Set Supported Operating Systems"
+  set_fact:
+    os_task_map:
+      Darwin: "osx"
+      RedHat: "linux"
+      Windows: "windows"
+
+- name: "Detect Operating System"
+  set_fact:
+    onesetup_os: "{{ os_task_map[ansible_facts['os_family']] | default(omit) }}"
+    # onesetup_os: "{{ os_task_map[ansible_facts['os_family']] | default(undef(hint='Unsupported OS: ' + ansible_facts['os_family'])) }}"
+
+- name: "Handle Unsupported Operating System"
+  fail:
+    msg: "Unsupported Operating System: {{ ansible_facts['os_family'] }}"
+  when: onesetup_os is not defined

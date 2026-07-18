@@ -1,22 +1,12 @@
-# -- INCLUDE OS SPECIFIC TASKS -- #
-# - name: "include macos tasks"
-#   include_tasks: osx.yml
-#   when: ansible_facts['os_family'] == "Darwin"
-#
-# - name: "include fedora tasks"
-#   include_tasks: fedora.yml
-#   when: ansible_facts['os_family'] == "RedHat"
+---
+# Include OS-Independent Tasks for all Operating Systems
+- name: "Include OS-Independent Tasks for all Operating Systems"
+  include_tasks: "{{ item }}"
+  with_fileglob:
+    - "{{ role_path }}/tasks/all/*.yml"
 
-# -- INCLUDE OS SPECIFIC TASKS -- #
-# - name: "include macos tasks"
-#   include_tasks: "{{ item }}"
-#   loop: "{{ query('fileglob', 'osx/*.yml') | sort }}"
-#   when: ansible_facts['os_family'] == "Darwin"
-#
-# - name: "include linux tasks"
-#   include_tasks: "{{ item }}"
-#   loop: "{{ query('fileglob', 'linux/*.yml') | sort }}"
-#   when: ansible_facts['os_family'] == "RedHat"
-
-- name: "include {{ onesetup_os }} tasks"
-  include_tasks: "{{ onesetup_os }}.yml"
+# Include OS-Specific Tasks for `{{ onesetup_os }}`
+- name: "Include OS-Specific Tasks for {{ onesetup_os }}"
+  include_tasks: "{{ item }}"
+  with_fileglob:
+    - "{{ role_path }}/tasks/{{ onesetup_os }}/*.yml"
