@@ -24,6 +24,11 @@
 
 - name: "Install"
   ansible.builtin.command:
-    cmd: "installer -pkg {{ caldigit_pkg.files[0].path }} -target /"
+    argv:
+      - "installer"
+      - "-pkg"
+      - "{{ caldigit_pkg.files[0].path }}"
+      - "-target"
+      - "/"
   become: true
   when: caldigit_pkg.files | length > 0
