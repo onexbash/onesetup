@@ -1,0 +1,27 @@
+---
+- name: "Download Caldigit Drivers & Utility"
+  ansible.builtin.get_url:
+    url: "https://downloads.caldigit.com/CalDigit-Docking-Station-Utility.zip"
+    dest: "{{ onesetup_tmpdir }}/caldigit-disk-utility.zip"
+    mode: "0644"
+    owner: "{{ USER }}"
+    group: "staff"
+
+- name: "Extract zip to tmp dir"
+  ansible.builtin.unarchive:
+    src: "{{ onesetup_tmpdir }}/caldigit-disk-utility.zip"
+    dest: "{{ onesetup_tmpdir }}"
+    remote_src: true
+
+- name: "Find extracted installer"
+  ansible.builtin.find:
+    paths: "{{ onesetup_tmpdir }}"
+    patterns: "*.pkg"
+    recurse: true
+  register: caldigit_pkg
+
+- name: "Install"
+  ansible.builtin.command:
+    cmd: "installer -pkg {{ caldigit_pkg.files[0].path }} -target /"
+  become: true
+  when: caldigit_pkg.files | length > 0

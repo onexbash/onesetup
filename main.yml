@@ -49,5 +49,5 @@
   # -- INCLUDE ROLES -- #
   roles:
     - { role: dotfiles, tags: ["dotfiles"] }
-    # - { role: apps, tags: ["apps"] }
+    - { role: apps, tags: ["apps"] }
     # - { role: settings, tags: ["settings"] }

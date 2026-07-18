@@ -1,9 +1,29 @@
-# Ensure Config Directory exists
-- name: "Ensure Config Directory exists"
+# Ensure Directory: $XDG_CONFIG_HOME
+- name: "Ensure Config Directory exists: {{ XDG_CONFIG_HOME }}"
   ansible.builtin.file:
     path: "{{ XDG_CONFIG_HOME }}"
     state: directory
     mode: "0744"
     owner: "{{ USER }}"
     group: "staff"
+  become: true
+
+# Ensure Directory: /tmp
+- name: "Ensure Directory exists: /tmp"
+  ansible.builtin.file:
+    path: "/tmp"
+    state: directory
+    mode: "0755"
+    owner: "root"
+    group: "wheel"
+  become: true
+
+# Ensure Directory: {{ onesetup_tmpdir }}
+- name: "Ensure Directory exists: {{ onesetup_tmpdir }}"
+  ansible.builtin.file:
+    path: "{{ onesetup_tmpdir }}"
+    state: directory
+    mode: "0755"
+    owner: "root"
+    group: "wheel"
   become: true
