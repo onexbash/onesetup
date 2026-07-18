@@ -10,16 +10,45 @@
     update: true
     recursive: true # whether submodules should be included/skipped
   become: true
+  register: dotfiles_clone
+  ignore_errors: true
 
-# Ensure Config Directory exists
-- name: "Ensure Config Directory exists"
-  ansible.builtin.file:
-    path: "{{ XDG_CONFIG_HOME }}"
-    state: directory
-    mode: "0744"
-    owner: "{{ USER }}"
-    group: "staff"
+# Prompt User if local changes can be overwritten
+- name: "Prompt: Overwrite Local Dotfiles Directory?"
+  ansible.builtin.pause:
+    prompt: "Local modifications detected in {{ DOTFILES_DIR }}. Overwrite and lose local changes? [y/n]"
+  register: user_overwrite_dotfiles
+  when: dotfiles_clone is failed
+
+# Clone Dotfiles Repository and force overwrite local changes (after user confirmation)
+- name: "Clone Dotfiles Repository (force overwrite)"
+  ansible.builtin.git:
+    repo: "{{ DOTFILES_REPO_HTTPS }}"
+    clone: true
+    dest: "{{ DOTFILES_DIR }}"
+    force: true # overwrite local changes as the user confirmed this
+    remote: origin
+    update: true
+    recursive: true # whether submodules should be included/skipped
   become: true
+  when:
+    - dotfiles_clone is failed
+    - dotfiles_overwrite_prompt.user_input | lower == 'y'
+
+# Notify: Skipping Dotfiles Rollout
+- name: "Info: Skipping Dotfiles Rollout.."
+  ansible.builtin.debug:
+    msg: "Skipping Dotfiles Rollout & continue playbook — local changes in {{ DOTFILES_DIR }} preserved."
+  when:
+    - dotfiles_clone is failed
+    - dotfiles_overwrite_prompt.user_input | lower != 'y'
+
+# Skip Dotfiles Role and continue playbook if User declined to overwrite local changes
+- name: "Skip Dotfiles Role and continue playbook"
+  meta: end_role
+  when:
+    - dotfiles_clone is failed
+    - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
 # Copy: Global Shell Files
 - name: "Copy: Global Shell Files"

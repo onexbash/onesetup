@@ -1,0 +1,9 @@
+# Ensure Config Directory exists
+- name: "Ensure Config Directory exists"
+  ansible.builtin.file:
+    path: "{{ XDG_CONFIG_HOME }}"
+    state: directory
+    mode: "0744"
+    owner: "{{ USER }}"
+    group: "staff"
+  become: true
