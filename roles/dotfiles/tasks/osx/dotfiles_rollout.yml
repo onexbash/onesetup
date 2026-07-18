@@ -11,7 +11,8 @@
     recursive: true # whether submodules should be included/skipped
   become: true
   register: dotfiles_clone
-  ignore_errors: true
+  failed_when: false # suppresses possible error message as this is handled down below
+  # ignore_errors: true
 
 # Prompt User if local changes can be overwritten
 - name: "Prompt: Overwrite Local Dotfiles Directory?"
