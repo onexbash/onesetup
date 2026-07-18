@@ -5,7 +5,6 @@ brew_casks:
   - alt-tab # alt-tab replacement
   - appcleaner # app uninstaller
   - chatgpt
-  - nvidia-geforce-now # nvidia cloud gaming
   - cleanshot # screenshot tool (paid)
   - deepl
   - discord
@@ -25,9 +24,7 @@ brew_casks:
   - raycast # spotlight replacement
   - spotify
   - utm # virtual machine manager
-  - visual-studio-code
   - sublime-text # light weight text editor
-  - wireshark # network tool
   - canva
   - figma
   - obs # streaming software
@@ -60,16 +57,16 @@ brew_formulaes:
   - imagemagick
   - tree-sitter # exposes syntax tree used by LSPs
   # -- LINTER & FORMATTER -- #
-  - eslint
-  - flow # javascript static type checker
-  - luacheck # lua linter
-  - prettier # javascript formatter
-  - ruff # python formatter & linter
-  - shellcheck # shell linter
-  - stylua # lua formatter
-  - tflint # terraform linter
+  # - eslint
+  # - flow # javascript static type checker
+  # - luacheck # lua linter
+  # - prettier # javascript formatter
+  # - ruff # python formatter & linter
+  # - shellcheck # shell linter
+  # - stylua # lua formatter
+  # - tflint # terraform linter
   # -- ANALYZER & SCANNER -- #
-  - tfsec # terraform vulnerability scanner
+  # - tfsec # terraform vulnerability scanner
   # -- MANAGERS -- #
   - pyenv # python version manager
   - pyenv-virtualenv # python virtual environment manager
