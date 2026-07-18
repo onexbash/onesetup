@@ -17,7 +17,7 @@
 - name: "Prompt: Overwrite Local Dotfiles Directory?"
   ansible.builtin.pause:
     prompt: "Local modifications detected in {{ DOTFILES_DIR }}. Overwrite and lose local changes? [y/n]"
-  register: user_overwrite_dotfiles
+  register: dotfiles_overwrite_prompt
   when: dotfiles_clone is failed
 
 # Clone Dotfiles Repository and force overwrite local changes (after user confirmation)
