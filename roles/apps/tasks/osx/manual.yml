@@ -3,12 +3,25 @@
 - name: "Define Caldigit Downloads"
   ansible.builtin.set_fact:
     caldigit_downloads:
-      - name: "disk-utility"
-        url: "https://downloads.caldigit.com/CalDigit-Docking-Station-Utility.zip"
       - name: "firmware-updater"
         url: "https://downloads.caldigit.com/TS5Plus/CalDigit_Thunderbolt_Firmware_Updater_v2.9.pkg.zip"
-      - name: "ports-updater"
-        url: "https://downloads.caldigit.com/TS4/CalDigit-TS4-PD-FW-Updater-v4708.zip"
+      - name: "disk-utility"
+        url: "https://downloads.caldigit.com/CalDigit-Docking-Station-Utility.zip"
+      - name: "apple-support"
+        url: "https://downloads.caldigit.com/CalDigit-USB-Hub-Support-Driver.pkg.zip"
+
+# Create tmp dirs
+- name: "Create Caldigit tmpdir under {{ onesetup_tmpdir }}"
+  ansible.builtin.file:
+    path: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}"
+    state: directory
+    mode: "0755"
+    owner: "root"
+    group: "wheel"
+  become: true
+  loop: "{{ caldigit_downloads }}"
+  loop_control:
+    label: "{{ item.name }}"
 
 # Download Packages as .zip files
 - name: "Download Caldigit Packages"
