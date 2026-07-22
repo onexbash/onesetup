@@ -21,6 +21,8 @@ dotfiles:
   - { src: "{{ DOTFILES_DIR }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/shell" }
   # nvim
   - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
+  - { src: "{{ DOTFILES_DIR }}/nvim_onevim", dest: "{{ XDG_CONFIG_HOME }}/nvim_onevim" }
+  - { src: "{{ DOTFILES_DIR }}/nvim_astro", dest: "{{ XDG_CONFIG_HOME }}/nvim_astro" }
   # alacritty
   - {
       src: "{{ DOTFILES_DIR }}/alacritty",
