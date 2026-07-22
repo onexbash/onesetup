@@ -17,26 +17,6 @@ shell_global:
   - { src: "{{ DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
 
 dotfiles:
-  # shell
-  - { src: "{{ DOTFILES_DIR }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/shell" }
-  # nvim
-  - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
-  - { src: "{{ DOTFILES_DIR }}/nvim_onevim", dest: "{{ XDG_CONFIG_HOME }}/nvim_onevim" }
-  - { src: "{{ DOTFILES_DIR }}/nvim_astro", dest: "{{ XDG_CONFIG_HOME }}/nvim_astro" }
-  # alacritty
-  - {
-      src: "{{ DOTFILES_DIR }}/alacritty",
-      dest: "{{ XDG_CONFIG_HOME }}/alacritty",
-    }
-  # ghostty
-  - { src: "{{ DOTFILES_DIR }}/ghostty", dest: "{{ XDG_CONFIG_HOME }}/ghostty" }
-  # git
-  - { src: "{{ DOTFILES_DIR }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
-  # starship
-  - {
-      src: "{{ DOTFILES_DIR }}/starship",
-      dest: "{{ XDG_CONFIG_HOME }}/starship",
-    }
   # aerospace
   - {
       src: "{{ DOTFILES_DIR }}/aerospace",
@@ -46,7 +26,30 @@ dotfiles:
   - { src: "{{ DOTFILES_DIR }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
   # eza
   - { src: "{{ DOTFILES_DIR }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
+  # ghostty
+  - { src: "{{ DOTFILES_DIR }}/ghostty", dest: "{{ XDG_CONFIG_HOME }}/ghostty" }
+  # git
+  - { src: "{{ DOTFILES_DIR }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
   # lazygit
   - { src: "{{ DOTFILES_DIR }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
+  # nvim
+  - { src: "{{ DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
+  - { src: "{{ DOTFILES_DIR }}/nvim_onevim", dest: "{{ XDG_CONFIG_HOME }}/nvim_onevim" }
+  - { src: "{{ DOTFILES_DIR }}/nvim_astro", dest: "{{ XDG_CONFIG_HOME }}/nvim_astro" }
+  # powershell
+  - { src: "{{ DOTFILES_DIR }}/powershell", dest: "{{ XDG_CONFIG_HOME }}/powershell" }
+  # karabiner
+  - { src: "{{ DOTFILES_DIR }}/karabiner", dest: "{{ XDG_CONFIG_HOME }}/karabiner" }
+  # homebrew
+  - { src: "{{ DOTFILES_DIR }}/homebrew", dest: "{{ XDG_CONFIG_HOME }}/homebrew" }
+  # shell
+  - { src: "{{ DOTFILES_DIR }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/shell" }
+  # starship
+  - {
+      src: "{{ DOTFILES_DIR }}/starship",
+      dest: "{{ XDG_CONFIG_HOME }}/starship",
+    }
+  # vim
+  - { src: "{{ DOTFILES_DIR }}/vim", dest: "{{ XDG_CONFIG_HOME }}/vim" }
   # zed
   - { src: "{{ DOTFILES_DIR }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }
