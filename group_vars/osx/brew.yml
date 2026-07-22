@@ -1,10 +1,8 @@
 ---
 # Casks
 brew_casks:
-  - alacritty # terminal emulator
   - alt-tab # alt-tab replacement
   - appcleaner # app uninstaller
-  - chatgpt
   - cleanshot # screenshot tool (paid)
   - deepl
   - discord
@@ -48,7 +46,7 @@ brew_formulaes:
   - sqlite
   - julia # just there that mason.nvim throws no warning
   - perl # just there that mason.nvim throws no warning
-  - postgresql@14 # database
+  - postgresql # database system
   - ansible # infrastructure as code
   - javacc # java parser
   - hashicorp/tap/terraform # infrastructure as code
@@ -56,18 +54,8 @@ brew_formulaes:
   - lua
   - imagemagick
   - tree-sitter # exposes syntax tree used by LSPs
-  # -- LINTER & FORMATTER -- #
-  # - eslint
-  # - flow # javascript static type checker
-  # - luacheck # lua linter
-  # - prettier # javascript formatter
-  # - ruff # python formatter & linter
-  # - shellcheck # shell linter
-  # - stylua # lua formatter
-  # - tflint # terraform linter
-  # -- ANALYZER & SCANNER -- #
-  # - tfsec # terraform vulnerability scanner
-  # -- MANAGERS -- #
+  # -- VERSION MANAGERS -- #
+  - asdf # Version Manager for everything (extensible via plugins)
   - pyenv # python version manager
   - pyenv-virtualenv # python virtual environment manager
   # -- LINUX UTILITIES -- #
@@ -85,12 +73,11 @@ brew_formulaes:
   - cmake-docs
   - gcc # C compiler
   - xz # compression tool
-  - sha2 # sha256sum
   - openssh # replace built-in | ssh
   - openssl@3 # replace built-in | ssl
   - jq # json parser
   - zlib # data-compression library required by python
-  - libgit2@1.7 # git library
+  - libgit2 # C library of git core methods
   - ncurses # text-based UI library
   - maven # java build tool
   # -- SHELL -- #
@@ -103,7 +90,6 @@ brew_formulaes:
   - zsh-autosuggestions
   # -- PACKAGE & VERSION MANAGER -- #
   - luarocks # lua package manager
-  - pdm # python package manager
   - poetry # python package manager
   - pnpm # node package manager
   - yarn # node package manager
@@ -112,8 +98,6 @@ brew_formulaes:
   - scc # code cost analyzer
   - fnm # node version manager
   - clipboard # clipboard manager
-  - pass-otp # OTP extension for pass
-  - zbar # barcode extractor
   - exiftool # tool for exif metadata
   - cloudflared # cloudflare cli
   - git-filter-repo # git tool for rewriting git commit history
@@ -121,12 +105,10 @@ brew_formulaes:
   - fontforge # font patcher / editor
   - unzip # extraction tool
   - tldr # simplified man pages
-  - pass # CLI password manager
   - pinentry
   - git-delta # git pager
   - glow # markdown preview
   - ollama # toolchain for llama AI
-  - neovim # IDE (vim fork)
   - vim
   - zip # archiving tool
   - gh # Github CLI
@@ -134,27 +116,25 @@ brew_formulaes:
   - catimg # ascii image preview
   - cheat # cheatsheet engine
   - sketchybar # custom macos menubar
-  - fontconfig
+  - fontconfig # font configuration API
   - bat # better cat
   - ripgrep # better grep
   - fastfetch # system info
   - zellij # terminal multiplexer (tmux alternative)
-  - telnet
+  # - telnet # UI for TELNET protocol
   - netcat # network cli tool
   - zoxide # better cd
-  - speedtest-cli
+  - speedtest # Speedtest CLI (tap: `teamookla/speedtest`)
   - ffmpegthumbnailer # terminal video thumbnailer
   - mas # macos app store CLI interface
   - unar # unarchiving tool
-  - poppler # pdf rendering library
+  # - poppler # pdf rendering library
   - tree
   - wget
   - svgo # svg optimizer
   - starship
-  - ripgrep
   - pastel # color cli tool
   - lazygit # git cli tool
-  - xsv # csv cli
   - borders # window borders
   - eza # better ls
   - fd # better find
@@ -166,6 +146,9 @@ brew_formulaes:
 
 # Taps
 brew_taps:
-  - FelixKratz/formulae
-  - hashicorp/tap # terraform
-  - sdkman/tap # java version manager
+  - asmvik/formulae # used by: yabai
+  - felixkratz/formulae # used by: SketchyBar, JankyBorders
+  - hashicorp/tap # used by: terraform and other hashicorp software
+  - nikitabobko/tap # used by: aerospace
+  - sdkman/tap # used by: sdkman (development kit manager)
+  - teamookla/speedtest # used by: speedtest-cli
