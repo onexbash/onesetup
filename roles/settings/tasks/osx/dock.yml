@@ -1,0 +1,38 @@
+---
+# -- -- -- -- -- -- -- #
+# --   DOCK ITEMS   -- #
+# -- -- -- -- -- -- -- #
+# Install dockutil for managing dock items
+- name: "Install 'dockutil' to manage Dock Items"
+  community.general.homebrew:
+    name: "dockutil"
+    path: "/usr/local/bin:/opt/homebrew/bin"
+    state: latest
+    install_options:
+      - quiet
+
+# Clear Dock Items
+- name: "Clear Dock"
+  ansible.builtin.command: "dockutil --remove all --no-restart"
+  register: dock_clear
+  changed_when: "'Removed' in dock_clear.stdout"
+  failed_when: >-
+    dock_clear.rc != 0 and
+    'No dock items to remove' not in dock_clear.stderr
+
+# Add Dock Items
+- name: "Add Defined Dock Items"
+  ansible.builtin.command:
+    argv:
+      - "dockutil"
+      - "--add"
+      - "{{ item.path }}"
+      - "--no-restart"
+  loop: "{{ dock_items }}"
+  when: item.path is exists
+  changed_when: true
+
+# Restart Dock daemon
+- name: "Restart Dock to apply changes"
+  ansible.builtin.command: "killall Dock"
+  changed_when: true

@@ -1,0 +1,22 @@
+---
+# -- WALLPAPER -- #
+- name: "wallpaper | copy to pictures directory"
+  copy:
+    src: "wallpaper.jpeg"
+    dest: "{{ HOME }}/Pictures/wallpaper.jpeg"
+    mode: "0644"
+    force: true
+- name: "wallpaper | apply"
+  shell: |
+    /usr/bin/osascript <<EOD
+    tell application "System Events"
+      set desktopCount to count of desktops
+      repeat with desktopNumber from 1 to desktopCount
+        tell desktop desktopNumber
+          set picture to "{{ HOME }}/Pictures/wallpaper.jpeg"
+        end tell
+      end repeat
+    end tell
+    EOD
+  args:
+    executable: /bin/bash

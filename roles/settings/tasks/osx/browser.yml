@@ -1,0 +1,12 @@
+---
+# -- BROWSER -- #
+# Install defaultbrowser utility
+- name: "Install 'defaultbrowser' utility"
+  community.general.homebrew:
+    name: "defaultbrowser"
+    path: "/usr/local/bin:/opt/homebrew/bin"
+    state: latest
+    install_options:
+      - quiet
+- name: "Set Firefox as default browser"
+  ansible.builtin.command: "defaultbrowser firefoxdeveloperedition"

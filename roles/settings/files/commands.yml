@@ -1,6 +1,0 @@
----
-osx:
-  # disable startup sound
-  - nvram SystemAudioVolume=" "
-  # restart automatically if the computer freezes
-  - systemsetup -setrestartfreeze on
