@@ -69,12 +69,14 @@
     key: AppleHighlightColor
     type: string
     value: "0.952900 0.545100 0.658800"
+  notify: restart_systemui_server
 # Accent Color
 - name: "set accent color"
   osx_defaults:
     key: AppleAccentColor
     type: int
     value: 1
+  notify: restart_systemui_server
 # Scrollbars
 - name: "always show scrollbars"
   osx_defaults:
@@ -82,13 +84,6 @@
     key: AppleShowScrollBars
     type: string
     value: Always
-# Sidebar Icon Size
-- name: "set sidebar icon size to medium"
-  osx_defaults:
-    domain: NSGlobalDomain
-    key: NSTableViewDefaultSizeMode
-    type: int
-    value: 2
 
 # -- -- -- -- -- -- -- #
 # --      DOCK      -- #    
@@ -100,6 +95,7 @@
     key: orientation
     type: string
     value: bottom
+  notify: restart_dock
 # Dock Size
 - name: "dock | size"
   osx_defaults:
@@ -107,6 +103,7 @@
     key: tilesize
     type: float
     value: 50
+  notify: restart_dock
 # Dock Recent Apps
 - name: "dock | show recents"
   osx_defaults:
@@ -114,6 +111,7 @@
     key: show-recents
     type: bool
     value: false
+  notify: restart_dock
 # Dock Autohide
 - name: "dock | autohide"
   osx_defaults:
@@ -121,6 +119,7 @@
     key: show-autohide
     type: bool
     value: true
+  notify: restart_dock
 # Dock Autohide Animation
 - name: "dock | hide animation"
   osx_defaults:
@@ -128,6 +127,7 @@
     key: mineffect
     type: string
     value: suck
+  notify: restart_dock
 # Dock Autohide Animation Duration
 - name: "dock | autohide animation duration"
   osx_defaults:
@@ -135,6 +135,7 @@
     key: autohide-time-modifier
     type: float
     value: 0.7
+  notify: restart_dock
 # Dock Autohide Animation Delay
 - name: "dock | autohide delay"
   osx_defaults:
@@ -142,6 +143,7 @@
     key: autohide-delay
     type: float
     value: 0
+  notify: restart_dock
 # Dock Pinned Apps
 - name: "dock | show pinned apps"
   osx_defaults:
@@ -149,6 +151,7 @@
     key: static-only
     type: bool
     value: false
+  notify: restart_dock
 # Dock Show Spaces
 - name: "dock | show spaces when scrolling up on a dock item"
   osx_defaults:
@@ -156,6 +159,7 @@
     key: scroll-to-open
     type: bool
     value: true
+  notify: restart_dock
 # Dock Spring Loading
 - name: "dock | enable spring loading"
   osx_defaults:
@@ -163,94 +167,107 @@
     key: enable-spring-load-actions-on-all-items
     type: bool
     value: true
+  notify: restart_dock
 
 # -- -- -- -- -- -- -- #
 # --    FINDER      -- #    
 # -- -- -- -- -- -- -- #
-# Finder Show Quit Option
+# Show Quit Option
 - name: "finder | show quit option"
   osx_defaults:
     domain: com.apple.finder
     key: QuitMenuItem
     type: bool
     value: false
-# Finder Show Extensions
+  notify: restart_finder
+# Show Extensions
 - name: "finder | show extensions"
   osx_defaults:
     domain: NSGlobalDomain
     key: AppleShowAllExtensions
     type: bool
     value: true
-# Finder Show Hidden Files
+  notify: restart_finder
+# Show Hidden Files
 - name: "finder | show hidden files"
   osx_defaults:
     domain: com.apple.finder
     key: AppleShowAllFiles
     type: bool
     value: true
-# Finder Show Path Bar
+  notify: restart_finder
+# Show Path Bar
 - name: "finder | show path bar"
   osx_defaults:
     domain: com.apple.finder
     key: ShowPathbar
     type: bool
     value: true
-# Finder View Style
+  notify: restart_finder
+# View Style
 - name: "finder | view style"
   osx_defaults:
     domain: com.apple.finder
     key: FXPreferredViewStyle
     type: string
     value: Nlsv # list: Nlsv | colum: clmv | gallery: glyv | icon: icnv
-# Finder Folder Sorting
+  notify: restart_finder
+# Folder Sorting
 - name: "finder | keep folders on top"
   osx_defaults:
     domain: com.apple.finder
     key: _FXSortFoldersFirst
     type: bool
     value: true
-# Finder Search Scope
+  notify: restart_finder
+# Search Scope
 - name: "finder | search scope"
   osx_defaults:
     domain: com.apple.finder
     key: FXDefaultSearchScope
     type: string
     value: SCcf # SCcf = current folder | SCsp = previous scope | SCev = entire volume
-# Finder Bin Emptying
+  notify: restart_finder
+# Bin Emptying
 - name: "finder | empty bin after 30days"
   osx_defaults:
     domain: com.apple.finder
     key: FXRemoveOldTrashItems
     type: bool
     value: true
-# Finder Change File Extension Warning
+  notify: restart_finder
+# Change File Extension Warning
 - name: "finder | change file extension warning"
   osx_defaults:
     domain: com.apple.finder
     key: FXEnableExtensionChangeWarning
     type: bool
     value: false
-# Finder Save to iCloud
+  notify: restart_finder
+# Save to iCloud
 - name: "finder | save to icloud by default"
   osx_defaults:
     domain: com.apple.finder
     key: NSDocumentSaveNewDocumentsToCloud
     type: bool
     value: false
-# Finder Titlebar Hover Delay
+  notify: restart_finder
+# Titlebar Hover Delay
 - name: "finder | titlebar hover delay"
   osx_defaults:
     domain: NSGlobalDomain
     key: NSToolbarTitleViewRolloverDelay
     type: float
     value: 0
-# Finder Sidebar Icon Size
+  notify: restart_finder
+# Sidebar Icon Size
 - name: "finder | sidebar icon size"
   osx_defaults:
     domain: NSGlobalDomain
     key: NSTableViewDefaultSizeMode
     type: int
     value: 2 # 1: small | 2: medium | 3: large
+  notify: restart_finder
 
 # -- -- -- -- -- -- -- -- #
 # --      DESKTOP      -- #    
@@ -262,6 +279,7 @@
     key: _FXSortFoldersFirstOnDesktop
     type: bool
     value: true
+  notify: restart_finder
 # Show Desktop Items
 - name: "desktop | show desktop items"
   osx_defaults:
@@ -269,6 +287,7 @@
     key: CreateDesktop
     type: bool
     value: false
+  notify: restart_finder
 # Show Volumes
 - name: "desktop | show volumes"
   osx_defaults:
@@ -276,6 +295,7 @@
     key: ShowHardDrivesOnDesktop
     type: bool
     value: false
+  notify: restart_finder
 # Show External Volumes
 - name: "desktop | show external volumes"
   osx_defaults:
@@ -283,6 +303,7 @@
     key: ShowExternalHardDrivesOnDesktop
     type: bool
     value: false
+  notify: restart_finder
 # Show Removable Volumes
 - name: "desktop | show removable volumes"
   osx_defaults:
@@ -290,6 +311,7 @@
     key: ShowRemovableMediaOnDesktop
     type: bool
     value: false
+  notify: restart_finder
 # Show Connected Servers
 - name: "desktop | show connected servers"
   osx_defaults:
@@ -297,6 +319,7 @@
     key: ShowMountedServersOnDesktop
     type: bool
     value: false
+  notify: restart_finder
 
 # -- -- -- -- -- -- -- -- #
 # --      MENUBAR      -- #    
@@ -308,6 +331,7 @@
     key: FlashDateSeparators
     type: bool
     value: false
+  notify: restart_systemui_server
 # Clock Date Format
 - name: "menubar | clock date format"
   osx_defaults:
@@ -315,6 +339,7 @@
     key: DateFormat
     type: string
     value: "EEE HH:mm"
+  notify: restart_systemui_server
 
 # -- -- -- -- -- -- -- -- #
 # --       MOUSE       -- #    
@@ -419,6 +444,7 @@
     key: mru-spaces
     type: bool
     value: false
+  notify: restart_dock
 # Group Windows by application
 - name: "mission control | group windows by application"
   osx_defaults:
@@ -426,6 +452,7 @@
     key: expose-group-apps
     type: bool
     value: true
+  notify: restart_dock
 # Switch to space with open windows
 - name: "mission control | switch to space with open windows"
   osx_defaults:
@@ -440,6 +467,7 @@
     key: spans-display
     type: bool
     value: false
+  notify: restart_dock
 
 # -- -- -- -- -- -- -- -- -- #
 # --   ACTIVITY MONITOR   -- #    
@@ -532,7 +560,7 @@
     domain: com.apple.iphonesimulator
     key: ScreenShotSaveLocation
     type: string
-    value: "~/nas/gallery/screenshots"
+    value: "{{ CLOUD_DIR }}/media/images/screenshots"
 
 # Disable Startup Sound
 - name: "Disable Startup Sound"
@@ -545,11 +573,3 @@
   ansible.builtin.command: "systemsetup -setrestartfreeze on"
   become: true
   changed_when: true
-
-# -- Restart Services -- #
-- name: "restart | dock"
-  command: killall Dock
-- name: "restart | finder"
-  command: killall Finder
-- name: "restart | system_ui_server"
-  command: killall SystemUIServer

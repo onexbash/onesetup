@@ -1,0 +1,15 @@
+---
+# Handler: Restart Dock Daemon
+- name: "Restart Dock"
+  ansible.builtin.command: "killall Dock"
+  listen: restart_dock
+
+# Handler: Restart Finder Daemon
+- name: "Restart Finder"
+  ansible.builtin.command: killall Finder
+  listen: restart_finder
+
+# Handler: Restart SystemUIServer Daemon
+- name: "Restart SystemUIServer"
+  ansible.builtin.command: killall SystemUIServer
+  listen: restart_systemui_server

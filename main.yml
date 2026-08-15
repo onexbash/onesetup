@@ -18,6 +18,7 @@
     XDG_CONFIG_HOME: "{{ lookup('ansible.builtin.env', 'XDG_CONFIG_HOME', default=HOME + '/.config/') }}"
     ZDOTDIR: "{{ lookup('ansible.builtin.env', 'ZDOTDIR') }}"
     CARGO_HOME: "{{ lookup('ansible.builtin.env', 'CARGO_HOME', default=HOME + '/.config/cargo') }}"
+    CLOUD_DIR: "/opt/onexcloud" # TODO: Use actual cloud storage
   vars_files:
     - group_vars/all/ssh.yml
   vars_prompt:
