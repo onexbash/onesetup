@@ -1,0 +1,9 @@
+---
+- name: "Ensure XCode CommandLineTools are installed and up-to-date"
+  ansible.builtin.script:
+    cmd: "{{ playbook_dir }}/files/install_xcode_clt.sh"
+    executable: "/usr/bin/env bash"
+  environment:
+    TOGGLE_SCRIPT_DEBUG_MODE: "{{ '1' if (ansible_verbosity | default(0)) > 1 else '0' }}" # passed based on ansible verbose-level (1 for -vv or higher, 0 otherwise)
+  register: xcode_clt_result
+  become: true
