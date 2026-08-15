@@ -13,9 +13,10 @@
   ansible.builtin.file:
     path: "/tmp"
     state: directory
-    mode: "0755"
+    mode: "1777"
     owner: "root"
     group: "wheel"
+    follow: true # follow symlink
   become: true
 
 # Ensure Directory: {{ onesetup_tmpdir }}
