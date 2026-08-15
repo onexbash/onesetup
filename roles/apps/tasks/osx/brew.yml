@@ -38,7 +38,7 @@
     install_options:
       # - no-quarantine # disable the macos quarantine option as it sometimes marks apps as damaged that are perfectly fine.
       - quiet # reduce output
-    # sudo_password: "{{ ansible_become_password }}" # TODO: pass password gathered by user prompt
+    sudo_password: "{{ ansible_become_password | default(omit) }}"
     update_homebrew: false # should be disabled(!) updates of the homebrew package manager itself are handled by a pre_task
     upgrade_all: false # should be disabled(!) upgrades of all brew packages are handled by a post_task (formulaes, casks & taps)
   loop: "{{ brew_casks }}"
@@ -46,3 +46,4 @@
     loop_var: item_cask
   ignore_errors: true # failed tasks should not exit the playbook (to ensure that one broken package doesnt break everything)
   register: log_cask # register output for debugging
+  no_log: true # prevents leaking become password to the logs

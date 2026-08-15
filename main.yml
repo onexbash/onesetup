@@ -20,7 +20,16 @@
     CARGO_HOME: "{{ lookup('ansible.builtin.env', 'CARGO_HOME', default=HOME + '/.config/cargo') }}"
   vars_files:
     - group_vars/all/ssh.yml
+  vars_prompt:
+    - name: SUDO_PASSWORD
+      prompt: "Enter your sudo password"
+      private: true
   pre_tasks:
+    - name: "auth | set become password gathered in user-prompt"
+      set_fact:
+        ansible_become_password: "{{ SUDO_PASSWORD }}"
+        cacheable: false
+      no_log: true
     # -- INCLUDE PRE_TASKS -- #
     # Include pre_task for System Discovery
     - name: "pre_tasks | System Discovery"
