@@ -1,29 +1,29 @@
 ---
-# install mas appstore cli tool
+# Install mas appstore cli tool
 - name: "ensure mas (appstore cli-tool) is installed"
   community.general.homebrew:
     name: mas
     state: latest
   become: false
-# install rosetta2
-# - name: "ensure rosetta2 is installed"
-#   shell:
-#     cmd: "softwareupdate --install-rosetta --agree-to-license"
-#   become: true
-#   ignore_errors: true
-# install bash
+# Install rosetta2
+- name: "ensure rosetta2 is installed"
+  shell:
+    cmd: "softwareupdate --install-rosetta --agree-to-license"
+  become: true
+  ignore_errors: true
+# Install bash
 - name: "ensure bash (brew version) is installed"
   community.general.homebrew:
     name: bash
     state: latest
   become: false
-# install zsh
+# Install zsh
 - name: "ensure zsh (brew version) is installed"
   community.general.homebrew:
     name: zsh
     state: latest
   become: false
-# install openssh
+# Install openssh
 - name: "ensure openssh (brew version) is installed"
   community.general.homebrew:
     name: openssh
