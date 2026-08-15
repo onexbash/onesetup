@@ -39,11 +39,15 @@
       include_tasks: "{{ item }}"
       with_fileglob:
         - "{{ playbook_dir }}/pre_tasks/all/*.yml"
+      loop_control:
+        loop_var: item_pretask
     # Include OS-Specific pre_tasks
     - name: "pre_tasks | OS-Specific ({{ onesetup_os }})"
       include_tasks: "{{ item }}"
       with_fileglob:
         - "{{ playbook_dir }}/pre_tasks/{{ onesetup_os }}/*.yml"
+      loop_control:
+        loop_var: item_pretask
     # -- INCLUDE GROUP_VARS -- #
     - name: "group_vars | OS-Independent (all)"
       include_vars:
