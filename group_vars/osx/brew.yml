@@ -104,7 +104,7 @@ brew_formulaes:
   - infisical # secret manager
   - fontforge # font patcher / editor
   - unzip # extraction tool
-  - tldr # simplified man pages
+  - tlrc # CLI Cheatsheet Engine (based on tldr)
   - pinentry
   - git-delta # git pager
   - glow # markdown preview
@@ -147,7 +147,7 @@ brew_formulaes:
 # Taps
 brew_taps:
   - asmvik/formulae # used by: yabai
-  - felixkratz/formulae # used by: SketchyBar, JankyBorders
+  - FelixKratz/formulae # used by: SketchyBar, JankyBorders
   - hashicorp/tap # used by: terraform and other hashicorp software
   - nikitabobko/tap # used by: aerospace
   - sdkman/tap # used by: sdkman (development kit manager)
