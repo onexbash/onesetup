@@ -35,6 +35,7 @@ brew_casks:
 brew_formulaes:
   # -- LANGUAGES -- #
   - typescript
+  - ast-grep # structural code search tool
   - yazi # terminal file manager
   - go
   - openjdk # java development kit
