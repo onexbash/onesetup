@@ -3,7 +3,7 @@
 # --      GENERAL      -- #    
 # -- -- -- -- -- -- -- -- #
 # Measurement Units
-- name: "set measurement units to centimeters"
+- name: "Set measurement units to centimeters"
   osx_defaults:
     domain: NSGlobalDomain
     key: AppleMeasurementUnits
@@ -11,7 +11,7 @@
     value: Centimeters
     state: present
 # Automatic Software Updates
-- name: "enable auto software updates"
+- name: "Enable auto software updates"
   osx_defaults:
     domain: /Library/Preferences/com.apple.SoftwareUpdate
     key: AutomaticCheckEnabled
@@ -46,14 +46,14 @@
 # --      APPSTORE     -- #    
 # -- -- -- -- -- -- -- -- #
 # Automatic Updates
-- name: "appstore | enable automatic updates"
+- name: "Appstore | enable automatic updates"
   osx_defaults:
     domain: com.apple.commerce
     key: AutoUpdate
     type: bool
     value: true
 # Automatic Downloads
-- name: "appstore | enable automatic downloads"
+- name: "Appstore | enable automatic downloads"
   osx_defaults:
     domain: com.apple.commerce
     key: AutoUpdateRestartRequired
@@ -64,21 +64,21 @@
 # --   USER INTERFACE  -- #    
 # -- -- -- -- -- -- -- -- #
 # Highlight Color
-- name: "set highlight color"
+- name: "Set highlight color"
   osx_defaults:
     key: AppleHighlightColor
     type: string
     value: "0.952900 0.545100 0.658800"
   notify: restart_systemui_server
 # Accent Color
-- name: "set accent color"
+- name: "Set accent color"
   osx_defaults:
     key: AppleAccentColor
     type: int
     value: 1
   notify: restart_systemui_server
 # Scrollbars
-- name: "always show scrollbars"
+- name: "Always show scrollbars"
   osx_defaults:
     domain: NSGlobalDomain
     key: AppleShowScrollBars
@@ -89,7 +89,7 @@
 # --      DOCK      -- #    
 # -- -- -- -- -- -- -- #
 # Dock Position
-- name: "dock | position"
+- name: "Dock | position"
   osx_defaults:
     domain: com.apple.dock
     key: orientation
@@ -97,7 +97,7 @@
     value: bottom
   notify: restart_dock
 # Dock Size
-- name: "dock | size"
+- name: "Dock | size"
   osx_defaults:
     domain: com.apple.dock
     key: tilesize
@@ -105,7 +105,7 @@
     value: 50
   notify: restart_dock
 # Dock Recent Apps
-- name: "dock | show recents"
+- name: "Dock | show recents"
   osx_defaults:
     domain: com.apple.dock
     key: show-recents
@@ -113,7 +113,7 @@
     value: false
   notify: restart_dock
 # Dock Autohide
-- name: "dock | autohide"
+- name: "Dock | autohide"
   osx_defaults:
     domain: com.apple.dock
     key: show-autohide
@@ -121,7 +121,7 @@
     value: true
   notify: restart_dock
 # Dock Autohide Animation
-- name: "dock | hide animation"
+- name: "Dock | hide animation"
   osx_defaults:
     domain: com.apple.dock
     key: mineffect
@@ -129,7 +129,7 @@
     value: suck
   notify: restart_dock
 # Dock Autohide Animation Duration
-- name: "dock | autohide animation duration"
+- name: "Dock | autohide animation duration"
   osx_defaults:
     domain: com.apple.dock
     key: autohide-time-modifier
@@ -137,7 +137,7 @@
     value: 0.7
   notify: restart_dock
 # Dock Autohide Animation Delay
-- name: "dock | autohide delay"
+- name: "Dock | autohide delay"
   osx_defaults:
     domain: com.apple.dock
     key: autohide-delay
@@ -145,7 +145,7 @@
     value: 0
   notify: restart_dock
 # Dock Pinned Apps
-- name: "dock | show pinned apps"
+- name: "Dock | show pinned apps"
   osx_defaults:
     domain: com.apple.dock
     key: static-only
@@ -153,7 +153,7 @@
     value: false
   notify: restart_dock
 # Dock Show Spaces
-- name: "dock | show spaces when scrolling up on a dock item"
+- name: "Dock | show spaces when scrolling up on a dock item"
   osx_defaults:
     domain: com.apple.dock
     key: scroll-to-open
@@ -161,7 +161,7 @@
     value: true
   notify: restart_dock
 # Dock Spring Loading
-- name: "dock | enable spring loading"
+- name: "Dock | enable spring loading"
   osx_defaults:
     domain: com.apple.dock
     key: enable-spring-load-actions-on-all-items
@@ -173,7 +173,7 @@
 # --    FINDER      -- #    
 # -- -- -- -- -- -- -- #
 # Show Quit Option
-- name: "finder | show quit option"
+- name: "Finder | show quit option"
   osx_defaults:
     domain: com.apple.finder
     key: QuitMenuItem
@@ -181,7 +181,7 @@
     value: false
   notify: restart_finder
 # Show Extensions
-- name: "finder | show extensions"
+- name: "Finder | show extensions"
   osx_defaults:
     domain: NSGlobalDomain
     key: AppleShowAllExtensions
@@ -189,7 +189,7 @@
     value: true
   notify: restart_finder
 # Show Hidden Files
-- name: "finder | show hidden files"
+- name: "Finder | show hidden files"
   osx_defaults:
     domain: com.apple.finder
     key: AppleShowAllFiles
@@ -197,7 +197,7 @@
     value: true
   notify: restart_finder
 # Show Path Bar
-- name: "finder | show path bar"
+- name: "Finder | show path bar"
   osx_defaults:
     domain: com.apple.finder
     key: ShowPathbar
@@ -205,7 +205,7 @@
     value: true
   notify: restart_finder
 # View Style
-- name: "finder | view style"
+- name: "Finder | view style"
   osx_defaults:
     domain: com.apple.finder
     key: FXPreferredViewStyle
@@ -213,7 +213,7 @@
     value: Nlsv # list: Nlsv | colum: clmv | gallery: glyv | icon: icnv
   notify: restart_finder
 # Folder Sorting
-- name: "finder | keep folders on top"
+- name: "Finder | keep folders on top"
   osx_defaults:
     domain: com.apple.finder
     key: _FXSortFoldersFirst
@@ -221,7 +221,7 @@
     value: true
   notify: restart_finder
 # Search Scope
-- name: "finder | search scope"
+- name: "Finder | search scope"
   osx_defaults:
     domain: com.apple.finder
     key: FXDefaultSearchScope
@@ -229,7 +229,7 @@
     value: SCcf # SCcf = current folder | SCsp = previous scope | SCev = entire volume
   notify: restart_finder
 # Bin Emptying
-- name: "finder | empty bin after 30days"
+- name: "Finder | empty bin after 30days"
   osx_defaults:
     domain: com.apple.finder
     key: FXRemoveOldTrashItems
@@ -237,7 +237,7 @@
     value: true
   notify: restart_finder
 # Change File Extension Warning
-- name: "finder | change file extension warning"
+- name: "Finder | change file extension warning"
   osx_defaults:
     domain: com.apple.finder
     key: FXEnableExtensionChangeWarning
@@ -245,7 +245,7 @@
     value: false
   notify: restart_finder
 # Save to iCloud
-- name: "finder | save to icloud by default"
+- name: "Finder | save to icloud by default"
   osx_defaults:
     domain: com.apple.finder
     key: NSDocumentSaveNewDocumentsToCloud
@@ -253,7 +253,7 @@
     value: false
   notify: restart_finder
 # Titlebar Hover Delay
-- name: "finder | titlebar hover delay"
+- name: "Finder | titlebar hover delay"
   osx_defaults:
     domain: NSGlobalDomain
     key: NSToolbarTitleViewRolloverDelay
@@ -261,7 +261,7 @@
     value: 0
   notify: restart_finder
 # Sidebar Icon Size
-- name: "finder | sidebar icon size"
+- name: "Finder | sidebar icon size"
   osx_defaults:
     domain: NSGlobalDomain
     key: NSTableViewDefaultSizeMode
@@ -273,7 +273,7 @@
 # --      DESKTOP      -- #    
 # -- -- -- -- -- -- -- -- #
 # Keep Folders on top
-- name: "desktop | keep folders on top"
+- name: "Desktop | keep folders on top"
   osx_defaults:
     domain: com.apple.finder
     key: _FXSortFoldersFirstOnDesktop
@@ -281,7 +281,7 @@
     value: true
   notify: restart_finder
 # Show Desktop Items
-- name: "desktop | show desktop items"
+- name: "Desktop | show desktop items"
   osx_defaults:
     domain: com.apple.finder
     key: CreateDesktop
@@ -289,7 +289,7 @@
     value: false
   notify: restart_finder
 # Show Volumes
-- name: "desktop | show volumes"
+- name: "Desktop | show volumes"
   osx_defaults:
     domain: com.apple.finder
     key: ShowHardDrivesOnDesktop
@@ -297,7 +297,7 @@
     value: false
   notify: restart_finder
 # Show External Volumes
-- name: "desktop | show external volumes"
+- name: "Desktop | show external volumes"
   osx_defaults:
     domain: com.apple.finder
     key: ShowExternalHardDrivesOnDesktop
@@ -305,7 +305,7 @@
     value: false
   notify: restart_finder
 # Show Removable Volumes
-- name: "desktop | show removable volumes"
+- name: "Desktop | show removable volumes"
   osx_defaults:
     domain: com.apple.finder
     key: ShowRemovableMediaOnDesktop
@@ -313,7 +313,7 @@
     value: false
   notify: restart_finder
 # Show Connected Servers
-- name: "desktop | show connected servers"
+- name: "Desktop | show connected servers"
   osx_defaults:
     domain: com.apple.finder
     key: ShowMountedServersOnDesktop
@@ -325,7 +325,7 @@
 # --      MENUBAR      -- #    
 # -- -- -- -- -- -- -- -- #
 # Clock Seperator
-- name: "menubar | blink clock separator"
+- name: "Menubar | blink clock separator"
   osx_defaults:
     domain: com.apple.menuextra.clock
     key: FlashDateSeparators
@@ -333,7 +333,7 @@
     value: false
   notify: restart_systemui_server
 # Clock Date Format
-- name: "menubar | clock date format"
+- name: "Menubar | clock date format"
   osx_defaults:
     domain: com.apple.menuextra.clock
     key: DateFormat
@@ -345,14 +345,14 @@
 # --       MOUSE       -- #    
 # -- -- -- -- -- -- -- -- #
 # Mouse Acceleration
-- name: "mouse | acceleration"
+- name: "Mouse | acceleration"
   osx_defaults:
     domain: NSGlobalDomain
     key: com.apple.mouse.linear
     type: bool
     value: true
 # Mouse Speed
-- name: "mouse | speed"
+- name: "Mouse | speed"
   osx_defaults:
     domain: NSGlobalDomain
     key: com.apple.mouse.scaling
@@ -363,7 +363,7 @@
 # --      TERMINAL     -- #    
 # -- -- -- -- -- -- -- -- #
 # Terminal follow mouse focus
-- name: "terminal | focus follows mouse"
+- name: "Terminal | focus follows mouse"
   osx_defaults:
     domain: com.apple.Terminal
     key: FocusFollowsMouse
@@ -374,28 +374,28 @@
 # --     TRACKPAD      -- #    
 # -- -- -- -- -- -- -- -- #
 # Click weight
-- name: "trackpad | click weight"
+- name: "Trackpad | click weight"
   osx_defaults:
     domain: com.apple.AppleMultitouchTrackpad
     key: FirstClickThreshold
     type: int
     value: 0 # light: 0 | medium: 1 | firm: 2
 # Dragging with drag lock
-- name: "trackpad | dragging with drag lock"
+- name: "Trackpad | dragging with drag lock"
   osx_defaults:
     domain: com.apple.AppleMultitouchTrackpad
     key: DragLock
     type: int
     value: 0
 # Dragging without drag lock
-- name: "trackpad | dragging without drag lock"
+- name: "Trackpad | dragging without drag lock"
   osx_defaults:
     domain: com.apple.AppleMultitouchTrackpad
     key: Dragging
     type: int
     value: 0
 # 3 Finger Drag
-- name: "trackpad | 3 finger drag"
+- name: "Trackpad | 3 finger drag"
   osx_defaults:
     domain: com.apple.AppleMultitouchTrackpad
     key: TrackpadThreeFingerDrag
@@ -406,28 +406,28 @@
 # --     KEYBOARD      -- #    
 # -- -- -- -- -- -- -- -- #
 # Key Hold Behaviour
-- name: "keyboard | key hold behaviour"
+- name: "Keyboard | key hold behaviour"
   osx_defaults:
     domain: NSGlobalDomain
     key: ApplePressAndHoldEnabled
     type: bool
     value: false
 # fn Key Behaviour
-- name: "keyboard | 🌐︎ key behaviour"
+- name: "Keyboard | 🌐︎ key behaviour"
   osx_defaults:
     domain: com.apple.HIToolbox
     key: AppleFnUsageType
     type: int
     value: 0 # 0: do nothing | 1: change input source | 2: show emojis & symbols | 3: start dication
 # Function keys behaviour
-- name: "keyboard | function keys behaviour (f1 - f12)"
+- name: "Keyboard | function keys behaviour (f1 - f12)"
   osx_defaults:
     domain: NSGlobalDomain
     key: com.apple.keyboard.fnState
     type: bool
     value: true # true: use function keys as standard function keys | false: use function keys as media keys
 # Drag on Gesture
-- name: "keyboard | drag on gesture"
+- name: "Keyboard | drag on gesture"
   osx_defaults:
     domain: NSGlobalDomain
     key: NSWindowShouldDragOnGesture
@@ -438,7 +438,7 @@
 # --  MISSION CONTROL  -- #    
 # -- -- -- -- -- -- -- -- #
 # Rearrange Spaces
-- name: "mission control | auto rearrange spaces based on recent use"
+- name: "Mission Control | auto rearrange spaces based on recent use"
   osx_defaults:
     domain: com.apple.dock
     key: mru-spaces
@@ -446,7 +446,7 @@
     value: false
   notify: restart_dock
 # Group Windows by application
-- name: "mission control | group windows by application"
+- name: "Mission Control | group windows by application"
   osx_defaults:
     domain: com.apple.dock
     key: expose-group-apps
@@ -454,14 +454,14 @@
     value: true
   notify: restart_dock
 # Switch to space with open windows
-- name: "mission control | switch to space with open windows"
+- name: "Mission Control | switch to space with open windows"
   osx_defaults:
     domain: NSGlobalDomain
     key: AppleSpacesSwitchOnActivate
     type: bool
     value: true
 # Seperate Spaces per display
-- name: "mission control | seperate spaces per display"
+- name: "Mission Control | seperate spaces per display"
   osx_defaults:
     domain: com.apple.spaces
     key: spans-display
@@ -473,14 +473,14 @@
 # --   ACTIVITY MONITOR   -- #    
 # -- -- -- -- -- -- -- -- -- #
 # Update Frequency
-- name: "activity monitor | update frequency"
+- name: "Activity Monitor | update frequency"
   osx_defaults:
     domain: com.apple.ActivityMonitor
     key: UpdatePeriod
     type: int
     value: 3 # update frequency in seconds
 # Activity Monitor Dock Icon
-- name: "activity monitor | dock icon"
+- name: "Activity Monitor | dock icon"
   osx_defaults:
     domain: com.apple.ActivityMonitor
     key: IconType
@@ -491,7 +491,7 @@
 # --   MISCELLANEOUS   -- #    
 # -- -- -- -- -- -- -- -- #
 # Help Menu Position
-- name: "help menu | position"
+- name: "Help Menu | position"
   osx_defaults:
     domain: com.apple.helpviewer
     key: DevMode
@@ -499,7 +499,7 @@
     value: false
 
 # Apple Music Notification
-- name: "dont show notification when a new song starts"
+- name: "Dont show notification when a new song starts"
   osx_defaults:
     domain: com.apple.Music
     key: userWantsPlaybackNotifications
@@ -507,7 +507,7 @@
     value: false
 
 # Application Quarantine Message
-- name: "disable application quarantine message"
+- name: "Disable application quarantine message"
   osx_defaults:
     domain: com.apple.LaunchServices
     key: LSQuarantine
@@ -515,7 +515,7 @@
     value: false
 
 # Auto Save
-- name: "enable auto save"
+- name: "Enable auto save"
   osx_defaults:
     domain: NSGlobalDomain
     key: NSCloseAlwaysConfirmsChanges
@@ -523,7 +523,7 @@
     value: true
 
 # Time Machine
-- name: "time machine | dont prompt to use time machine for new disks"
+- name: "Time machine | dont prompt to use time machine for new disks"
   osx_defaults:
     domain: com.apple.TimeMachine
     key: DoNotOfferNewDisksForBackup
@@ -531,7 +531,7 @@
     value: true
 
 # Messages (iMessage)
-- name: "messages | subject field"
+- name: "Messages | subject field"
   osx_defaults:
     domain: com.apple.MobileSMS
     key: MMSShowSubject
@@ -539,7 +539,7 @@
     value: true
 
 # Feedback Assistant
-- name: "feedback assistant | autogather large files"
+- name: "Feedback assistant | autogather large files"
   osx_defaults:
     domain: com.apple.appleseed.FeedbackAssistant
     key: Autogather
@@ -547,7 +547,7 @@
     value: true
 
 # Apple Crash Report
-- name: "disable apple crash reports"
+- name: "Disable apple crash reports"
   osx_defaults:
     domain: com.apple.CrashReporter
     key: DialogType
@@ -573,3 +573,104 @@
   ansible.builtin.command: "systemsetup -setrestartfreeze on"
   become: true
   changed_when: true
+
+
+# NOTE: The settings below are not verified yet
+# -- SECURITY -- #
+- name: "Security | require password immediately after sleep/screensaver"
+  osx_defaults:
+    domain: com.apple.screensaver
+    key: askForPassword
+    type: int
+    value: 1
+- name: "Security | password delay"
+  osx_defaults:
+    domain: com.apple.screensaver
+    key: askForPasswordDelay
+    type: int
+    value: 0
+- name: "Security | enable firewall"
+  osx_defaults:
+    domain: /Library/Preferences/com.apple.alf
+    key: globalstate
+    type: int
+    value: 1
+  become: true
+
+# -- HOT CORNERS -- #
+# Disable top-left
+- name: "Hot Corners | disable top-left"
+  osx_defaults:
+    domain: com.apple.dock
+    key: wvous-tl-corner
+    type: int
+    value: 0
+  notify: restart_dock
+# Disable top-right  
+- name: "Hot Corners | disable top-right"
+  osx_defaults:
+    domain: com.apple.dock
+    key: wvous-tr-corner
+    type: int
+    value: 0
+  notify: restart_dock
+# Disable bottom-left
+- name: "Hot Corners | disable bottom-left"
+  osx_defaults:
+    domain: com.apple.dock
+    key: wvous-bl-corner
+    type: int
+    value: 0
+  notify: restart_dock
+# Disable bottom-right
+- name: "Hot Corners | disable bottom-right"
+  osx_defaults:
+    domain: com.apple.dock
+    key: wvous-br-corner
+    type: int
+    value: 0
+  notify: restart_dock
+
+# -- KEYBOARD REPEAT (dev QoL) -- #
+- name: "Keyboard | fast key repeat rate"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: KeyRepeat
+    type: int
+    value: 2
+- name: "Keyboard | short initial delay"
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: InitialKeyRepeat
+    type: int
+    value: 15
+
+# -- SCREENSHOTS -- #
+- name: "Screenshots | disable drop shadow"
+  osx_defaults:
+    domain: com.apple.screencapture
+    key: disable-shadow
+    type: bool
+    value: true
+- name: "Screenshots | format"
+  osx_defaults:
+    domain: com.apple.screencapture
+    key: type
+    type: string
+    value: png
+
+# -- SAFARI DEV -- #
+- name: "Safari | enable develop menu"
+  osx_defaults:
+    domain: com.apple.Safari
+    key: IncludeDevelopMenu
+    type: bool
+    value: true
+
+# -- TERMINAL -- #
+- name: "Terminal | secure keyboard entry"
+  osx_defaults:
+    domain: com.apple.Terminal
+    key: SecureKeyboardEntry
+    type: bool
+    value: true
