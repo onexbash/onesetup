@@ -54,14 +54,16 @@
 # Copy: Global Shell Files
 - name: "Copy: Global Shell Files"
   ansible.builtin.copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    src: "{{ shell_file.src }}"
+    dest: "{{ shell_file.dest }}"
     mode: "0644"
     owner: "root"
     group: "wheel"
     force: true
     remote_src: true
   loop: "{{ shell_global }}"
+  loop_control:
+    loop_var: shell_file
   become: true
 
 # Cleanup: Dotfiles (dest)
