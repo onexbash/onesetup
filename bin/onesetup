@@ -59,10 +59,11 @@ run_playbook() {
   eval "$(/opt/homebrew/bin/brew shellenv)"
   # run ansible playbook with optional --skip-tags
   if [ -n "$skip_tags" ]; then
-    ansible-playbook "${ONESETUP_DIR}/main.yml" --ask-become-pass --ask-vault-pass --skip-tags "$skip_tags" &&
+    # --ask-become-pass
+    ansible-playbook "${ONESETUP_DIR}/main.yml" --ask-vault-pass --skip-tags "$skip_tags" &&
       echo -e "${I_OK} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
   else
-    ansible-playbook "${ONESETUP_DIR}/main.yml" --ask-become-pass --ask-vault-pass &&
+    ansible-playbook "${ONESETUP_DIR}/main.yml" --ask-vault-pass &&
       echo -e "${I_OK} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
   fi
 }
