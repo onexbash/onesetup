@@ -69,10 +69,12 @@
 # Cleanup: Dotfiles (dest)
 - name: "Cleanup: Dotfiles"
   ansible.builtin.file:
-    path: "{{ item.dest }}"
+    path: "{{ item_dotfiles.dest }}"
     state: "absent"
     force: true
   loop: "{{ dotfiles }}"
+  loop_control:
+    loop_var: "item_dotfiles"
   ignore_errors: true
   become: true
 
