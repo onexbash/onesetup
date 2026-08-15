@@ -1,7 +1,13 @@
 # -- DOCK ITEMS -- #
-- name: "execute dock setup script"
-  ansible.builtin.command:
-    cmd: "{{ XDG_CONFIG_HOME }}/scripts/set_dock_items.sh"
+# Install dockutil for managing dock items
+- name: "install dockutil"
+  community.general.homebrew:
+    name: "dockutil"
+    path: "/usr/local/bin:/opt/homebrew/bin"
+    state: latest
+    install_options:
+      - quiet # reduce output
+  ignore_errors: true
 # -- -- -- -- -- -- -- -- -- -- #
 # --  MACOS SYSTEM SETTINGS  -- #
 # -- -- -- -- -- -- -- -- -- -- #

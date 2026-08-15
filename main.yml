@@ -50,4 +50,4 @@
   roles:
     - { role: dotfiles, tags: ["dotfiles"] }
     - { role: apps, tags: ["apps"] }
-    # - { role: settings, tags: ["settings"] }
+    - { role: settings, tags: ["settings"] }
