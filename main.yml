@@ -33,17 +33,17 @@
     # -- INCLUDE PRE_TASKS -- #
     # Include pre_task for System Discovery
     - name: "pre_tasks | System Discovery"
-      include_tasks: "{{ playbook_dir }}/pre_tasks/system_discovery.yml"
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/pre_tasks/system_discovery.yml"
     # Include OS-Independent pre_tasks (for every OS)
     - name: "pre_tasks | OS-Independent (all)"
-      include_tasks: "{{ item }}"
+      ansible.builtin.include_tasks: "{{ item_pretask }}"
       with_fileglob:
         - "{{ playbook_dir }}/pre_tasks/all/*.yml"
       loop_control:
         loop_var: item_pretask
     # Include OS-Specific pre_tasks
     - name: "pre_tasks | OS-Specific ({{ onesetup_os }})"
-      include_tasks: "{{ item }}"
+      ansible.builtin.include_tasks: "{{ item_pretask }}"
       with_fileglob:
         - "{{ playbook_dir }}/pre_tasks/{{ onesetup_os }}/*.yml"
       loop_control:
