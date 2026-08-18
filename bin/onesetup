@@ -32,10 +32,9 @@ function main() {
   export ONESETUP_DIR_DEV="${ONESETUP_DIR_DEV:-$(git rev-parse --show-toplevel 2>/dev/null)}"
   export ONESETUP_REPO="${ONESETUP_REPO:-onexbash/onesetup}"
   export ONESETUP_VARFILE_ENCRYPTED="${ONESETUP_VARFILE_ENCRYPTED:-group_vars/all/encrypted.yml}"
-
+  export ONESETUP_CLOUD_DIR="${ONESETUP_CLOUD_DIR:-/opt/onexcloud}" # TODO: use actual cloud storage
   export DOTFILES_DIR="${DOTFILES_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles}"
   export DOTFILES_REPO="${DOTFILES_REPO:-onexbash/dotfiles}"
-
   export ANSIBLE_DEBUG="${ANSIBLE_DEBUG:-0}"
 
   # Function Calls

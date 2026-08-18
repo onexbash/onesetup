@@ -1,40 +1,47 @@
 ---
 # -- -- -- -- -- -- -- -- #
 # --   MAIN PLAYBOOK   -- #
-- name: "onesetup"
+- name: onesetup
+  
   # -- CONNECTION -- #
   hosts: localhost
   connection: local
+  
   # -- VARIABLES -- #
   vars:
-    ONESETUP_DIR: "{{ lookup('ansible.builtin.env', 'ONESETUP_DIR') }}"
-    ONESETUP_REPO: "{{ lookup('ansible.builtin.env', 'ONESETUP_REPO') }}"
-    DOTFILES_DIR: "{{ lookup('ansible.builtin.env', 'DOTFILES_DIR') }}"
-    DOTFILES_REPO: "{{ lookup('ansible.builtin.env', 'DOTFILES_REPO') }}"
-    DOTFILES_REPO_HTTPS: "https://github.com/{{ DOTFILES_REPO }}.git"
+    # Project Environment Variables
+    ONESETUP_DIR: "{{ ansible_facts['env']['ONESETUP_DIR'] | default(ansible_facts['env']['HOME'] + '/.local/share/onesetup') }}"
+    ONESETUP_REPO: "{{ ansible_facts['env']['ONESETUP_REPO'] }}"
+    DOTFILES_DIR: "{{ ansible_facts['env']['DOTFILES_DIR'] | default(ansible_facts['env']['HOME'] + '/.local/share/dotfiles') }}"
+    DOTFILES_REPO: "{{ ansible_facts['env']['DOTFILES_REPO'] }}"
+    ONESETUP_REPO_SSH: "git@github.com:{{ ONESETUP_REPO }}.git"
+    ONESETUP_REPO_HTTPS: "https://github.com/{{ ONESETUP_REPO }}.git"
     DOTFILES_REPO_SSH: "git@github.com:{{ DOTFILES_REPO }}.git"
-    USER: "{{ lookup('ansible.builtin.env', 'USER') }}"
-    HOME: "{{ lookup('ansible.builtin.env', 'HOME') }}"
-    XDG_CONFIG_HOME: "{{ lookup('ansible.builtin.env', 'XDG_CONFIG_HOME', default=HOME + '/.config/') }}"
-    ZDOTDIR: "{{ lookup('ansible.builtin.env', 'ZDOTDIR') }}"
-    CARGO_HOME: "{{ lookup('ansible.builtin.env', 'CARGO_HOME', default=HOME + '/.config/cargo') }}"
-    CLOUD_DIR: "/opt/onexcloud" # TODO: Use actual cloud storage
-  vars_files:
-    - group_vars/all/ssh.yml
+    DOTFILES_REPO_HTTPS: "https://github.com/{{ DOTFILES_REPO }}.git"
+    ONESETUP_CLOUD_DIR: "{{ ansible_facts['env']['ONESETUP_CLOUD_DIR'] }}" # TODO: Use actual cloud storage
+    # User Environment Variables
+    USER: "{{ ansible_facts['env']['USER'] }}"
+    HOME: "{{ ansible_facts['env']['HOME'] }}"
+    XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] }}"
+    ZDOTDIR: "{{ ansible_facts['env']['ZDOTDIR'] }}"
+    CARGO_HOME: "{{ ansible_facts['env']['CARGO_HOME'] }}"
+  # Variable Prompts
   vars_prompt:
     - name: SUDO_PASSWORD
       prompt: "Enter your sudo password"
       private: true
+
+  # -- PRE-TASKS -- #
   pre_tasks:
+    # Set Become Password
     - name: "auth | set become password gathered in user-prompt"
       set_fact:
         ansible_become_password: "{{ SUDO_PASSWORD }}"
         cacheable: false
       no_log: true
-    # -- INCLUDE PRE_TASKS -- #
     # Include pre_task for System Discovery
     - name: "pre_tasks | System Discovery"
-      ansible.builtin.include_tasks: "{{ playbook_dir }}/pre_tasks/system_discovery.yml"
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/pre_tasks/all/system_discovery.yml"
     # Include OS-Independent pre_tasks (for every OS)
     - name: "pre_tasks | OS-Independent (all)"
       ansible.builtin.include_tasks: "{{ item_pretask }}"
@@ -49,18 +56,15 @@
         - "{{ playbook_dir }}/pre_tasks/{{ onesetup_os }}/*.yml"
       loop_control:
         loop_var: item_pretask
-    # -- INCLUDE GROUP_VARS -- #
-    - name: "group_vars | OS-Independent (all)"
-      include_vars:
-        dir: "group_vars/all"
+    # Include OS-Specific Variables
+    - name: "group_vars | Include OS-specific variables ({{ onesetup_os }})"
+      ansible.builtin.include_vars:
+        dir: "{{ playbook_dir }}/group_vars/{{ onesetup_os }}"
         extensions:
           - yml
-    - name: "group_vars | OS-Specific ({{ onesetup_os }})"
-      include_vars:
-        dir: "group_vars/{{ onesetup_os }}"
-        extensions:
-          - yml
-  # -- INCLUDE ROLES -- #
+      ignore_errors: true # Skip if OS-specific folder doesnt exist
+  
+  # -- ROLES -- #
   roles:
     - { role: dotfiles, tags: ["dotfiles"] }
     - { role: apps, tags: ["apps"] }
