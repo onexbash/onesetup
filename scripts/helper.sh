@@ -97,7 +97,7 @@ function load_env_file() {
       ((count_missing++))
     fi
   done
-  echo -e "${I_INFO}You passed ${FG_BLUE}$count_args${S_RESET} .env file where ${FG_GREEN}$count_existing${S_RESET} exist and ${FG_RED}$count_missing${S_RESET} don't exist."
+  echo -e "${I_INFO}You passed ${FG_BLUE}$count_args${C_RESET} .env file where ${FG_GREEN}$count_existing${C_RESET} exist and ${FG_RED}$count_missing${C_RESET} don't exist."
 
   # Return exit-code
   if [ $count_missing -gt 0 ]; then

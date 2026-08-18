@@ -112,10 +112,10 @@ function install() {
   # Ensure bin directory exists
   local bin_dir="/usr/local/bin"
   if [[ -d "$bin_dir" ]]; then
-    echo -e "${I_OK}Bin Directory found at: [ ${FG_GREEN}$bin_dir${S_RESET} ]"
+    echo -e "${I_OK}Bin Directory found at: [ ${FG_GREEN}$bin_dir${C_RESET} ]"
   else
     sudo mkdir -p "$bin_dir"
-    echo -e "${I_OK}Bin Directory not found and therefore created at: [ ${FG_GREEN}$bin_dir${S_RESET} ]"
+    echo -e "${I_OK}Bin Directory not found and therefore created at: [ ${FG_GREEN}$bin_dir${C_RESET} ]"
   fi
 
   # Rollout executables to bin_dir
@@ -126,7 +126,7 @@ function install() {
     if [[ -f "$file" ]]; then
       local filename
       filename=$(basename "$file")
-      sudo cp -f "$file" "$bin_dir" && echo -e "${I_OK}${FG_GREEN}$filename${S_RESET} copied to ${FG_GREEN}$bin_dir${S_RESET}" || echo -e "${I_ERR}Failed to copy ${FG_RED}$filename${S_RESET} to ${FG_RED}$bin_dir${S_RESET}"
+      sudo cp -f "$file" "$bin_dir" && echo -e "${I_OK}${FG_GREEN}$filename${C_RESET} copied to ${FG_GREEN}$bin_dir${C_RESET}" || echo -e "${I_ERR}Failed to copy ${FG_RED}$filename${C_RESET} to ${FG_RED}$bin_dir${C_RESET}"
     fi
   done
 }
