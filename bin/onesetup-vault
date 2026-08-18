@@ -174,6 +174,7 @@ function prepare_output_target() {
 
   # If target is ansible, check for variable duplicates in group_vars/all/encrypted.yml
   # TODO: implement target 'ssh' that uses group_vars/all/ssh.yml
+  # TODO: make it work when the command is run outside of the onesetup project directory
   if [[ "$target" == "ansible" ]]; then
     if check_duplicates_varfile "$varname"; then
       echo -e "${I_ERR}Variable [ ${C_MAGENTA}$varname${C_RESET} ] already exists in [ ${C_MAGENTA}$ONESETUP_VARFILE_ENCRYPTED${C_RESET} ]."
