@@ -4,7 +4,7 @@
   environment:
     CARGO_HOME: "{{ XDG_CONFIG_HOME }}/cargo"
     RUSTUP_HOME: "{{ XDG_CONFIG_HOME }}/rustup"
-    PATH: "{{ XDG_CONFIG_HOME }}/cargo/bin:{{ ansible_env.PATH }}" # TODO: not sure if this works
+    PATH: "{{ XDG_CONFIG_HOME }}/cargo/bin:{{ ansible_facts['env']['PATH'] }}" # TODO: Test if this works
   register: cargo_exists
   ignore_errors: true
 

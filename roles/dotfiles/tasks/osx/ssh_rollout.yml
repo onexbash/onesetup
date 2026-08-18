@@ -13,7 +13,7 @@
 - name: "Rollout SSH config files"
   ansible.builtin.copy:
     content: "{{ item.value }}\n"
-    dest: "{{ ansible_env.HOME }}/.ssh/{{ item.key }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.ssh/{{ item.key }}"
     mode: "0600"
   loop: "{{ ssh_files | dict2items }}"
   no_log: true # Prevents secret leaking
