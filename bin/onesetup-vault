@@ -172,7 +172,8 @@ function prepare_output_target() {
     fi
   fi
 
-  # If target is ansible, check for variable duplicates
+  # If target is ansible, check for variable duplicates in group_vars/all/encrypted.yml
+  # TODO: implement target 'ssh' that uses group_vars/all/ssh.yml
   if [[ "$target" == "ansible" ]]; then
     if check_duplicates_varfile "$varname"; then
       echo -e "${I_ERR}Variable [ ${C_MAGENTA}$varname${C_RESET} ] already exists in [ ${C_MAGENTA}$ONESETUP_VARFILE_ENCRYPTED${C_RESET} ]."
