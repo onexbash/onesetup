@@ -357,7 +357,7 @@
     domain: NSGlobalDomain
     key: com.apple.mouse.scaling
     type: float
-    value: 2
+    value: 1.5 # values: https://macos-defaults.com/mouse/scaling.html#set-to-1-default-value
 
 # -- -- -- -- -- -- -- -- #
 # --      TERMINAL     -- #    
