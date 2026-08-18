@@ -1,0 +1,29 @@
+---
+# Ensure ~/.ssh directory exists with correct permission
+- name: "Ensure SSH Directory exists ({{ HOME }}/.ssh)"
+  ansible.builtin.file:
+    path: "{{ HOME }}/.ssh"
+    state: "directory"
+    mode: "0700"
+    owner: "{{ USER }}"
+    group: "staff"
+  become: true
+
+# Rollout SSH Config Files from 'group_vars/all/ssh.yml'
+- name: "Rollout SSH config files"
+  ansible.builtin.copy:
+    content: "{{ item.value }}\n"
+    dest: "{{ ansible_env.HOME }}/.ssh/{{ item.key }}"
+    mode: "0600"
+  loop: "{{ ssh_files | dict2items }}"
+  no_log: true # Prevents secret leaking
+
+# Rollout SSH Keys from 'group_vars/all/ssh.yml'
+- name: "Rollout SSH Keys"
+  ansible.builtin.copy:
+    content: "{{ item.value }}\n"
+    dest: "{{ HOME }}/.ssh/{{ item.key | regex_replace('_pub$', '.pub') }}"
+    mode: "{{ '0644' if item.key.endswith('_pub') else '0600' }}"
+  loop: "{{ ssh_keys | dict2items }}"
+  no_log: true # Prevents secret leaking
+
