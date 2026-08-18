@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
+# Exit on error, undefined variables, and failed commands in pipes
+set -euo pipefail
+
 # Main Function
 function main() {
-  # exit on error, undefined variables, and failed commands in pipes
-  set -euo pipefail
-   
   # Terminal Colors
   export C_BLACK='\033[1;30m'
   export C_RED='\033[1;31m'
@@ -14,29 +14,29 @@ function main() {
   export C_MAGENTA='\033[1;35m'
   export C_CYAN='\033[1;36m'
   export C_WHITE='\033[1;37m'
-  export C_GRAY='\033[1;34m'
+  export C_GRAY='\033[0;37m'
   export C_RESET='\033[0m'
 
   # Prompt Variables
-  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
-  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
-  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
-  export I_INFO="${C_BLACK}[${C_MAGENTA} INFO ${C_BLACK}] ${C_RESET}"     # info
-  export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"     # error
-  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
-  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
-  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
+  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"
+  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"
+  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"
+  export I_INFO="${C_BLACK}[${C_MAGENTA} INFO ${C_BLACK}] ${C_RESET}"
+  export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"
+  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"
+  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"
+  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}"
 
-  # Environment Variable Defaults (overwritten if set by user)
-  if [[ -z "${ONESETUP_DIR:-}" ]]; then
-    export ONESETUP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
-  fi
-  if [[ -z "${ONESETUP_REPO:-}" ]]; then
-    export ONESETUP_REPO="onexbash/onesetup"
-  fi
-  if [[ -z "${ANSIBLE_DEBUG:-}" ]]; then
-    export ANSIBLE_DEBUG=0
-  fi
+  # Environment Variable Defaults (overwritten if passed to the 'onesetup' command or added to .env)
+  export ONESETUP_DIR="${ONESETUP_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/onesetup}"
+  export ONESETUP_REPO="${ONESETUP_REPO:-onexbash/onesetup}"
+  export ONESETUP_VARFILE_ENCRYPTED="${ONESETUP_VARFILE_ENCRYPTED:-group_vars/all/encrypted.yml}"
+  
+  export DOTFILES_DIR="${DOTFILES_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles}"
+  export DOTFILES_REPO="${DOTFILES_REPO:-onexbash/dotfiles}"
+  
+  export ANSIBLE_DEBUG="${ANSIBLE_DEBUG:-0}"
+  export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-${ONESETUP_DIR}/ansible.cfg}"
 
   # Function Calls
   install_deps
@@ -59,140 +59,166 @@ Commands:
 EOF
 }
 
-# Argument Parser
-function parse_args() {
-  if [[ $# -eq 0 ]]; then
-    prompt_user
-    return 0
-  fi
-
-  case "${1:-}" in
-  encrypt)
-    shift
-    parse_encrypt_args "$@"
-    ;;
-  decrypt)
-    shift
-    parse_decrypt_args "$@"
-    ;;
-  help | --help | -h)
-    print_help
-    ;;
-  *)
-    echo -e "${I_ERR}Unknown command: $1"
-    print_help
-    exit 1
-    ;;
+# Helper: Detect Operating System
+function detect_os() {
+  case "$(uname -s)" in
+    Linux*) echo "linux" ;;
+    Darwin*) echo "macos" ;;
+    CYGWIN* | MINGW* | MSYS*) echo "windows" ;;
+    *) echo "unknown" ;;
   esac
 }
 
-# Parse Subcommand 'encrypt'
-function parse_encrypt_args() {
-  if [[ $# -eq 0 ]]; then
-    encrypt_prompt_user
-    return 0
+# Helper: Linux PKG Installer
+function install_linux_pkg() {
+  local pkg="$1"
+  if command -v apt-get &>/dev/null; then
+    sudo apt-get update -qq && sudo apt-get install -y "$pkg"
+  elif command -v dnf &>/dev/null; then
+    sudo dnf install -y "$pkg"
+  elif command -v pacman &>/dev/null; then
+    sudo pacman -S --noconfirm "$pkg"
+  else
+    echo -e "${I_ERR}Unsupported package manager." && return 1
   fi
-
-  case "${1:-}" in
-  --string)
-    shift
-    encrypt_string "$@"
-    ;;
-  --file)
-    shift
-    encrypt_file "$@"
-    ;;
-  *)
-    echo -e "${I_ERR}Unknown argument for 'encrypt': $1"
-    echo -e "${I_INFO}Usage: $(basename "$0") encrypt [--string | --file <path> [varname]]"
-    exit 1
-    ;;
-  esac
 }
 
-# Parse Subcommand 'decrypt'
-function parse_decrypt_args() {
-  if [[ $# -eq 0 ]]; then
-    decrypt_prompt_user
-    return 0
-  fi
+# Install Dependencies
+function install_deps() {
+  local os pkg_list
+  os="$(detect_os)"
+  pkg_list=("gum" "ansible")
 
-  case "${1:-}" in
-  --arg1)
-    shift
-    decrypt_arg1 "$@"
-    ;;
-  --arg2)
-    shift
-    decrypt_arg2 "$@"
-    ;;
-  *)
-    echo -e "${I_ERR}Unknown argument for 'decrypt': $1"
-    echo -e "${I_INFO}Usage: $(basename "$0") decrypt [--arg1 | --arg2]"
-    exit 1
-    ;;
-  esac
+  for pkg in "${pkg_list[@]}"; do
+    if command -v "$pkg" &>/dev/null; then
+      continue
+    fi
+
+    echo -e "${I_INFO}Dependency missing: ${C_RED}$pkg${C_RESET}. Installing..."
+
+    case "$os" in
+    macos)
+      if ! command -v "brew" &>/dev/null; then
+        echo -e "${I_ERR}Homebrew is not installed on your system. Please install & re-run this script."
+        echo -e "${I_INFO}Install Homebrew from: ${C_BLUE}https://brew.sh${C_RESET}"
+        exit 1
+      fi
+      brew install "$pkg" || { echo -e "${I_ERR}Failed to install: $pkg"; exit 1; }
+      ;;
+    linux)
+      install_linux_pkg "$pkg" || { echo -e "${I_ERR}Failed to install: $pkg"; exit 1; }
+      ;;
+    windows)
+      echo -e "${I_ERR}Windows Support Coming soon.." && exit 1
+      ;;
+    *)
+      echo -e "${I_ERR}Unsupported OS." && exit 1
+      ;;
+    esac
+  done
 }
 
-# Prompt for Subcommand: [encrypt/decrypt]
-function prompt_user() {
+# Helper: Copy to clipboard
+function copy_to_clipboard() {
+  if command -v pbcopy &>/dev/null; then pbcopy
+  elif command -v wl-copy &>/dev/null; then wl-copy
+  elif command -v xclip &>/dev/null; then xclip -selection clipboard 2>/dev/null
+  else
+    cat
+    echo -e "\n${I_WARN}No clipboard tool found — printed above instead." >&2
+  fi
+}
+
+# Prompt 'target' argument for Subcommand 'encrypt'
+function prompt_encrypt_target() {
+  local choice
   choice=$(
-    gum choose "Encrypt" "Decrypt" \
+    gum choose "Copy to Clipboard" "Save to $ONESETUP_VARFILE_ENCRYPTED" \
       --cursor.foreground "#cba6f7" \
       --header.foreground "#cba6f7" \
       --selected.foreground "#cba6f7" \
-      --header "Choose:" \
+      --header "Choose Output Target:" \
       --no-show-help \
       --ordered || true
   )
-
   case "$choice" in
-  "Encrypt") encrypt_prompt_user ;;
-  "Decrypt") decrypt_prompt_user ;;
-  *) echo -e "${I_WARN}Operation cancelled." ;;
+  "Copy to Clipboard") echo "clipboard" ;;
+  "Save to $ONESETUP_VARFILE_ENCRYPTED") echo "ansible" ;;
+  *) echo "" ;;
   esac
 }
 
-# Prompt args for Subcommand 'encrypt'
-function encrypt_prompt_user() {
-  choice=$(
-    gum choose "Encrypt String" "Encrypt File Content" \
-      --cursor.foreground "#cba6f7" \
-      --header.foreground "#cba6f7" \
-      --selected.foreground "#cba6f7" \
-      --header "Choose:" \
-      --no-show-help \
-      --ordered || true
-  )
-
-  case "$choice" in
-  "Encrypt String") encrypt_string ;;
-  "Encrypt File Content") encrypt_file ;;
-  *) echo -e "${I_WARN}Operation cancelled." ;;
-  esac
+# Helper: Check if variable name already exists in ONESETUP_VARFILE_ENCRYPTED
+function check_duplicates_varfile() {
+  local varname="$1"
+  if [[ -f "$ONESETUP_VARFILE_ENCRYPTED" ]]; then
+    if grep -qE "^${varname}:" "$ONESETUP_VARFILE_ENCRYPTED"; then
+      return 0 # Duplicate exists
+    fi
+  fi
+  return 1 # No Duplicates
 }
 
-# Prompt args for Subcommand 'decrypt'
-function decrypt_prompt_user() {
-  choice=$(
-    gum choose "arg1" "arg2" \
-      --cursor.foreground "#cba6f7" \
-      --header.foreground "#cba6f7" \
-      --selected.foreground "#cba6f7" \
-      --header "Choose:" \
-      --no-show-help \
-      --ordered || true
-  )
+# Helper: Resolve target output and validate duplicates BEFORE encrypting
+function prepare_output_target() {
+  local target="$1"
+  local varname="$2"
 
-  case "$choice" in
-  "arg1") decrypt_arg1 ;;
-  "arg2") decrypt_arg2 ;;
-  *) echo -e "${I_WARN}Operation cancelled." ;;
+  # If target wasn't explicitly supplied via CLI, ask or default
+  if [[ -z "$target" ]]; then
+    if [[ -t 0 ]]; then
+      target=$(prompt_encrypt_target)
+    else
+      target="clipboard"
+    fi
+  fi
+
+  # If target is ansible, check for variable duplicates
+  if [[ "$target" == "ansible" ]]; then
+    if check_duplicates_varfile "$varname"; then
+      echo -e "${I_ERR}Variable [ ${C_MAGENTA}$varname${C_RESET} ] already exists in [ ${C_MAGENTA}$ONESETUP_VARFILE_ENCRYPTED${C_RESET} ]."
+      echo -e "${I_INFO}Please choose a different variable name to prevent overwriting."
+      return 1
+    fi
+  fi
+
+  # Echo resolved target back to caller
+  echo "$target"
+}
+
+# Helper: Handle output based on validated target
+function handle_encrypted_output() {
+  local encrypted_res="$1"
+  local varname="$2"
+  local target="$3"
+
+  case "$target" in
+  clipboard)
+    echo "$encrypted_res" | copy_to_clipboard
+    echo -e "${I_OK}Encrypted string copied to clipboard with Ansible Variable [ ${C_MAGENTA}$varname${C_RESET} ]"
+    ;;
+  ansible)
+    # Create destination directory if missing
+    mkdir -p "$(dirname "$ONESETUP_VARFILE_ENCRYPTED")"
+
+    # Append to target file
+    echo "$encrypted_res" >> "$ONESETUP_VARFILE_ENCRYPTED"
+    echo -e "${I_OK}Encrypted Ansible Variable [ ${C_MAGENTA}$varname${C_RESET} ] appended to [ ${C_MAGENTA}$ONESETUP_VARFILE_ENCRYPTED${C_RESET} ]"
+    ;;
+  *)
+    echo -e "${I_WARN}No target selected. Aborting."
+    return 1
+    ;;
   esac
 }
 
 # Subcommand 'encrypt': --string
 function encrypt_string() {
+  local target="$1"
+  local secret=""
+  local varname=""
+
+  # Prompt for Secret to be encrypted
   printf "%b" "${I_ASK}Secret to Encrypt: "
   read -r secret
   if [[ -z "$secret" ]]; then
@@ -200,6 +226,7 @@ function encrypt_string() {
     return 1
   fi
 
+  # Prompt for Variable Name
   printf "%b" "${I_ASK}Variable Name: "
   read -r varname
   if [[ -z "$varname" ]]; then
@@ -207,6 +234,17 @@ function encrypt_string() {
     return 1
   fi
 
+  # Validate $varname for invalid characters
+  if [[ ! "$varname" =~ ^[a-zA-Z0-9_]+$ ]]; then
+    echo -e "${I_ERR}Invalid Characters in Variable Name"
+    echo -e "${I_INFO}Allowed Characters: Letters[a-z|A-Z], Numbers[0-9], Underscores[_]"
+    return 1
+  fi
+
+  # Resolve target & run duplicate check BEFORE encrypting
+  target=$(prepare_output_target "$target" "$varname") || return 1
+
+  # Encrypt with Ansible-Vault
   local encrypted_res
   encrypted_res=$(ansible-vault encrypt_string \
     --show-input \
@@ -215,12 +253,14 @@ function encrypt_string() {
     --name "$varname" \
     "$secret")
 
-  echo "$encrypted_res" | copy_to_clipboard
-  echo -e "${I_OK}Encrypted string copied to clipboard."
+  # Pass encrypted Result to Handler function
+  handle_encrypted_output "$encrypted_res" "$varname" "$target"
 }
 
 # Subcommand 'encrypt': --file
 function encrypt_file() {
+  local target="$1"
+  shift
   local filepath="${1:-}"
   local varname="${2:-}"
 
@@ -275,11 +315,14 @@ function encrypt_file() {
     return 1
   fi
 
+  # Resolve target & run duplicate check BEFORE encrypting
+  target=$(prepare_output_target "$target" "$varname") || return 1
+
   # Read the file content
   local filecontent
   filecontent=$(<"$filepath")
 
-  # Execute ansible-vault safely
+  # Encrypt with Ansible-Vault
   local encrypted_res
   encrypted_res=$(ansible-vault encrypt_string \
     --show-input \
@@ -288,8 +331,8 @@ function encrypt_file() {
     --name "$varname" \
     "$filecontent")
 
-  echo "$encrypted_res" | copy_to_clipboard
-  echo -e "${I_OK}Encrypted Content of [ ${C_MAGENTA}$filepath${C_RESET} ] copied to clipboard with Ansible Variable [ ${C_MAGENTA}$varname${C_RESET} ]"
+  # Pass encrypted Result to Handler function
+  handle_encrypted_output "$encrypted_res" "$varname" "$target"
 }
 
 # Subcommand 'decrypt': --arg1
@@ -302,74 +345,174 @@ function decrypt_arg2() {
   echo -e "${I_INFO}: Coming soon.."
 }
 
-# Install Dependencies
-function install_deps() {
-  local os pkg_list
-  os="$(detect_os)"
-  pkg_list=("gum" "ansible")
+# Prompt args for Subcommand 'encrypt'
+function prompt_encrypt() {
+  local choice
+  choice=$(
+    gum choose "Encrypt String" "Encrypt File Content" \
+      --cursor.foreground "#cba6f7" \
+      --header.foreground "#cba6f7" \
+      --selected.foreground "#cba6f7" \
+      --header "Choose:" \
+      --no-show-help \
+      --ordered || true
+  )
 
-  for pkg in "${pkg_list[@]}"; do
-    if command -v "$pkg" &>/dev/null; then
-      continue
-    fi
-
-    echo -e "${I_INFO}Dependency missing: ${C_RED}$pkg${C_RESET}. Installing..."
-
-    case "$os" in
-    macos)
-      if ! command -v "brew" &>/dev/null; then
-        echo -e "${I_ERR}Homebrew is not installed on your system. Please install & re-run this script."
-        echo -e "${I_INFO}Install Homebrew from: ${C_BLUE}https://brew.sh${C_RESET}"
-        exit 1
-      fi
-      brew install "$pkg" || { echo -e "${I_ERR}Failed to install: $pkg"; exit 1; }
-      ;;
-    linux)
-      install_linux_pkg "$pkg" || { echo -e "${I_ERR}Failed to install: $pkg"; exit 1; }
-      ;;
-    windows)
-      echo -e "${I_ERR}Windows Support Coming soon.." && exit 1
-      ;;
-    *)
-      echo -e "${I_ERR}Unsupported OS." && exit 1
-      ;;
-    esac
-  done
-}
-
-# Helper: Linux PKG Installer
-function install_linux_pkg() {
-  local pkg="$1"
-  if command -v apt-get &>/dev/null; then
-    sudo apt-get update -qq && sudo apt-get install -y "$pkg"
-  elif command -v dnf &>/dev/null; then
-    sudo dnf install -y "$pkg"
-  elif command -v pacman &>/dev/null; then
-    sudo pacman -S --noconfirm "$pkg"
-  else
-    echo -e "${I_ERR}Unsupported package manager." && exit 1
-  fi
-}
-
-# Helper: Detect Operating System
-function detect_os() {
-  case "$(uname -s)" in
-    Linux*) echo "linux" ;;
-    Darwin*) echo "macos" ;;
-    CYGWIN* | MINGW* | MSYS*) echo "windows" ;;
-    *) echo "unknown" ;;
+  case "$choice" in
+  "Encrypt String") encrypt_string "" ;;
+  "Encrypt File Content") encrypt_file "" ;;
+  *) echo -e "${I_WARN}Operation cancelled." ;;
   esac
 }
 
-# Helper: Copy to clipboard
-function copy_to_clipboard() {
-  if command -v pbcopy &>/dev/null; then pbcopy
-  elif command -v wl-copy &>/dev/null; then wl-copy
-  elif command -v xclip &>/dev/null; then xclip -selection clipboard
-  else
-    cat
-    echo -e "${I_WARN}No clipboard tool found — printed above instead." >&2
+# Prompt args for Subcommand 'decrypt'
+function prompt_decrypt() {
+  local choice
+  choice=$(
+    gum choose "arg1" "arg2" \
+      --cursor.foreground "#cba6f7" \
+      --header.foreground "#cba6f7" \
+      --selected.foreground "#cba6f7" \
+      --header "Choose:" \
+      --no-show-help \
+      --ordered || true
+  )
+
+  case "$choice" in
+  "arg1") decrypt_arg1 ;;
+  "arg2") decrypt_arg2 ;;
+  *) echo -e "${I_WARN}Operation cancelled." ;;
+  esac
+}
+
+# Prompt for Subcommand to run
+function prompt_subcommand() {
+  local choice
+  choice=$(
+    gum choose "Encrypt" "Decrypt" \
+      --cursor.foreground "#cba6f7" \
+      --header.foreground "#cba6f7" \
+      --selected.foreground "#cba6f7" \
+      --header "Choose:" \
+      --no-show-help \
+      --ordered || true
+  )
+
+  case "$choice" in
+  "Encrypt") prompt_encrypt ;;
+  "Decrypt") prompt_decrypt ;;
+  *) echo -e "${I_WARN}Operation cancelled." ;;
+  esac
+}
+
+# Parse Subcommand 'encrypt'
+function parse_encrypt_args() {
+  if [[ $# -eq 0 ]]; then
+    prompt_encrypt
+    return 0
   fi
+
+  local action=""
+  local target=""
+  local action_args=()
+
+  # Validate arguments
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+    --string | --file)
+      if [[ -n "$action" ]]; then
+        echo -e "${I_ERR}Cannot specify both '--string' and '--file'."
+        exit 1
+      fi
+      action="$1"
+      shift
+      ;;
+    --target)
+      if [[ $# -lt 2 ]]; then
+        echo -e "${I_ERR}Flag '--target' requires a value (clipboard | ansible)."
+        exit 1
+      fi
+      target="$2"
+      shift 2
+
+      # Validate target value immediately
+      if [[ "$target" != "clipboard" && "$target" != "ansible" ]]; then
+        echo -e "${I_ERR}Invalid value for '--target': '$target'"
+        echo -e "${I_INFO}Allowed values: ${C_MAGENTA}clipboard${C_RESET}, ${C_MAGENTA}ansible${C_RESET}"
+        exit 1
+      fi
+      ;;
+    *)
+      action_args+=("$1")
+      shift
+      ;;
+    esac
+  done
+
+  case "$action" in
+  --string)
+    encrypt_string "$target" "${action_args[@]}"
+    ;;
+  --file)
+    encrypt_file "$target" "${action_args[@]}"
+    ;;
+  *)
+    echo -e "${I_ERR}Missing encrypt option."
+    echo -e "${I_INFO}Usage: $(basename "$0") encrypt [--string | --file <path> [varname]] [--target clipboard|ansible]"
+    exit 1
+    ;;
+  esac
+}
+
+# Parse Subcommand 'decrypt'
+function parse_decrypt_args() {
+  if [[ $# -eq 0 ]]; then
+    prompt_decrypt
+    return 0
+  fi
+
+  case "${1:-}" in
+  --arg1)
+    shift
+    decrypt_arg1 "$@"
+    ;;
+  --arg2)
+    shift
+    decrypt_arg2 "$@"
+    ;;
+  *)
+    echo -e "${I_ERR}Unknown argument for 'decrypt': $1"
+    echo -e "${I_INFO}Usage: $(basename "$0") decrypt [--arg1 | --arg2]"
+    exit 1
+    ;;
+  esac
+}
+
+# Argument Parser
+function parse_args() {
+  if [[ $# -eq 0 ]]; then
+    prompt_subcommand
+    return 0
+  fi
+
+  case "${1:-}" in
+  encrypt)
+    shift
+    parse_encrypt_args "$@"
+    ;;
+  decrypt)
+    shift
+    parse_decrypt_args "$@"
+    ;;
+  help | --help | -h)
+    print_help
+    ;;
+  *)
+    echo -e "${I_ERR}Unknown command: $1"
+    print_help
+    exit 1
+    ;;
+  esac
 }
 
 # Call Main Function with args

@@ -1,86 +1,271 @@
 #!/usr/bin/env bash
 
-# exit on error, undefined variables, and failed commands in pipes
+# Exit on error, undefined variables, and failed commands in pipes
 set -euo pipefail
 
-# -- TERMINAL COLORS -- #
-export C_BLACK='\033[1;30m'
-export C_RED='\033[1;31m'
-export C_GREEN='\033[1;32m'
-export C_YELLOW='\033[1;33m'
-export C_BLUE='\033[1;34m'
-export C_PURPLE='\033[1;35m'
-export C_CYAN='\033[1;36m'
-export C_WHITE='\033[1;37m'
-export C_GRAY='\033[1;34m'
-export C_RESET='\033[0m'
+# Main Function
+function main() {
+  # Terminal Colors
+  export C_BLACK='\033[1;30m'
+  export C_RED='\033[1;31m'
+  export C_GREEN='\033[1;32m'
+  export C_YELLOW='\033[1;33m'
+  export C_BLUE='\033[1;34m'
+  export C_PURPLE='\033[1;35m'
+  export C_CYAN='\033[1;36m'
+  export C_WHITE='\033[1;37m'
+  export C_GRAY='\033[1;34m'
+  export C_RESET='\033[0m'
 
-# -- INFO PROMPTS -- #
-export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
-export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
-export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
-export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"     # info
-export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"     # error
-export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
-export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
-export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
+  # Prompt Variables
+  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"
+  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"
+  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"
+  export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"
+  export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"
+  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"
+  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"
+  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}"
 
-# -- ENV VARS -- #
-# Environment Variable Defaults (overwritten if set by user)
-if [[ -z "${ONESETUP_DIR:-}" ]]; then
-  export ONESETUP_DIR="$HOME/.local/share/onesetup"
-fi
-if [[ -z "${ONESETUP_REPO:-}" ]]; then
-  export ONESETUP_REPO="onexbash/onesetup"
-fi
-if [[ -z "${DOTFILES_DIR:-}" ]]; then
-  export DOTFILES_DIR="$HOME/.local/share/dotfiles"
-fi
-if [[ -z "${DOTFILES_REPO:-}" ]]; then
-  export DOTFILES_REPO="onexbash/dotfiles"
-fi
-if [[ -z "${ANSIBLE_DEBUG:-}" ]]; then
-  export ANSIBLE_DEBUG=0
-fi
-if [[ -z "${ANSIBLE_INVENTORY:-}" ]]; then
-  export ANSIBLE_INVENTORY="${ONESETUP_DIR}/inventory.ini" &&
-    echo -e "${I_INFO} \$ANSIBLE_INVENTORY >>> $ANSIBLE_INVENTORY"
-fi
-if [[ -z "${ANSIBLE_CONFIG:-}" ]]; then
-  export ANSIBLE_CONFIG="${ONESETUP_DIR}/ansible.cfg" &&
-    echo -e "${I_INFO} \$ANSIBLE_CONFIG >>> $ANSIBLE_CONFIG"
-fi
+  # Environment Variable Defaults
+  export ONESETUP_DIR="${ONESETUP_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/onesetup}"
+  export ONESETUP_DIR_DEV="${ONESETUP_DIR_DEV:-$(git rev-parse --show-toplevel 2>/dev/null)}"
+  export ONESETUP_REPO="${ONESETUP_REPO:-onexbash/onesetup}"
+  export ONESETUP_VARFILE_ENCRYPTED="${ONESETUP_VARFILE_ENCRYPTED:-group_vars/all/encrypted.yml}"
 
-# -- FUNCTIONS -- #
-run_playbook() {
-  local skip_tags="${1:-}"
-  echo -e "${I_OK} onesetup ==> running ansible playbook"
-  # initialize homebrew
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-  # run ansible playbook with optional --skip-tags
-  if [ -n "$skip_tags" ]; then
-    # --ask-become-pass
-    ansible-playbook "${ONESETUP_DIR}/main.yml" --ask-vault-pass --skip-tags "$skip_tags" &&
-      echo -e "${I_OK} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
+  export DOTFILES_DIR="${DOTFILES_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles}"
+  export DOTFILES_REPO="${DOTFILES_REPO:-onexbash/dotfiles}"
+
+  export ANSIBLE_DEBUG="${ANSIBLE_DEBUG:-0}"
+
+  # Function Calls
+  install_deps
+  parse_args "$@"
+}
+
+# Print Command Usage Help
+function print_help() {
+  cat <<EOF
+Usage: $(basename "$0") <command> [options]
+
+Sub-Commands:
+  run                         Run Ansible Playbook
+    --directory [dev/prod]    Ansible Playbook Directory: Git repo root (dev) or Installation Directory (prod). Default: prod
+    --roles <role1,role2>     Comma-separated list of roles/tags to run
+    --skip-roles <role1,...>  Comma-separated list of roles/tags to skip
+  tbd                         To Be Defined
+    --arg1                    Placeholder arg1
+    --arg2                    Placeholder arg2
+  help, --help, -h            Display this help message
+EOF
+}
+
+# Helper: Detect Operating System
+function detect_os() {
+  case "$(uname -s)" in
+    Linux*) echo "linux" ;;
+    Darwin*) echo "macos" ;;
+    CYGWIN* | MINGW* | MSYS*) echo "windows" ;;
+    *) echo "unknown" ;;
+  esac
+}
+
+# Helper: Linux PKG Installer
+function install_linux_pkg() {
+  local pkg="$1"
+  if command -v apt-get &>/dev/null; then
+    sudo apt-get update -qq && sudo apt-get install -y "$pkg"
+  elif command -v dnf &>/dev/null; then
+    sudo dnf install -y "$pkg"
+  elif command -v pacman &>/dev/null; then
+    sudo pacman -S --noconfirm "$pkg"
   else
-    ansible-playbook "${ONESETUP_DIR}/main.yml" --ask-vault-pass &&
-      echo -e "${I_OK} onesetup ==> ansible playbook finished" || echo -e "${I_ERR} onesetup ==> ansible playbook failed"
+    echo -e "${I_ERR}Unsupported package manager." >&2 && return 1
   fi
 }
 
-# -- MAIN -- #
-skip_tags=""
-while [[ $# -gt 0 ]]; do
-  case $1 in
-  --skip)
-    skip_tags="$2"
-    shift 2
+# Install Dependencies
+function install_deps() {
+  local os pkg_list
+  os="$(detect_os)"
+  pkg_list=("gum" "ansible")
+
+  for pkg in "${pkg_list[@]}"; do
+    if command -v "$pkg" &>/dev/null; then
+      continue
+    fi
+
+    echo -e "${I_INFO}Dependency missing: ${C_RED}$pkg${C_RESET}. Installing..." >&2
+
+    case "$os" in
+    macos)
+      if ! command -v "brew" &>/dev/null; then
+        echo -e "${I_ERR}Homebrew is not installed on your system. Please install & re-run this script." >&2
+        echo -e "${I_INFO}Install Homebrew from: ${C_BLUE}https://brew.sh${C_RESET}" >&2
+        exit 1
+      fi
+      brew install "$pkg" || { echo -e "${I_ERR}Failed to install: $pkg" >&2; exit 1; }
+      ;;
+    linux)
+      install_linux_pkg "$pkg" || { echo -e "${I_ERR}Failed to install: $pkg" >&2; exit 1; }
+      ;;
+    windows)
+      echo -e "${I_ERR}Windows Support Coming soon.." >&2 && exit 1
+      ;;
+    *)
+      echo -e "${I_ERR}Unsupported OS." >&2 && exit 1
+      ;;
+    esac
+  done
+}
+
+# Subcommand 'run': Run Ansible Playbook
+function run_playbook() {
+  local roles=""
+  local skip_roles=""
+  local dir_type="prod"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --directory)
+      if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
+        echo -e "${I_ERR}Flag '--directory' requires a value: 'dev' or 'prod'." >&2
+        exit 1
+      fi
+      dir_type="$2"
+      shift 2
+      ;;
+    --directory=*)
+      dir_type="${1#*=}"
+      shift
+      ;;
+    --roles)
+      if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
+        echo -e "${I_ERR}Flag '--roles' requires a comma-separated list of roles." >&2
+        exit 1
+      fi
+      roles="$2"
+      shift 2
+      ;;
+    --skip-roles)
+      if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
+        echo -e "${I_ERR}Flag '--skip-roles' requires a comma-separated list of roles." >&2
+        exit 1
+      fi
+      skip_roles="$2"
+      shift 2
+      ;;
+    *)
+      echo -e "${I_ERR}Unknown option for 'run': $1" >&2
+      exit 1
+      ;;
+    esac
+  done
+
+  # Validate --directory value
+  if [[ "$dir_type" != "dev" && "$dir_type" != "prod" ]]; then
+    echo -e "${I_ERR}Invalid value '$dir_type' for '--directory'. Allowed values are 'dev' or 'prod'." >&2
+    exit 1
+  fi
+
+  # Mutual Exclusion Checks for roles
+  if [[ -n "$roles" && -n "$skip_roles" ]]; then
+    echo -e "${I_ERR}Cannot specify both '--roles' and '--skip-roles' at the same time." >&2
+    exit 1
+  fi
+
+  # Determine target working directory based on selected directory type
+  local target_dir
+  if [[ "$dir_type" == "dev" ]]; then
+    if [[ -z "$ONESETUP_DIR_DEV" ]]; then
+      echo -e "${I_ERR}'--directory dev' requested, but ONESETUP_DIR_DEV is not set and current directory is not a Git repository." >&2
+      exit 1
+    fi
+    target_dir="$ONESETUP_DIR_DEV"
+  else
+    target_dir="$ONESETUP_DIR"
+  fi
+
+  # Set ANSIBLE_CONFIG to target directory's config file
+  export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-${target_dir}/ansible.cfg}"
+
+  # Initialize Homebrew on macOS if available
+  if [[ -f "/opt/homebrew/bin/brew" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -f "/usr/local/bin/brew" ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+
+  echo -e "${I_OK} onesetup ==> running ansible playbook from: ${C_CYAN}${target_dir}${C_RESET}"
+
+  # Construct Ansible playbook arguments dynamically
+  local ansible_args=("--ask-vault-pass")
+
+  if [[ -n "$roles" ]]; then
+    ansible_args+=("--tags" "$roles")
+  elif [[ -n "$skip_roles" ]]; then
+    ansible_args+=("--skip-tags" "$skip_roles")
+  fi
+
+  if ansible-playbook "${target_dir}/main.yml" "${ansible_args[@]}"; then
+    echo -e "${I_OK} onesetup ==> ansible playbook finished"
+  else
+    echo -e "${I_ERR} onesetup ==> ansible playbook failed" >&2
+    exit 1
+  fi
+}
+
+# Subcommand 'tbd': To Be Defined
+function cmd_tbd() {
+  echo -e "${I_INFO}Coming Soon.."
+}
+
+# Prompt for Subcommand when run without arguments
+function prompt_subcommand() {
+  local choice
+  choice=$(
+    gum choose "Run Playbook" "TBD" \
+      --cursor.foreground "#cba6f7" \
+      --header.foreground "#cba6f7" \
+      --selected.foreground "#cba6f7" \
+      --header "Choose:" \
+      --no-show-help \
+      --ordered || true
+  )
+
+  case "$choice" in
+  "Run Playbook") run_playbook ;;
+  "TBD") cmd_tbd ;;
+  *) echo -e "${I_WARN}Operation cancelled." ;;
+  esac
+}
+
+# Argument Parser
+function parse_args() {
+  if [[ $# -eq 0 ]]; then
+    prompt_subcommand
+    return 0
+  fi
+
+  case "${1:-}" in
+  run)
+    shift
+    run_playbook "$@"
+    ;;
+  tbd)
+    shift
+    cmd_tbd "$@"
+    ;;
+  help | --help | -h)
+    print_help
     ;;
   *)
-    echo -e "${I_ERR} Unknown option: $1"
+    echo -e "${I_ERR}Unknown command: $1" >&2
+    print_help
     exit 1
     ;;
   esac
-done
+}
 
-run_playbook "$skip_tags"
+# Call Main Function with args
+main "$@"

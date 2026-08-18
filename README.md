@@ -34,10 +34,10 @@ Bootstrap a fresh Mac into your fully configured dev machine with a single comma
 
 | OS | Architecture | Status |
 |---|---|---|
-| macOS | Apple Silicon (M1 / M2 / M3) | ✅ Supported |
-| macOS | Intel | 🚧 Planned |
-| Fedora Linux | x86_64 | 🚧 Planned |
-
+| MacOS | Apple Silicon (arm64) | ✅ Supported |
+| MacOS | Intel (x86_64) | ✅ Supported | 🚧 Not entirely tested yet
+| Linux | x86_64 | 🚧 Planned | *Fedora/Arch/Debian/Ubuntu*
+| Windows | x86_64 | 🚧 Planned | *Windows 11*
 ---
 
 ## 🚀 Getting Started
@@ -50,13 +50,23 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/s
 
 **2. Restart your terminal** to reload the shell configuration.
 
-**3. Run the `onesetup` binary**
+**3. (Optional) Encrypt your SSH Keys using the `onesetup-vault` binary**
+```bash
+# Encrypt Private Key
+onesetup-vault encrypt --file "~/.ssh/id_ed25519" --target "ansible"
+# Encrypt Public Key
+onesetup-vault encrypt --file "~/.ssh/id_ed25519.pub" --target "ansible"
+# Encrypt SSH Config
+onesetup-vault encrypt --file "~/.ssh/config" --target "ansible"
+```
+
+**4. Run the `onesetup` binary**
 
 ```bash
 onesetup
 ```
 
-**4. (Optional) Skip individual roles**
+**5. (Optional) Skip individual roles**
 
 ```bash
 onesetup --skip "<role_name>, <role_name>"
@@ -66,6 +76,41 @@ onesetup --skip "<role_name>, <role_name>"
 
 ---
 
+## Commands
+
+Once installed, the `onesetup` binaries are available in `/usr/local/bin`. 
+
+> **Note:** `/usr/local/bin` has to be included in your `$PATH` variable.
+
+---
+
+### [`onesetup`](./bin/onesetup)
+Applies defined system configurations using Ansible.
+
+| Command | Description |
+| :--- | :--- |
+| `onesetup` | If run without arguments or subcommands, you will be prompted interactively. |
+| `onesetup run [options]` | Executes the Ansible playbook on your target environment. |
+| `onesetup run --directory "dev"` | Runs the playbook directly from your local Git repo to test changes without reinstalling |
+| `onesetup --help` | Displays command usage and available flags. |
+
+**Available Options for `onesetup run`:**
+
+* `--directory <dev|prod>` (Default: `prod`)
+  * `dev`: Executes the playbook from your local **Git Repository Root** (`$ONESETUP_DIR_DEV`).
+  * `prod`: Executes the playbook from the **Installation Directory** (`$ONESETUP_DIR`).
+* `--roles <role1,role2>` — Runs only the specified comma-separated roles/tags.
+* `--skip-roles <role1,...>` — Skips the specified comma-separated roles/tags.
+
+---
+
+### [`onesetup-vault`](./bin/onesetup-vault)
+Encrypts or decrypts sensitive variables using Ansible Vault.
+
+| Command | Description |
+| :--- | :--- |
+| `onesetup-vault` | If run without arguments or subcommands, you will be prompted interactively. |
+| `onesetup-vault --help` | Displays usage instructions for vault operations. |
 ## ⚙️ What It Does
 
 ### Software Installation
