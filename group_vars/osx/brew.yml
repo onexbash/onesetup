@@ -15,10 +15,12 @@ brew_casks:
   - keepassxc # password manager (.kdbx based)
   - pdfelement # pdf editor
   - insomnia # HTTP & GraphQL Client (similar to postman)
-  - proton-drive
-  - proton-mail
-  - protonvpn
-  - proton-pass # password manager
+  - proton-drive # Proton Cloud Storage
+  - proton-mail # Proton Mail Client
+  - protonvpn # Proton VPN Client
+  - proton-pass # Proton Password Manager
+  - proton-meet # Proton Video Conference
+  - proton-mail-bridge # Proton Bridge to allow Mail traffic over 3rd party E-Mail Clients
   - raycast # spotlight replacement
   - spotify
   - utm # virtual machine manager
@@ -38,6 +40,7 @@ brew_formulaes:
   - ast-grep # structural code search tool
   - yazi # terminal file manager
   - go
+  - proton-pass-cli
   - openjdk # java development kit
   - git-crypt # git repository file encryption
   - ruby
