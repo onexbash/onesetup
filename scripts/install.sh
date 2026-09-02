@@ -1,99 +1,23 @@
 #!/usr/bin/env bash
 
-# --                          -- #
-# --     HELPER FUNCTIONS     -- #
-# --                          -- #
-
-# [Helper] Terminal Colors & Prompts
-function tty_styles() {
-  # Terminal Colors
-  export C_BLACK='\033[1;30m'
-  export C_RED='\033[1;31m'
-  export C_GREEN='\033[1;32m'
-  export C_YELLOW='\033[1;33m'
-  export C_BLUE='\033[1;34m'
-  export C_PURPLE='\033[1;35m'
-  export C_CYAN='\033[1;36m'
-  export C_WHITE='\033[1;37m'
-  export C_GRAY='\033[1;34m'
-  export C_RESET='\033[0m'
-  # Info Prompts
-  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
-  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
-  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
-  export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"     # info
-  export I_ERR="${C_BLACK}[${C_RED} ERROR ${C_BLACK}] ${C_RESET}"     # error
-  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
-  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
-  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
-}
-
-# [Helper] Set Script Modes TODO: refactor this
-function set_modes() {
-  set -eo pipefail
-  TOGGLE_SCRIPT_DEBUG_MODE="${TOGGLE_SCRIPT_DEBUG_MODE:-0}"
-  if [[ "$TOGGLE_SCRIPT_DEBUG_MODE" -eq 1 ]]; then
-    set -x
-    echo -e "${I_OK}Running Script in Debug Mode"
-  fi
-}
-
-# [Helper] Detect Operating System
-function detect_os() {
-  local platform
-  platform=$(uname -s)
-  case "$platform" in
-    Linux*) echo "linux" ;;
-    Darwin*) echo "macos" ;;
-    CYGWIN* | MINGW* | MSYS*) echo "windows" ;;
-    *) echo "unsupported" ;;
-  esac
-}
-
-# [Helper] Ensure Directory presence with right permissions
-function ensure_directory() {
-  local target_dir="$1" desired_perms="$2" desired_ownership="$3" recursive="${4:-false}"
-  local chown_flag=""
-  [[ "$recursive" == "true" ]] && chown_flag="-R"
-  # Create Directory & set permissions if not present yet
-  if [[ ! -d "$target_dir" ]]; then
-    sudo mkdir -p "$target_dir"
-    sudo chown $chown_flag "$desired_ownership" "$target_dir"
-    sudo chmod "$desired_perms" "$target_dir"
-  else
-    # Check Permissions on existing Directory
-    local current_owner current_perms
-    if [[ "$(detect_os)" == "macos" ]]; then
-      current_owner=$(stat -f "%Su:%Sg" "$target_dir")
-      current_perms=$(stat -f "%Lp" "$target_dir")
-    else
-      current_owner=$(stat -c "%U:%G" "$target_dir")
-      current_perms=$(stat -c "%a" "$target_dir")
-    fi
-    # Set Permissions on existing Directory
-    [[ "$current_owner" != "$desired_ownership" ]] && sudo chown $chown_flag "$desired_ownership" "$target_dir"
-    [[ "$current_perms" != "$desired_perms" ]] && sudo chmod "$desired_perms" "$target_dir"
-  fi
-}
-
-# --                        -- #
-# --     CORE FUNCTIONS     -- #
-# --                        -- #
+# --                             -- #
+# --     INSTALLATION SCRIPT     -- #
+# --                             -- #
 
 # [0] Main Function
 function main() {
-  # Call Helper Functions 
+  # Call Utility Functions 
   tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
   set_modes || echo -e "${I_WARN}Failed to set Script Modes."
   # Call Core Functions
-  load_env "$username" "$repo_name" # Called with variables defined in the Install-Command
+  load_utils "$username" "$repo_name" # Called with variables defined in the Install-Command
   { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
   { prerequisites && echo -e "${I_OK}Prerequesites satisfied"; } || { echo -e "${I_ERR}Failed to ensure that prerequesites are satisfied"; exit 1; }
   { install && echo -e "${I_OK}Installation completed"; } || { echo -e "${I_ERR}Installation failed"; exit 1; }
 }
 
-# [1] Curl & Source Environment Script that has the read_config() function
-function load_env(){
+# [1] Curl & Source Utility Script from Remote Repository
+function load_utils(){
   local username="$1"
   local repo_name="$2"
 
@@ -107,8 +31,9 @@ function load_env(){
 
   TMP_SCRIPT=$(mktemp)
   trap 'rm -f "$TMP_SCRIPT"' EXIT
+
   curl -fsSL "https://raw.githubusercontent.com/${username}/${repo_name}/main/scripts/env.sh" -o "$TMP_SCRIPT"
-  source "$TMP_SCRIPT" && echo -e "${I_OK}Environment Script sourced" || { echo -e "${I_ERR}Failed to source Environment Script: $TMP_SCRIPT"; exit 1; }  
+  source "$TMP_SCRIPT" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script: $TMP_SCRIPT"; exit 1; }  
 }
 
 # [2] Ensure prerequisites are satisfied
@@ -137,17 +62,17 @@ function prerequisites() {
   # git
   if ! command -v "git" &>/dev/null; then
     case "$ONESETUP_SYSTEM_OS" in
-    linux) sudo dnf install -y git ;;
-    macos) brew install git ;;
-    windows) echo -e "${I_WARN}Windows not supported yet"; return 1 ;;
+    linux) { sudo dnf install -y git && echo -e "${I_OK}Installation succeeded: git" ;} || { echo -e "${I_ERR}Installation failed: git"; return 1; } ;;
+    macos) { brew install git && echo -e "${I_OK}Installation succeeded: git" ;} || { echo -e "${I_ERR}Installation failed: git"; return 1; } ;;
+    windows) echo -e "${I_ERR}Windows not supported yet"; return 1 ;;
     unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
     esac
   fi
   # gum
   if ! command -v "gum" &>/dev/null; then
     case "$ONESETUP_SYSTEM_OS" in
-    linux) { sudo dnf install -y "gum" && echo -e "${I_OK}gum installed!" ;} || { echo -e "${I_ERR}failed to install gum!"; return 1; } ;;
-    macos) { brew install "gum" && echo -e "${I_OK}gum installed!" ;} || { echo -e "${I_ERR}failed to install gum!"; return 1; } ;;
+    linux) { sudo dnf install -y "gum" && echo -e "${I_OK}Installation succeeded: gum" ;} || { echo -e "${I_ERR}Failed to install gum!"; return 1; } ;;
+    macos) { brew install "gum" && echo -e "${I_OK}Installation succeeded: gum" ;} || { echo -e "${I_ERR}Failed to install gum!"; return 1; } ;;
     windows) echo -e "${I_WARN}Windows not supported yet"; return 1 ;;
     unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
     esac
@@ -177,15 +102,15 @@ function install() {
     # Compare local commit hash with latest remote
     if [[ -n "$local_sha" && -n "$remote_sha" ]]; then
       if [[ "$local_sha" != "$remote_sha" ]]; then
-        echo -e "${I_INFO}Installation directory is out of date."
+        echo -e "${I_WARN}Installation directory is outdated."
         echo -e "${I_INFO}Updating to latest version..."
         rm -rf "$install_dir" && git clone --depth 1 --single-branch "$repo_uri" "$install_dir"
       else
-        echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$repo_name)."
+        echo -e "${I_OK}The installation directory is up-to-date with the remote (https://github.com/$repo_name)."
         echo -e "${I_INFO}Skipping installation..."
       fi
     else
-      echo -e "${I_ERR}Failed to verify remote commit hash. Re-cloning..."
+      echo -e "${I_ERR}Failed to verify remote commit hash. Re-installing..."
       rm -rf "$install_dir" && git clone --depth 1 --single-branch "$repo_uri" "$install_dir"
     fi
   fi

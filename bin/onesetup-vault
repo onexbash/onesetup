@@ -1,88 +1,26 @@
 #!/usr/bin/env bash
 
-# Exit on error, undefined variables, and failed commands in pipes
-set -euo pipefail
+# --                               -- #
+# --     ONESETUP-VAULT BINARY     -- #
+# --                               -- #
+# Rolled out by 'install.sh' | Registers Command 'onesetup-vault'
 
-# Main Function
+# [0] Main Function
 function main() {
-  # Terminal Colors
-  export C_BLACK='\033[1;30m'
-  export C_RED='\033[1;31m'
-  export C_GREEN='\033[1;32m'
-  export C_YELLOW='\033[1;33m'
-  export C_BLUE='\033[1;34m'
-  export C_MAGENTA='\033[1;35m'
-  export C_CYAN='\033[1;36m'
-  export C_WHITE='\033[1;37m'
-  export C_GRAY='\033[0;37m'
-  export C_RESET='\033[0m'
-
-  # Prompt Variables
-  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"
-  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"
-  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"
-  export I_INFO="${C_BLACK}[${C_MAGENTA} INFO ${C_BLACK}] ${C_RESET}"
-  export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"
-  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"
-  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"
-  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}"
-
-  # Environment Variable Defaults (overwritten if passed to the 'onesetup' command or added to .env)
-  export ONESETUP_DIR="${ONESETUP_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/onesetup}"
-  export ONESETUP_REPO="${ONESETUP_REPO:-onexbash/onesetup}"
-  export ONESETUP_VARFILE_ENCRYPTED="${ONESETUP_VARFILE_ENCRYPTED:-group_vars/all/encrypted.yml}"
-  export ONESETUP_CLOUD_DIR="${ONESETUP_CLOUD_DIR:-/opt/onexcloud}" # TODO: use actual cloud storage
-  export DOTFILES_DIR="${DOTFILES_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles}"
-  export DOTFILES_REPO="${DOTFILES_REPO:-onexbash/dotfiles}"
-  export ANSIBLE_DEBUG="${ANSIBLE_DEBUG:-0}"
-  export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-${ONESETUP_DIR}/ansible.cfg}"
-
   # Function Calls
-  install_deps
-  parse_args "$@"
+  load_utils
+  { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
+  install_deps || { echo -e "${I_ERR}Failed to install dependencies"; exit 1; }
+  parse_args "$@" || { echo -e "${I_ERR}Failed to parse Command arguments"; exit 1; }
 }
 
-# Print Command Usage Help
-function print_help() {
-  cat <<EOF
-Usage: $(basename "$0") <command> [options]
-
-Commands:
-  encrypt                  Encrypt secrets with Ansible-Vault
-    --string               Interactively encrypt a plain text string
-    --file <path> [var]    Encrypt file contents as an Ansible variable
-  decrypt                  Decrypt secrets with Ansible-Vault
-    --arg1                 Placeholder for decrypt option 1
-    --arg2                 Placeholder for decrypt option 2
-  help, -h, --help         Display this help message
-EOF
+# [1] Source Utility Script
+function load_utils(){
+  local system_install_dir="$HOME/.local/share/onesetup" # TODO: Implement support for customized installation directory
+  source "${system_install_dir}/scripts/util.sh" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
 }
 
-# Helper: Detect Operating System
-function detect_os() {
-  case "$(uname -s)" in
-    Linux*) echo "linux" ;;
-    Darwin*) echo "macos" ;;
-    CYGWIN* | MINGW* | MSYS*) echo "windows" ;;
-    *) echo "unknown" ;;
-  esac
-}
-
-# Helper: Linux PKG Installer
-function install_linux_pkg() {
-  local pkg="$1"
-  if command -v apt-get &>/dev/null; then
-    sudo apt-get update -qq && sudo apt-get install -y "$pkg"
-  elif command -v dnf &>/dev/null; then
-    sudo dnf install -y "$pkg"
-  elif command -v pacman &>/dev/null; then
-    sudo pacman -S --noconfirm "$pkg"
-  else
-    echo -e "${I_ERR}Unsupported package manager." && return 1
-  fi
-}
-
-# Install Dependencies
+# [2] Dependency Installation
 function install_deps() {
   local os pkg_list
   os="$(detect_os)"
@@ -117,15 +55,51 @@ function install_deps() {
   done
 }
 
-# Helper: Copy to clipboard
-function copy_to_clipboard() {
-  if command -v pbcopy &>/dev/null; then pbcopy
-  elif command -v wl-copy &>/dev/null; then wl-copy
-  elif command -v xclip &>/dev/null; then xclip -selection clipboard 2>/dev/null
-  else
-    cat
-    echo -e "\n${I_WARN}No clipboard tool found — printed above instead." >&2
+# [3] Command Arguments Parser
+function parse_args() {
+  if [[ $# -eq 0 ]]; then
+    prompt_subcommand
+    return 0
   fi
+
+  case "${1:-}" in
+  encrypt)
+    shift
+    parse_encrypt_args "$@"
+    ;;
+  decrypt)
+    shift
+    parse_decrypt_args "$@"
+    ;;
+  help | --help | -h)
+    print_help
+    ;;
+  *)
+    echo -e "${I_ERR}Unknown command: $1"
+    print_help
+    exit 1
+    ;;
+  esac
+}
+
+# --                              -- #
+# --     SUBCOMMAND FUNCTIONS     -- #
+# --                              -- #
+
+# Subcommand: 'help': Print Command Usage Help
+function print_help() {
+  cat <<EOF
+Usage: $(basename "$0") <command> [options]
+
+Commands:
+  encrypt                  Encrypt secrets with Ansible-Vault
+    --string               Interactively encrypt a plain text string
+    --file <path> [var]    Encrypt file contents as an Ansible variable
+  decrypt                  Decrypt secrets with Ansible-Vault
+    --arg1                 Placeholder for decrypt option 1
+    --arg2                 Placeholder for decrypt option 2
+  help, -h, --help         Display this help message
+EOF
 }
 
 # Prompt 'target' argument for Subcommand 'encrypt'
@@ -147,7 +121,7 @@ function prompt_encrypt_target() {
   esac
 }
 
-# Helper: Check if variable name already exists in ONESETUP_VARFILE_ENCRYPTED
+# Check if variable name already exists in ONESETUP_VARFILE_ENCRYPTED
 function check_duplicates_varfile() {
   local varname="$1"
   if [[ -f "$ONESETUP_VARFILE_ENCRYPTED" ]]; then
@@ -158,7 +132,7 @@ function check_duplicates_varfile() {
   return 1 # No Duplicates
 }
 
-# Helper: Resolve target output and validate duplicates BEFORE encrypting
+# Resolve target output and validate duplicates BEFORE encrypting
 function prepare_output_target() {
   local target="$1"
   local varname="$2"
@@ -187,7 +161,7 @@ function prepare_output_target() {
   echo "$target"
 }
 
-# Helper: Handle output based on validated target
+# Handle output based on validated target
 function handle_encrypted_output() {
   local encrypted_res="$1"
   local varname="$2"
@@ -484,33 +458,6 @@ function parse_decrypt_args() {
   *)
     echo -e "${I_ERR}Unknown argument for 'decrypt': $1"
     echo -e "${I_INFO}Usage: $(basename "$0") decrypt [--arg1 | --arg2]"
-    exit 1
-    ;;
-  esac
-}
-
-# Argument Parser
-function parse_args() {
-  if [[ $# -eq 0 ]]; then
-    prompt_subcommand
-    return 0
-  fi
-
-  case "${1:-}" in
-  encrypt)
-    shift
-    parse_encrypt_args "$@"
-    ;;
-  decrypt)
-    shift
-    parse_decrypt_args "$@"
-    ;;
-  help | --help | -h)
-    print_help
-    ;;
-  *)
-    echo -e "${I_ERR}Unknown command: $1"
-    print_help
     exit 1
     ;;
   esac
