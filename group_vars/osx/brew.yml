@@ -1,37 +1,37 @@
 ---
 # Casks
 brew_casks:
-  - alt-tab # alt-tab replacement
-  - appcleaner # app uninstaller
+  - alt-tab # Alt-Tab replacement
+  - appcleaner # App Uninstaller
   - cleanshot # screenshot tool (paid)
   - deepl
   - discord
-  - session # onion routed messenger
+  - session # Onion routed messenger
   - tor-browser
-  - firefox # firefox default
-  - firefox@developer-edition # firefox developer edition
-  - gimp # image editor
-  - git-credential-manager # required by git for https auth.
-  - keepassxc # password manager (.kdbx based)
-  - pdfelement # pdf editor
-  - insomnia # HTTP & GraphQL Client (similar to postman)
+  - firefox
+  - firefox@developer-edition
+  - gimp # Image Editor
+  - git-credential-manager
+  - keepassxc # File Based Password Manager
+  - stirling-pdf # PDF Viewer (self hosted)
+  - insomnia # API Client (like postman)
   - proton-drive # Proton Cloud Storage
   - proton-mail # Proton Mail Client
   - protonvpn # Proton VPN Client
   - proton-pass # Proton Password Manager
   - proton-meet # Proton Video Conference
   - proton-mail-bridge # Proton Bridge to allow Mail traffic over 3rd party E-Mail Clients
-  - raycast # spotlight replacement
+  - raycast # Smart Spotlight Replacement
   - spotify
-  - utm # virtual machine manager
-  - sublime-text # light weight text editor
+  - utm # VM Management
+  - sublime-text # Text Editor
   - canva
   - figma
-  - obs # streaming software
-  - keka # compression tool
-  - kekaexternalhelper # helper utility for keka compression tool
-  - whatsapp # whatsapp desktop client
-  - karabiner-elements # keyboard remapping tool
+  - obs # Streaming Software
+  - keka # Compression Tool
+  - kekaexternalhelper # Helper Utility for keka
+  - whatsapp
+  - karabiner-elements # Keyboard Mapping Tool
 
 # Formulaes
 brew_formulaes:
