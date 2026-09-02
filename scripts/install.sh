@@ -8,6 +8,9 @@
 function main() {
   # Call Core Functions
   load_utils "$username" "$repo_name" # Called with variables defined in the Install-Command
+
+  tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
+  set_modes || echo -e "${I_WARN}Failed to set Script Modes."
   { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
   { prerequisites && echo -e "${I_OK}Prerequesites satisfied"; } || { echo -e "${I_ERR}Failed to ensure that prerequesites are satisfied"; exit 1; }
   { install && echo -e "${I_OK}Installation completed"; } || { echo -e "${I_ERR}Installation failed"; exit 1; }

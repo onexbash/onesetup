@@ -3,12 +3,7 @@
 # --                        -- #
 # --     UTILITY SCRIPT     -- #
 # --                        -- #
-
-# Main Function for Utilities that should always be called
-function main(){
-  tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
-  set_modes || echo -e "${I_WARN}Failed to set Script Modes."
-}
+# Collection of Utility Functions called by other scripts
 
 # [UTIL] Terminal Colors & Prompts
 function tty_styles() {
@@ -287,7 +282,3 @@ function read_config(){
 
   export ONESETUP_DIR_DEV="${ONESETUP_DIR_DEV:-$(git rev-parse --show-toplevel 2>/dev/null)}"
 }
-
-
-# Call Main Function with args
-main "$@"
