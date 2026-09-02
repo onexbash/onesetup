@@ -1,30 +1,64 @@
-# Ensure Directory: $XDG_CONFIG_HOME
-- name: "Ensure Config Directory exists: {{ XDG_CONFIG_HOME }}"
+# Ensure Directory: CONFIG_DIR
+- name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_CONFIG_DIR }}"
   ansible.builtin.file:
-    path: "{{ XDG_CONFIG_HOME }}"
+    path: "{{ ONESETUP_SYSTEM_CONFIG_DIR }}"
     state: directory
     mode: "0744"
-    owner: "{{ USER }}"
-    group: "staff"
-  become: true
-
-# Ensure Directory: /tmp
-- name: "Ensure Directory exists: /tmp"
-  ansible.builtin.file:
-    path: "/tmp"
-    state: directory
-    mode: "1777"
-    owner: "root"
-    group: "wheel"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
     follow: true # follow symlink
   become: true
 
-# Ensure Directory: {{ onesetup_tmpdir }}
-- name: "Ensure Directory exists: {{ onesetup_tmpdir }}"
+# Ensure Directory: INSTALL_DIR
+- name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_INSTALL_DIR }}"
   ansible.builtin.file:
-    path: "{{ onesetup_tmpdir }}"
+    path: "{{ ONESETUP_SYSTEM_INSTALL_DIR }}"
     state: directory
     mode: "0755"
-    owner: "root"
-    group: "wheel"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+    follow: true # follow symlink
+  become: true
+
+# Ensure Directory: STORAGE_DIR
+- name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_STORAGE_DIR }}"
+  ansible.builtin.file:
+    path: "{{ ONESETUP_SYSTEM_STORAGE_DIR }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+    follow: true # follow symlink
+  become: true
+
+# Ensure Directory: DOTFILES_DIR
+- name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
+  ansible.builtin.file:
+    path: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+    follow: true # follow symlink
+  become: true
+
+# Ensure Directory: BIN_DIR
+- name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_BIN_DIR }}"
+  ansible.builtin.file:
+    path: "{{ ONESETUP_SYSTEM_BIN_DIR }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
+    group: "{{ ONESETUP_SYSTEM_ADMIN_GROUP }}"
+    follow: true # follow symlink
+  become: true
+
+# Ensure Directory: TMP_DIR
+- name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_TMP_DIR }}"
+  ansible.builtin.file:
+    path: "{{ ONESETUP_SYSTEM_TMP_DIR }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
+    group: "{{ ONESETUP_SYSTEM_ADMIN_GROUP }}"
   become: true

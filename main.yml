@@ -9,17 +9,35 @@
   
   # -- VARIABLES -- #
   vars:
-    # Project Environment Variables
-    ONESETUP_DIR: "{{ ansible_facts['env']['ONESETUP_DIR'] | default(ansible_facts['env']['HOME'] + '/.local/share/onesetup') }}"
-    ONESETUP_REPO: "{{ ansible_facts['env']['ONESETUP_REPO'] }}"
-    DOTFILES_DIR: "{{ ansible_facts['env']['DOTFILES_DIR'] | default(ansible_facts['env']['HOME'] + '/.local/share/dotfiles') }}"
-    DOTFILES_REPO: "{{ ansible_facts['env']['DOTFILES_REPO'] }}"
-    ONESETUP_REPO_SSH: "git@github.com:{{ ONESETUP_REPO }}.git"
-    ONESETUP_REPO_HTTPS: "https://github.com/{{ ONESETUP_REPO }}.git"
-    DOTFILES_REPO_SSH: "git@github.com:{{ DOTFILES_REPO }}.git"
-    DOTFILES_REPO_HTTPS: "https://github.com/{{ DOTFILES_REPO }}.git"
-    ONESETUP_CLOUD_DIR: "{{ ansible_facts['env']['ONESETUP_CLOUD_DIR'] }}" # TODO: Use actual cloud storage
-    # User Environment Variables
+    # Environment Variables: Remote 
+    ONESETUP_REMOTE_PROVIDER: "{{ ansible_facts['env']['ONESETUP_REMOTE_PROVIDER'] }}"
+    ONESETUP_REMOTE_USERNAME: "{{ ansible_facts['env']['ONESETUP_REMOTE_USERNAME'] }}"
+    ONESETUP_REMOTE_CONNECTION: "{{ ansible_facts['env']['ONESETUP_REMOTE_CONNECTION'] }}"
+    ONESETUP_REMOTE_PROJECT_REPO: "{{ ansible_facts['env']['ONESETUP_REMOTE_PROJECT_REPO'] }}"
+    ONESETUP_REMOTE_DOTFILES_REPO: "{{ ansible_facts['env']['ONESETUP_REMOTE_DOTFILES_REPO'] }}" 
+    # Environment Variables: System
+    ONESETUP_SYSTEM_OS: "{{ ansible_facts['env']['ONESETUP_SYSTEM_OS'] }}"
+    ONESETUP_SYSTEM_USERNAME: "{{ ansible_facts['env']['ONESETUP_SYSTEM_USERNAME'] }}"
+    ONESETUP_SYSTEM_ROOT_USER: "{{ ansible_facts['env']['ONESETUP_SYSTEM_ROOT_USER'] }}"
+    ONESETUP_SYSTEM_CONFIG_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_CONFIG_DIR'] }}"
+    ONESETUP_SYSTEM_INSTALL_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_INSTALL_DIR'] }}"
+    ONESETUP_SYSTEM_STORAGE_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_STORAGE_DIR'] }}"
+    ONESETUP_SYSTEM_DOTFILES_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_DOTFILES_DIR'] }}"
+    ONESETUP_SYSTEM_BIN_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_BIN_DIR'] }}"
+    ONESETUP_SYSTEM_TMP_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_TMP_DIR'] }}"
+    ONESETUP_SYSTEM_USER_GROUP: "{{ ansible_facts['env']['ONESETUP_SYSTEM_USER_GROUP'] }}"
+    ONESETUP_SYSTEM_ADMIN_GROUP: "{{ ansible_facts['env']['ONESETUP_SYSTEM_ADMIN_GROUP'] }}"
+    # Environment Variables: Project
+    ONESETUP_PROJECT_DEVELOPMENT: "{{ ansible_facts['env']['ONESETUP_PROJECT_DEVELOPMENT'] }}"
+    ONESETUP_PROJECT_ANSIBLE_DEBUG: "{{ ansible_facts['env']['ONESETUP_PROJECT_ANSIBLE_DEBUG'] }}"
+    ONESETUP_PROJECT_SCRIPT_DEBUG: "{{ ansible_facts['env']['ONESETUP_PROJECT_SCRIPT_DEBUG'] }}"
+    # Environment Variables: Dynamic
+    ONESETUP_PROJECT_REPO_URI: "{{ ansible_facts['env']['ONESETUP_PROJECT_REPO_URI'] }}"
+    ONESETUP_DOTFILES_REPO_URI: "{{ ansible_facts['env']['ONESETUP_DOTFILES_REPO_URI'] }}"
+    ONESETUP_PROJECT_REPO_RAW: "{{ ansible_facts['env']['ONESETUP_PROJECT_REPO_RAW'] }}"
+    ONESETUP_DOTFILES_REPO_RAW: "{{ ansible_facts['env']['ONESETUP_DOTFILES_REPO_RAW'] }}"
+    ONESETUP_DIR_DEV: "{{ ansible_facts['env']['ONESETUP_DIR_DEV'] }}"
+    # Environment Variables: User Environment
     USER: "{{ ansible_facts['env']['USER'] }}"
     HOME: "{{ ansible_facts['env']['HOME'] }}"
     XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] }}"

@@ -118,8 +118,10 @@ function read_config(){
   local system_root_user="root"
   local system_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/onesetup"
   local system_install_dir="$HOME/.local/share/onesetup"
+  local system_storage_dir="$HOME/.local/state/onesetup"
   local system_dotfiles_dir="$HOME/.local/share/dotfiles"
   local system_bin_dir="/usr/local/bin"
+  local system_tmp_dir="/tmp"
   local system_admin_group system_user_group
   if [[ "$system_os" == "linux" ]]; then
     system_admin_group="wheel"
@@ -203,6 +205,11 @@ function read_config(){
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_install_dir="${val/#\~/$HOME}"
     fi
+    # [System]: storage_dir
+    val=$(yq '.system.storage_dir' "$config_file" 2>/dev/null)
+    if [[ -n "$val" && "$val" != "null" ]]; then
+      system_storage_dir="${val/#\~/$HOME}"
+    fi
     # [System]: dotfiles_dir
     val=$(yq '.system.dotfiles_dir' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
@@ -212,6 +219,11 @@ function read_config(){
     val=$(yq '.system.bin_dir' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_bin_dir="${val/#\~/$HOME}"
+    fi
+    # [System]: bin_dir
+    val=$(yq '.system.tmp_dir' "$config_file" 2>/dev/null)
+    if [[ -n "$val" && "$val" != "null" ]]; then
+      system_tmp_dir="${val/#\~/$HOME}"
     fi
     # [System]: user_group
     val=$(yq '.system.user_group' "$config_file" 2>/dev/null)
@@ -253,8 +265,10 @@ function read_config(){
   export ONESETUP_SYSTEM_ROOT_USER="${system_root_user}"
   export ONESETUP_SYSTEM_CONFIG_DIR="${system_config_dir}"
   export ONESETUP_SYSTEM_INSTALL_DIR="${system_install_dir}"
+  export ONESETUP_SYSTEM_STORAGE_DIR="${system_storage_dir}"
   export ONESETUP_SYSTEM_DOTFILES_DIR="${system_dotfiles_dir}"
   export ONESETUP_SYSTEM_BIN_DIR="${system_bin_dir}"
+  export ONESETUP_SYSTEM_TMP_DIR="${system_tmp_dir}"
   export ONESETUP_SYSTEM_USER_GROUP="${system_user_group}"
   export ONESETUP_SYSTEM_ADMIN_GROUP="${system_admin_group}"
   # Section 'project'
