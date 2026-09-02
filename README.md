@@ -42,20 +42,13 @@ Bootstrap a fresh Mac into your fully configured dev machine with a single comma
 
 ## 🚀 Getting Started
 ### 1) Installation
-**1.1) Configure your installation**
+**1.1) Run the installation script**
 
 ```bash
-export ONESETUP_REPO="<GITHUB USERNAME>/<GITHUB REPO NAME>" # default: onexbash/onesetup
-export ONESETUP_DIR="<Directory to install Project to>" # default: ~/.local/share/onesetup
-export ANSIBLE_DEBUG="[0/1/2]" # default: 0
+# Replace the username & repo_name variables with the actual values of your Remote Repository (e.g: github)
+username="<USERNAME>" repo_name="<REPOSITORY>" bash -c 'curl -fsSL "https://raw.githubusercontent.com/$username/$repo_name/main/scripts/install.sh" | bash'
 ```
-**1.2) Run the installation script**
-
-```bash
-username="<GITHUB USERNAME>" repo_name="<GITHUB REPO NAME>" bash -c '$(curl -fsSL https://raw.githubusercontent.com/"$username"/"$repo_name"/main/scripts/install.sh)'
-username="<GITHUB USERNAME>" repo_name="<GITHUB REPO NAME>" bash -c 'curl -fsSL "https://raw.githubusercontent.com/$username/$repo_name/main/scripts/install.sh" | bash'
-```
-**1.3) Restart your terminal** or reload shell.
+**1.2) Restart your terminal** or reload shell.
 
 ### 2) Ansible Vault Encryption
 **2.1) Encrypt your SSH Keys using the `onesetup-vault` binary**
