@@ -43,9 +43,8 @@ Bootstrap a fresh Mac into your fully configured dev machine with a single comma
 ## 🚀 Getting Started
 ### 1) Installation
 **1.1) Run the installation script**
-
+*Replace the username & repo_name variables with the actual values of your Remote Repository (e.g: github)*
 ```bash
-# Replace the username & repo_name variables with the actual values of your Remote Repository (e.g: github)
 username="<USERNAME>" repo_name="<REPOSITORY>" bash -c 'curl -fsSL "https://raw.githubusercontent.com/$username/$repo_name/main/scripts/install.sh" | bash'
 ```
 **1.2) Restart your terminal** or reload shell.
