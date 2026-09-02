@@ -6,9 +6,6 @@
 
 # [0] Main Function
 function main() {
-  # Call Utility Functions 
-  tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
-  set_modes || echo -e "${I_WARN}Failed to set Script Modes."
   # Call Core Functions
   load_utils "$username" "$repo_name" # Called with variables defined in the Install-Command
   { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
