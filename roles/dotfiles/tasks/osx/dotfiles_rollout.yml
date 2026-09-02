@@ -2,9 +2,9 @@
 # Clone Dotfiles Repository
 - name: "Clone Dotfiles Repository"
   ansible.builtin.git:
-    repo: "{{ DOTFILES_REPO_HTTPS }}"
+    repo: "{{ ONESETUP_DOTFILES_REPO_URI }}"
     clone: true
-    dest: "{{ DOTFILES_DIR }}"
+    dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
     force: false # respect local changes to prevent dotfile loss
     remote: origin
     update: true
@@ -17,16 +17,16 @@
 # Prompt User if local changes can be overwritten
 - name: "Prompt: Overwrite Local Dotfiles Directory?"
   ansible.builtin.pause:
-    prompt: "Local modifications detected in {{ DOTFILES_DIR }}. Overwrite and lose local changes? [y/n]"
+    prompt: "Local modifications detected in {{ ONESETUP_SYSTEM_DOTFILES_DIR }}. Overwrite and lose local changes? [y/n]"
   register: dotfiles_overwrite_prompt
   when: dotfiles_clone is failed
 
 # Clone Dotfiles Repository and force overwrite local changes (after user confirmation)
 - name: "Clone Dotfiles Repository (force overwrite)"
   ansible.builtin.git:
-    repo: "{{ DOTFILES_REPO_HTTPS }}"
+    repo: "{{ ONESETUP_DOTFILES_REPO_URI }}"
     clone: true
-    dest: "{{ DOTFILES_DIR }}"
+    dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
     force: true # overwrite local changes as the user confirmed this
     remote: origin
     update: true
@@ -39,7 +39,7 @@
 # Notify: Skipping Dotfiles Rollout
 - name: "Info: Skipping Dotfiles Rollout.."
   ansible.builtin.debug:
-    msg: "Skipping Dotfiles Rollout & continue playbook — local changes in {{ DOTFILES_DIR }} preserved."
+    msg: "Skipping Dotfiles Rollout & continue playbook — local changes in {{ ONESETUP_SYSTEM_DOTFILES_DIR }} preserved."
   when:
     - dotfiles_clone is failed
     - dotfiles_overwrite_prompt.user_input | lower != 'y'

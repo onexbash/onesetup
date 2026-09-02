@@ -46,7 +46,7 @@
   # Variable Prompts
   vars_prompt:
     - name: SUDO_PASSWORD
-      prompt: "Enter your sudo password"
+      prompt: "Sudo password"
       private: true
 
   # -- PRE-TASKS -- #
