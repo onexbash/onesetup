@@ -186,7 +186,7 @@ function install() {
       elif (($behind_count > 0)); then
         echo -e "${I_INFO}The installation directory is $behind_count commits behind of the remote (https://github.com/$repo_name)."
         echo -e "${I_INFO}Updating.."
-        sudo rm -rf "$install_dir" && sudo git clone "$repo_uri" "$install_dir"
+        sudo rm -rf "$install_dir" && git clone "$repo_uri" "$install_dir"
       fi
     else
       echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$repo_name)."
@@ -197,7 +197,7 @@ function install() {
   # Install only if directory is empty.
   if [[ ! -d "$install_dir" ]]; then
     echo -e "${I_INFO}No Installation found for 'onesetup'. Installing to ${install_dir} .."
-    sudo git clone "$repo_uri" "$install_dir" && echo -e "${I_OK}Installation complete!"
+    git clone "$repo_uri" "$install_dir" && echo -e "${I_OK}Installation complete!"
   fi
 
   # Ensure install directory has correct permissions (recursive)
