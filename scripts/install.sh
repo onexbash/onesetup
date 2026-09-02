@@ -32,7 +32,7 @@ function load_utils(){
   TMP_SCRIPT=$(mktemp)
   trap 'rm -f "$TMP_SCRIPT"' EXIT
 
-  curl -fsSL "https://raw.githubusercontent.com/${username}/${repo_name}/main/scripts/env.sh" -o "$TMP_SCRIPT"
+  curl -fsSL "https://raw.githubusercontent.com/${username}/${repo_name}/main/scripts/util.sh" -o "$TMP_SCRIPT"
   source "$TMP_SCRIPT" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script: $TMP_SCRIPT"; exit 1; }  
 }
 
