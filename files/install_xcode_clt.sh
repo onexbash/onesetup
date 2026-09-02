@@ -6,9 +6,11 @@
 # Main Function
 function main(){
   local status=0
-
-  set_modes  || echo -e "${I_WARN}Failed to set Script Modes."
+  # Function Calls
+  load_utils
   tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
+  set_modes || echo -e "${I_WARN}Failed to set Script Modes."
+  { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
 
   if ! install; then
     echo -e "${I_ERR}Failed to install/update XCode CommandLineTools"
@@ -27,42 +29,12 @@ function main(){
   exit "$status"
 }
 
-# Helper: Set Script Modes
-function set_modes() {
-  # Exit on error & pipe failures
-  set -eo pipefail
-  # Prompt whether script should run in debug-mode when $TOGGLE_SCRIPT_DEBUG_MODE env var is not set.
-  if [[ -z $TOGGLE_SCRIPT_DEBUG_MODE ]]; then
-    export TOGGLE_SCRIPT_DEBUG_MODE=0 # disabled by default
-  fi
-  if [[ $TOGGLE_SCRIPT_DEBUG_MODE -eq 1 ]]; then
-    set -x && echo -e "${I_OK}Running Script in Debug Mode"
-  fi
+
+function load_utils(){
+  local system_install_dir="$HOME/.local/share/onesetup" # TODO: Implement support for customized installation directory
+  source "${system_install_dir}/scripts/util.sh" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
 }
 
-# Helper: TTY Styles (colors, prompts, ..)
-function tty_styles() {
-  # Terminal Colors
-  export C_BLACK='\033[1;30m'
-  export C_RED='\033[1;31m'
-  export C_GREEN='\033[1;32m'
-  export C_YELLOW='\033[1;33m'
-  export C_BLUE='\033[1;34m'
-  export C_PURPLE='\033[1;35m'
-  export C_CYAN='\033[1;36m'
-  export C_WHITE='\033[1;37m'
-  export C_GRAY='\033[1;34m'
-  export C_RESET='\033[0m'
-  # Info Prompts
-  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
-  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
-  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
-  export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"     # info
-  export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"     # error
-  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
-  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
-  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
-}
 
 # Returns latest CLT update label offered by softwareupdate (empty if none)
 # NOTE: sort -V sorts whole lines; assumes all matched labels share the same prefix ("Command Line Tools for Xcode-")
