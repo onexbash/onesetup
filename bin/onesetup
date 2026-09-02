@@ -109,20 +109,21 @@ EOF
 function run_playbook() {
   local roles=""
   local skip_roles=""
-  local dir_type="prod"
+  local development="${ONESETUP_PROJECT_DEVELOPMENT}"
+  # local development="${ONESETUP_PROJECT_DEVELOPMENT:-false}"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-    --directory)
+    --development)
       if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
-        echo -e "${I_ERR}Flag '--directory' requires a value: 'dev' or 'prod'." >&2
+        echo -e "${I_ERR}Flag '--development' requires a value: [true/false]" >&2
         exit 1
       fi
-      dir_type="$2"
+      development="$2"
       shift 2
       ;;
-    --directory=*)
-      dir_type="${1#*=}"
+    --development=*)
+      development="${1#*=}"
       shift
       ;;
     --roles)
@@ -148,9 +149,10 @@ function run_playbook() {
     esac
   done
 
-  # Validate --directory value
-  if [[ "$dir_type" != "dev" && "$dir_type" != "prod" ]]; then
-    echo -e "${I_ERR}Invalid value '$dir_type' for '--directory'. Allowed values are 'dev' or 'prod'." >&2
+  # Validate --development value
+  development="$(echo "$development" | tr '[:upper:]' '[:lower:]')"
+  if [[ "$development" != "true" && "$development" != "false" ]]; then
+    echo -e "${I_ERR}Invalid value '$development' for '--development'. Allowed values are 'true' or 'false'." >&2
     exit 1
   fi
 
@@ -160,16 +162,16 @@ function run_playbook() {
     exit 1
   fi
 
-  # Determine target working directory based on selected directory type
+  # Determine target working directory based on development flag 
   local target_dir
-  if [[ "$dir_type" == "dev" ]]; then
-    if [[ -z "$ONESETUP_DIR_DEV" ]]; then
-      echo -e "${I_ERR}'--directory dev' requested, but ONESETUP_DIR_DEV is not set and current directory is not a Git repository." >&2
+  if [[ "$development" == "true" ]]; then
+    target_dir="$(git rev-parse --show-toplevel 2>/dev/null)"
+    if [[ -z "$target_dir" ]]; then
+      echo -e "${I_ERR}Development mode requested ('--development true'), but current directory is not inside a Git repository." >&2
       exit 1
     fi
-    target_dir="$ONESETUP_DIR_DEV"
   else
-    target_dir="$ONESETUP_DIR"
+    target_dir="$ONESETUP_SYSTEM_INSTALL_DIR"
   fi
 
   # Export Ansible Environment Variables based on $target_dir
