@@ -161,7 +161,7 @@ function install() {
   local bin_dir="$ONESETUP_SYSTEM_BIN_DIR"
   local repo_uri="$ONESETUP_PROJECT_REPO_URI"
 
-  # Check if installation directory is a git repository
+  # Step 1: Remove installation directory if invalid/corrupted
   if [[ -d "$install_dir" ]]; then
     if ! git -C "$install_dir" rev-parse --git-dir >/dev/null 2>&1; then
       rm -rf "$install_dir" && \
@@ -169,44 +169,37 @@ function install() {
     fi
   fi
 
-  # Check if installation directory is up-to-date
+  # Step 2: Check for updates if repository already exists
   if [[ -d "$install_dir" ]]; then
-    git -C "$install_dir" fetch
-    local behind_count
-    local ahead_count
-    behind_count=$(git -C "$install_dir" rev-list --count HEAD..@{u})
-    ahead_count=$(git -C "$install_dir" rev-list --count @{u}..HEAD)
-    if (($behind_count > 0)) || (($ahead_count > 0)); then
-      if (($behind_count > 0)) && (($ahead_count > 0)); then
-        echo -e "${I_WARN}The installation directory is $behind_count commits behind and $ahead_count commits ahead of the remote (https://github.com/$repo_name)."
-        echo -e "${I_ERR}Please Check! Exiting.."; exit 1
-      elif (($ahead_count > 0)); then
-        echo -e "${I_WARN}The installation directory is $ahead_count commits ahead of the remote (https://github.com/$repo_name)."
-        echo -e "${I_ERR}Please Check! Exiting.."; exit 1
-      elif (($behind_count > 0)); then
-        echo -e "${I_INFO}The installation directory is $behind_count commits behind of the remote (https://github.com/$repo_name)."
-        echo -e "${I_INFO}Updating.."
-        sudo rm -rf "$install_dir" && git clone "$repo_uri" "$install_dir"
+    local local_sha remote_sha
+    local_sha=$(git -C "$install_dir" rev-parse HEAD 2>/dev/null || echo "")
+    remote_sha=$(git ls-remote "$repo_uri" HEAD 2>/dev/null | awk '{print $1}')
+    # Compare local commit hash with latest remote
+    if [[ -n "$local_sha" && -n "$remote_sha" ]]; then
+      if [[ "$local_sha" != "$remote_sha" ]]; then
+        echo -e "${I_INFO}Installation directory is out of date."
+        echo -e "${I_INFO}Updating to latest version..."
+        rm -rf "$install_dir" && git clone --depth 1 --single-branch "$repo_uri" "$install_dir"
+      else
+        echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$repo_name)."
+        echo -e "${I_INFO}Skipping installation..."
       fi
     else
-      echo -e "${I_WARN}The installation directory is up-to-date with the remote (https://github.com/$repo_name)."
-      echo -e "${I_INFO}Skipping installation.."
+      echo -e "${I_ERR}Failed to verify remote commit hash. Re-cloning..."
+      rm -rf "$install_dir" && git clone --depth 1 --single-branch "$repo_uri" "$install_dir"
     fi
   fi
 
-  # Install only if directory is empty.
+  # Step 3: Perform fresh installation if directory doesn't exist
   if [[ ! -d "$install_dir" ]]; then
-    echo -e "${I_INFO}No Installation found for 'onesetup'. Installing to ${install_dir} .."
-    git clone "$repo_uri" "$install_dir" && echo -e "${I_OK}Installation complete!"
+    echo -e "${I_INFO}No installation found for 'onesetup'. Installing to ${install_dir}..."
+    git clone --depth 1 --single-branch "$repo_uri" "$install_dir" && echo -e "${I_OK}Installation complete!"
   fi
 
-  # Ensure install directory has correct permissions (recursive)
+  # Step 4: Ensure permissions and deploy binaries
   ensure_directory "$install_dir" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}" true
-
-  # Ensure bin directory exists with correct permissions
   ensure_directory "$bin_dir" "755" "${ONESETUP_SYSTEM_ROOT_USER}:${ONESETUP_SYSTEM_ADMIN_GROUP}"
 
-  # Rollout executables to bin_dir
   for file in "${install_dir}"/bin/*; do
     if [[ -f "$file" ]]; then
       local filename
@@ -215,6 +208,5 @@ function install() {
     fi
   done
 }
-
 # Call Main Function with args
 main "$@"
