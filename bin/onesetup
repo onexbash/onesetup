@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-# Exit on error, undefined variables, and failed commands in pipes
-set -euo pipefail
+# --                          -- #
+# --     HELPER FUNCTIONS     -- #
+# --                          -- #
 
-# Main Function
-function main() {
+# [Helper] Terminal Colors & Prompts
+function tty_styles() {
   # Terminal Colors
   export C_BLACK='\033[1;30m'
   export C_RED='\033[1;31m'
@@ -16,60 +17,44 @@ function main() {
   export C_WHITE='\033[1;37m'
   export C_GRAY='\033[1;34m'
   export C_RESET='\033[0m'
-
-  # Prompt Variables
-  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"
-  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"
-  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"
-  export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"
-  export I_ERR="${C_BLACK}[${C_YELLOW} ERROR ${C_BLACK}] ${C_RESET}"
-  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"
-  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"
-  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}"
-
-  # Environment Variable Defaults
-  export ONESETUP_DIR="${ONESETUP_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/onesetup}"
-  export ONESETUP_DIR_DEV="${ONESETUP_DIR_DEV:-$(git rev-parse --show-toplevel 2>/dev/null)}"
-  export ONESETUP_REPO="${ONESETUP_REPO:-onexbash/onesetup}"
-  export ONESETUP_VARFILE_ENCRYPTED="${ONESETUP_VARFILE_ENCRYPTED:-group_vars/all/encrypted.yml}"
-  export ONESETUP_CLOUD_DIR="${ONESETUP_CLOUD_DIR:-/opt/onexcloud}" # TODO: use actual cloud storage
-  export DOTFILES_DIR="${DOTFILES_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles}"
-  export DOTFILES_REPO="${DOTFILES_REPO:-onexbash/dotfiles}"
-  export ANSIBLE_DEBUG="${ANSIBLE_DEBUG:-0}"
-
-  # Function Calls
-  install_deps
-  parse_args "$@"
+  # Info Prompts
+  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
+  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
+  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
+  export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"     # info
+  export I_ERR="${C_BLACK}[${C_RED} ERROR ${C_BLACK}] ${C_RESET}"     # error
+  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
+  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
+  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
 }
 
-# Print Command Usage Help
-function print_help() {
-  cat <<EOF
-Usage: $(basename "$0") <command> [options]
-
-Sub-Commands:
-  run                         Run Ansible Playbook
-    --directory [dev/prod]    Ansible Playbook Directory: Git repo root (dev) or Installation Directory (prod). Default: prod
-    --roles <role1,role2>     Comma-separated list of roles/tags to run
-    --skip-roles <role1,...>  Comma-separated list of roles/tags to skip
-  tbd                         To Be Defined
-    --arg1                    Placeholder arg1
-    --arg2                    Placeholder arg2
-  help, --help, -h            Display this help message
-EOF
+# [Helper] Set Script Modes TODO: refactor this
+function set_modes() {
+  set -eo pipefail
+  TOGGLE_SCRIPT_DEBUG_MODE="${TOGGLE_SCRIPT_DEBUG_MODE:-0}"
+  if [[ "$TOGGLE_SCRIPT_DEBUG_MODE" -eq 1 ]]; then
+    set -x
+    echo -e "${I_OK}Running Script in Debug Mode"
+  fi
 }
 
-# Helper: Detect Operating System
+# --                           -- #
+# --     UTILITY FUNCTIONS     -- #
+# --                           -- #
+
+# [Utility] Detect Operating System
 function detect_os() {
-  case "$(uname -s)" in
+  local platform
+  platform=$(uname -s)
+  case "$platform" in
     Linux*) echo "linux" ;;
     Darwin*) echo "macos" ;;
     CYGWIN* | MINGW* | MSYS*) echo "windows" ;;
-    *) echo "unknown" ;;
+    *) echo "unsupported" ;;
   esac
 }
 
-# Helper: Linux PKG Installer
+# [Utility] Linux PKG Installer
 function install_linux_pkg() {
   local pkg="$1"
   if command -v apt-get &>/dev/null; then
@@ -83,7 +68,182 @@ function install_linux_pkg() {
   fi
 }
 
-# Install Dependencies
+# --                        -- #
+# --     CORE FUNCTIONS     -- #
+# --                        -- #
+
+# [0] Main Function
+function main() {
+  # Call Helper Functions
+  tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
+  set_modes || echo -e "${I_WARN}Failed to set Script Modes."
+
+  # Call Core Functions
+  load_env
+  { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
+  install_deps || { echo -e "${I_ERR}Failed to install dependencies"; exit 1; }
+  parse_args "$@" || { echo -e "${I_ERR}Failed to parse Command arguments"; exit 1; }
+}
+
+# Source Environment Script that has the read_config() function
+function load_env(){
+  local system_install_dir="$HOME/.local/share/onesetup"
+  source "${system_install_dir}/scripts/env.sh" && echo -e "${I_OK}Environment Script sourced" || { echo -e "${I_ERR}Failed to source Environment Script"; exit 1; }  
+}
+
+# [1] Read User Config File 'onesetup.yml'
+# function read_config(){
+#   # Set Default Config Values
+#   # [Remote]
+#   local remote_provider="github"
+#   local remote_username="onexbash"
+#   local remote_connection="https"
+#   local remote_project_repo="onesetup"
+#   local remote_dotfiles_repo="dotfiles"
+#   # [System]
+#   local system_os="$(detect_os)"
+#   local system_username="$USER"
+#   local system_root_user="root"
+#   local system_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/onesetup"
+#   local system_install_dir="$HOME/.local/share/onesetup"
+#   local system_dotfiles_dir="$HOME/.local/share/dotfiles"
+#   local system_bin_dir="/usr/local/bin"
+#   local system_admin_group system_user_group
+#   if [[ "$system_os" == "linux" ]]; then
+#     system_admin_group="wheel"
+#     system_user_group="$(id -gn "$system_username" 2>/dev/null || echo "$system_username")"
+#   elif [[ "$system_os" == "macos" ]]; then
+#     system_admin_group="wheel"
+#     system_user_group="staff"
+#   elif [[ "$system_os" == "windows" ]]; then
+#     system_admin_group="admin"
+#     system_user_group="staff"
+#   fi
+#   # [Ansible]
+#   local ansible_debug="0"
+#   
+#   # Ensure Config Directory exists with right permissions
+#   local config_file="${system_config_dir}/config.yml"
+#   ensure_directory "$system_config_dir" "755" "${system_username}:${system_user_group}"
+# 
+#   # Ensure yq is present to parse config file
+#   if ! command -v "yq" &>/dev/null; then
+#     case "$system_os" in
+#       linux) sudo dnf install -y "yq" ;;
+#       macos) brew install "yq" ;;
+#       *) echo -e "${I_ERR}Unsupported OS ($system_os) — cannot install yq automatically."; return 1 ;;
+#     esac
+#   fi
+#  
+#   # Overwrite Defaults with Config File Values
+#   if [[ -f "$config_file" ]]; then
+#     local val
+#     # [Remote]: provider
+#     val=$(yq '.remote.provider' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       remote_provider="$val"
+#     fi
+#     # [Remote]: username
+#     val=$(yq '.remote.username' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       remote_username="$val"
+#     fi
+#     # [Remote]: connection
+#     val=$(yq '.remote.connection' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       remote_connection="$val"
+#     fi
+#     # [Remote]: project_repo
+#     val=$(yq '.remote.project_repo' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       remote_project_repo="$val"
+#     fi
+#     # [Remote]: dotfiles_repo
+#     val=$(yq '.remote.dotfiles_repo' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       remote_dotfiles_repo="$val"
+#     fi
+#     # [System]: os
+#     val=$(yq '.system.os' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       system_os="${val/#\~/$HOME}"
+#     fi
+#     # [System]: username
+#     val=$(yq '.system.username' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       system_username="$val"
+#     fi
+#     # [System]: root_user
+#     val=$(yq '.system.root_user' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       system_root_user="$val"
+#     fi
+#     # [System]: config_dir
+#     val=$(yq '.system.config_dir' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       system_config_dir="${val/#\~/$HOME}"
+#     fi
+#     # [System]: install_dir
+#     val=$(yq '.system.install_dir' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       system_install_dir="${val/#\~/$HOME}"
+#     fi
+#     # [System]: dotfiles_dir
+#     val=$(yq '.system.dotfiles_dir' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       system_dotfiles_dir="${val/#\~/$HOME}"
+#     fi
+#     # [System]: bin_dir
+#     val=$(yq '.system.bin_dir' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       system_bin_dir="${val/#\~/$HOME}"
+#     fi
+#     # [Ansible]: debug
+#     val=$(yq '.ansible.debug' "$config_file" 2>/dev/null)
+#     if [[ -n "$val" && "$val" != "null" ]]; then
+#       ansible_debug="${val/#\~/$HOME}"
+#     fi
+#   fi
+# 
+#   # Environment Variables: Config Keys
+#   export ONESETUP_PROVIDER="${remote_provider}"
+#   export ONESETUP_REMOTE_USERNAME="${remote_username}"
+#   export ONESETUP_REMOTE_CONNECTION="${remote_connection}"
+#   export ONESETUP_REMOTE_PROJECT_REPO="${remote_project_repo}"
+#   export ONESETUP_REMOTE_DOTFILES_REPO="${remote_dotfiles_repo}" 
+#   export ONESETUP_SYSTEM_OS="${system_os}"
+#   export ONESETUP_SYSTEM_USERNAME="${system_username}"
+#   export ONESETUP_SYSTEM_ROOT_USER="${system_root_user}"
+#   export ONESETUP_SYSTEM_CONFIG_DIR="${system_config_dir}"
+#   export ONESETUP_SYSTEM_INSTALL_DIR="${system_install_dir}"
+#   export ONESETUP_SYSTEM_DOTFILES_DIR="${system_dotfiles_dir}"
+#   export ONESETUP_SYSTEM_BIN_DIR="${system_bin_dir}"
+#   export ONESETUP_SYSTEM_USER_GROUP="${system_user_group}"
+#   export ONESETUP_SYSTEM_ADMIN_GROUP="${system_admin_group}"
+#   export ONESETUP_ANSIBLE_DEBUG="${ansible_debug}"
+# 
+#   # Environment Variables: Dynamic
+#   local project_uri dotfiles_uri
+#   case "${ONESETUP_REMOTE_CONNECTION}" in
+#     ssh)
+#       project_uri="git@github.com:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
+#       dotfiles_uri="git@github.com:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git"
+#       ;;
+#     https|*) # default to HTTPS if connection is not set
+#       project_uri="https://github.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
+#       dotfiles_uri="https://github.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git"
+#       ;;
+#   esac
+#   export ONESETUP_PROJECT_REPO_URI="${project_uri}"
+#   export ONESETUP_DOTFILES_REPO_URI="${dotfiles_uri}"
+# 
+#   export ONESETUP_PROJECT_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/main"
+#   export ONESETUP_DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/main"
+# 
+#   export ONESETUP_DIR_DEV="${ONESETUP_DIR_DEV:-$(git rev-parse --show-toplevel 2>/dev/null)}"
+# }
+
+# [2] Dependency Installation
 function install_deps() {
   local os pkg_list
   os="$(detect_os)"
@@ -116,6 +276,54 @@ function install_deps() {
       ;;
     esac
   done
+}
+
+# [3] Command Arguments Parser
+function parse_args() {
+  if [[ $# -eq 0 ]]; then
+    prompt_subcommand
+    return 0
+  fi
+
+  case "${1:-}" in
+  run)
+    shift
+    run_playbook "$@"
+    ;;
+  tbd)
+    shift
+    cmd_tbd "$@"
+    ;;
+  help | --help | -h)
+    print_help
+    ;;
+  *)
+    echo -e "${I_ERR}Unknown command: $1" >&2
+    print_help
+    exit 1
+    ;;
+  esac
+}
+
+# --                              -- #
+# --     SUBCOMMAND FUNCTIONS     -- #
+# --                              -- #
+
+# Subcommand: 'help': Print Command Usage Help
+function print_help() {
+  cat <<EOF
+Usage: $(basename "$0") <command> [options]
+
+Sub-Commands:
+  run                         Run Ansible Playbook
+    --directory [dev/prod]    Ansible Playbook Directory: Git repo root (dev) or Installation Directory (prod). Default: prod
+    --roles <role1,role2>     Comma-separated list of roles/tags to run
+    --skip-roles <role1,...>  Comma-separated list of roles/tags to skip
+  tbd                         To Be Defined
+    --arg1                    Placeholder arg1
+    --arg2                    Placeholder arg2
+  help, --help, -h            Display this help message
+EOF
 }
 
 # Subcommand 'run': Run Ansible Playbook
@@ -237,33 +445,6 @@ function prompt_subcommand() {
   "Run Playbook") run_playbook ;;
   "TBD") cmd_tbd ;;
   *) echo -e "${I_WARN}Operation cancelled." ;;
-  esac
-}
-
-# Argument Parser
-function parse_args() {
-  if [[ $# -eq 0 ]]; then
-    prompt_subcommand
-    return 0
-  fi
-
-  case "${1:-}" in
-  run)
-    shift
-    run_playbook "$@"
-    ;;
-  tbd)
-    shift
-    cmd_tbd "$@"
-    ;;
-  help | --help | -h)
-    print_help
-    ;;
-  *)
-    echo -e "${I_ERR}Unknown command: $1" >&2
-    print_help
-    exit 1
-    ;;
   esac
 }
 

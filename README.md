@@ -41,16 +41,24 @@ Bootstrap a fresh Mac into your fully configured dev machine with a single comma
 ---
 
 ## 🚀 Getting Started
-
-**1. Run the installation script**
+### 1) Installation
+**1.1) Configure your installation**
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/install.sh)"
+export ONESETUP_REPO="<GITHUB USERNAME>/<GITHUB REPO NAME>" # default: onexbash/onesetup
+export ONESETUP_DIR="<Directory to install Project to>" # default: ~/.local/share/onesetup
+export ANSIBLE_DEBUG="[0/1/2]" # default: 0
 ```
+**1.2) Run the installation script**
 
-**2. Restart your terminal** to reload the shell configuration.
+```bash
+username="<GITHUB USERNAME>" repo_name="<GITHUB REPO NAME>" bash -c '$(curl -fsSL https://raw.githubusercontent.com/"$username"/"$repo_name"/main/scripts/install.sh)'
+username="<GITHUB USERNAME>" repo_name="<GITHUB REPO NAME>" bash -c 'curl -fsSL "https://raw.githubusercontent.com/$username/$repo_name/main/scripts/install.sh" | bash'
+```
+**1.3) Restart your terminal** or reload shell.
 
-**3. (Optional) Encrypt your SSH Keys using the `onesetup-vault` binary**
+### 2) Ansible Vault Encryption
+**2.1) Encrypt your SSH Keys using the `onesetup-vault` binary**
 ```bash
 # Encrypt Private Key
 onesetup-vault encrypt --file "~/.ssh/id_ed25519" --target "ansible"
@@ -59,15 +67,13 @@ onesetup-vault encrypt --file "~/.ssh/id_ed25519.pub" --target "ansible"
 # Encrypt SSH Config
 onesetup-vault encrypt --file "~/.ssh/config" --target "ansible"
 ```
-
-**4. Run the `onesetup` binary**
-
+### 3) Command Usage
+**3.1) Run the `onesetup` binary**
 ```bash
 onesetup
 ```
 
-**5. (Optional) Skip individual roles**
-
+**3.2) Skip individual roles (optional)**
 ```bash
 onesetup --skip "<role_name>, <role_name>"
 ```
@@ -164,6 +170,7 @@ You'll be prompted for the vault password (`--ask-vault-pass`) when running `one
 - [ ] Intel-based macOS support
 - [ ] Additional CLI parameters
 - [ ] Setup wizard to semi-automate secret encryption & storage
+- [ ] Auto-Installation of manual drivers (printer, ..)
 
 ---
 
