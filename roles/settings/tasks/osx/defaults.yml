@@ -560,7 +560,7 @@
     domain: com.apple.iphonesimulator
     key: ScreenShotSaveLocation
     type: string
-    value: "{{ ONESETUP_CLOUD_DIR }}/media/images/screenshots"
+    value: "{{ ONESETUP_SYSTEM_STORAGE_DIR }}/Media/images/screenshots"
 
 # Disable Startup Sound
 - name: "Disable Startup Sound"
