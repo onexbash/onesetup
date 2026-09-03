@@ -40,7 +40,7 @@
     # Environment Variables: User Environment
     USER: "{{ ansible_facts['env']['USER'] }}"
     HOME: "{{ ansible_facts['env']['HOME'] }}"
-    XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] }}"
+    XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.config') }}"
     ZDOTDIR: "{{ ansible_facts['env']['ZDOTDIR'] }}"
     CARGO_HOME: "{{ ansible_facts['env']['CARGO_HOME'] }}"
   # Variable Prompts
