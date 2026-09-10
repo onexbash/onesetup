@@ -2,6 +2,8 @@
 dock_items:
   - name: "Ghostty"
     path: "/Applications/Ghostty.app"
+  - name: "Wezterm"
+    path: "/Applications/WezTerm.app"
   - name: "Firefox Developer Edition"
     path: "/Applications/Firefox Developer Edition.app"
   - name: "Proton Mail"

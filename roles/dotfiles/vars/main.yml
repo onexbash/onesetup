@@ -28,6 +28,8 @@ dotfiles:
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
   # ghostty
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/ghostty", dest: "{{ XDG_CONFIG_HOME }}/ghostty" }
+  # wezterm
+  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/wezterm", dest: "{{ XDG_CONFIG_HOME }}/wezterm" }
   # git
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
   # lazygit
