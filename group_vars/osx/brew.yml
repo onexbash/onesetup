@@ -5,7 +5,6 @@ brew_casks:
   - shotcut # Video Editing
   - alt-tab # Alt-Tab replacement
   - appcleaner # App Uninstaller
-  - cleanshot # screenshot tool (paid)
   - deepl
   - discord
   - session # Onion routed messenger
@@ -156,6 +155,6 @@ brew_taps:
   - FelixKratz/formulae # used by: SketchyBar, JankyBorders
   - hashicorp/tap # used by: terraform and other hashicorp software
   - nikitabobko/tap # used by: aerospace
-  - sdkman/tap # used by: sdkman (development kit manager)
+  - sdkman/tap # used by: sdkman
   - teamookla/speedtest # used by: speedtest-cli
   - lzhgus/tap # used by: capso
