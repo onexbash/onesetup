@@ -75,6 +75,16 @@ onesetup --skip "<role_name>, <role_name>"
 
 ---
 
+## Windows Target Preperation
+For Windows User's you have to run the Ansible Target Preperation Script in an elevated Powershell Instance before the playbook can be run
+```bash
+# Fetch Script from Ansible Github Repository
+$url = "https://raw.githubusercontent.com/ansible/ansible-documentation/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"
+Invoke-WebRequest -Uri $url -OutFile PrepareTargetForAnsible.ps1
+# Execute Script
+./PrepareTargetForAnsible.ps1
+```
+
 ## Commands
 
 Once installed, the `onesetup` binaries are available in `/usr/local/bin`. 
