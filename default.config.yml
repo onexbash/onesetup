@@ -1,0 +1,23 @@
+remote:
+  provider: github # Name of the Provider that stores your onesetup Git Repository [github/gitlab/bitbucket/azure_devops]
+  username: onexbash
+  connection: https # Connection Type for Repository Operations [https/ssh]
+  project_repo: onesetup # Repository Name
+  dotfiles_repo: dotfiles # Name of a seperate Git Repository that stores all your dotfiles
+
+system:
+  os: macos            # Operating System (Auto-Detected but can be overridden here) [macos|linux|windows]
+  username: myuser # Name of a User on your system that has sudo privileges but is not the root user
+  root_user: root # Name of the Root user on your system
+  config_dir: "~/.config/onesetup" # Config Directory for your config.yml
+  install_dir: "~/.local/share/onesetup" # Installation Directory
+  storage_dir: "~/.local/state/onesetup" # Storage Directory
+  dotfiles_dir: "~/.local/share/dotfiles" # Dotfiles Directory used to clone your Dotfiles Repo into and symlink them to the mappec locations
+  bin_dir: "/usr/local/bin" # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
+  tmp_dir: "/tmp" # Directory for Temporary Files
+  user_group: staff    # Group of the system user [MacOS Default: "staff" | Linux Default: "?" | Windows Default: "?"] 
+  admin_group: wheel   # Group of the root user [MacOS Default: "wheel" | Linux Default: "wheel" | Windows Default: "admin"]
+
+project:
+  development: false
+  debug: 0 # Debug Level for Console Outputs [0: Normal | 1: Info | 2: Verbose | 3: Debug]

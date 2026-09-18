@@ -135,8 +135,7 @@ function read_config(){
   fi
   # [Project]
   local project_development="false"
-  local project_ansible_debug="0"
-  local project_script_debug="0"
+  local project_debug="0"
   
   # Ensure Config Directory exists with right permissions
   local config_file="${system_config_dir}/config.yml"
@@ -155,100 +154,95 @@ function read_config(){
   # Overwrite Defaults with Config File Values
   if [[ -f "$config_file" ]]; then
     local val
-    # [Remote]: provider
+    # [remote]: provider
     val=$(yq '.remote.provider' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       remote_provider="$val"
     fi
-    # [Remote]: username
+    # [remote]: username
     val=$(yq '.remote.username' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       remote_username="$val"
     fi
-    # [Remote]: connection
+    # [remote]: connection
     val=$(yq '.remote.connection' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       remote_connection="$val"
     fi
-    # [Remote]: project_repo
+    # [remote]: project_repo
     val=$(yq '.remote.project_repo' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       remote_project_repo="$val"
     fi
-    # [Remote]: dotfiles_repo
+    # [remote]: dotfiles_repo
     val=$(yq '.remote.dotfiles_repo' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       remote_dotfiles_repo="$val"
     fi
-    # [System]: os
+    # [system]: os
     val=$(yq '.system.os' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_os="$val"
     fi
-    # [System]: username
+    # [system]: username
     val=$(yq '.system.username' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_username="$val"
     fi
-    # [System]: root_user
+    # [system]: root_user
     val=$(yq '.system.root_user' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_root_user="$val"
     fi
-    # [System]: config_dir
+    # [system]: config_dir
     val=$(yq '.system.config_dir' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_config_dir="${val/#\~/$HOME}"
     fi
-    # [System]: install_dir
+    # [system]: install_dir
     val=$(yq '.system.install_dir' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_install_dir="${val/#\~/$HOME}"
     fi
-    # [System]: storage_dir
+    # [system]: storage_dir
     val=$(yq '.system.storage_dir' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_storage_dir="${val/#\~/$HOME}"
     fi
-    # [System]: dotfiles_dir
+    # [system]: dotfiles_dir
     val=$(yq '.system.dotfiles_dir' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_dotfiles_dir="${val/#\~/$HOME}"
     fi
-    # [System]: bin_dir
+    # [system]: bin_dir
     val=$(yq '.system.bin_dir' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_bin_dir="${val/#\~/$HOME}"
     fi
-    # [System]: bin_dir
+    # [system]: bin_dir
     val=$(yq '.system.tmp_dir' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_tmp_dir="${val/#\~/$HOME}"
     fi
-    # [System]: user_group
+    # [system]: user_group
     val=$(yq '.system.user_group' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_user_group="$val"
     fi
-    # [System]: admin_group
+    # [system]: admin_group
     val=$(yq '.system.admin_group' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       system_admin_group="$val"
     fi
-    # [Project]: development
+    # [project]: development
     val=$(yq '.project.development' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
       project_development="$val"
     fi
-    # [Project]: ansible_debug
-    val=$(yq '.project.ansible_debug' "$config_file" 2>/dev/null)
+    # [project]: debug
+    val=$(yq '.project.debug' "$config_file" 2>/dev/null)
     if [[ -n "$val" && "$val" != "null" ]]; then
-      project_ansible_debug="$val"
-    fi
-    # [Project]: script_debug
-    val=$(yq '.project.ansible_debug' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      project_script_debug="$val"
+      project_debug="$val"
     fi
   fi
 
@@ -273,8 +267,7 @@ function read_config(){
   export ONESETUP_SYSTEM_ADMIN_GROUP="${system_admin_group}"
   # Section 'project'
   export ONESETUP_PROJECT_DEVELOPMENT="${project_development}"
-  export ONESETUP_PROJECT_ANSIBLE_DEBUG="${project_ansible_debug}"
-  export ONESETUP_PROJECT_SCRIPT_DEBUG="${project_script_debug}"
+  export ONESETUP_PROJECT_DEBUG="${project_debug}"
 
   # Environment Variables: Dynamic
   local project_uri dotfiles_uri
