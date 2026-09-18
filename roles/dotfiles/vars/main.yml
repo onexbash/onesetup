@@ -29,8 +29,6 @@ dotfiles:
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/powershell", dest: "{{ XDG_CONFIG_HOME }}/powershell" }
   # karabiner
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/karabiner", dest: "{{ XDG_CONFIG_HOME }}/karabiner" }
-  # shell
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/home", dest: "{{ XDG_CONFIG_HOME }}/shell" }
   # starship
   - {
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/starship",

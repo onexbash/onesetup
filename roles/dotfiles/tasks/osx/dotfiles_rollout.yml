@@ -91,6 +91,7 @@
   ansible.builtin.find:
     paths: "{{ shell_home.src }}"
     file_type: file
+    hidden: true # Important to include hidden files starting with '.'
   register: user_shell_files
 
 # Symlink: User Shell Files
