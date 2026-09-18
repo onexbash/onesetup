@@ -10,6 +10,13 @@
   ignore_errors: true
   register: log_tap
 
+# Cleanup Trust Store
+- name: "Cleanup: Homebrew Trust Store"
+  ansible.builtin.file:
+    path: "{{ XDG_CONFIG_HOME }}/homebrew"
+    state: absent
+  become: true
+
 # Trust Taps
 - name: "Trust: Homebrew Taps"
   ansible.builtin.command:
