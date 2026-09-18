@@ -530,14 +530,6 @@
     type: bool
     value: true
 
-# Messages (iMessage)
-- name: "Messages | subject field"
-  community.general.osx_defaults:
-    domain: com.apple.MobileSMS
-    key: MMSShowSubject
-    type: bool
-    value: true
-
 # Feedback Assistant
 - name: "Feedback assistant | autogather large files"
   community.general.osx_defaults:
@@ -690,14 +682,6 @@
     key: type
     type: string
     value: png
-
-# -- SAFARI DEV -- #
-- name: "Safari | enable develop menu"
-  community.general.osx_defaults:
-    domain: com.apple.Safari
-    key: IncludeDevelopMenu
-    type: bool
-    value: true
 
 # -- TERMINAL -- #
 - name: "Terminal | secure keyboard entry"
