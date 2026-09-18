@@ -41,42 +41,21 @@ Bootstrap a fresh Mac into your fully configured dev machine with a single comma
 ---
 
 ## 🚀 Getting Started
-### 1) Installation
-**1.1) Run the installation script**
+### 1) Remote Target Preparation 
+A Target in this Context is the Device you want to configure, aka [Managed Node](https://docs.ansible.com/projects/ansible/latest/network/getting_started/basic_concepts.html#managed-nodes) in Ansible terms.
+Because of some lovely Chicken-Egg-Problems, there are some steps that can't be automated smooth and need to be prepared manually. I'm trying to keep these as little as possible.
 
-*Replace the username & repo_name variables with the actual values of your Remote Repository (e.g: github)*
+#### 1a) MacOS
+*Make sure Homebrew is installed on your system and initialized by your Shell Config (ZSH: `~/.zprofile` | BASH: `~/.bashrc`)*
 ```bash
-username="<USERNAME>" repo_name="<REPOSITORY>" bash -c 'curl -fsSL "https://raw.githubusercontent.com/$username/$repo_name/main/scripts/install.sh" | bash'
+# Homebrew Installation Script (https://brew.sh)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
-**1.2) Restart your terminal** or reload shell.
+#### 1b) Linux
+*COMING SOON / In Testing*
 
-### 2) Ansible Vault Encryption
-**2.1) Encrypt your SSH Keys using the `onesetup-vault` binary**
-```bash
-# Encrypt Private Key
-onesetup-vault encrypt --file "~/.ssh/id_ed25519" --target "ansible"
-# Encrypt Public Key
-onesetup-vault encrypt --file "~/.ssh/id_ed25519.pub" --target "ansible"
-# Encrypt SSH Config
-onesetup-vault encrypt --file "~/.ssh/config" --target "ansible"
-```
-### 3) Command Usage
-**3.1) Run the `onesetup` binary**
-```bash
-onesetup
-```
-
-**3.2) Skip individual roles (optional)**
-```bash
-onesetup --skip "<role_name>, <role_name>"
-```
-
-> 💡 Roles are tagged (`dotfiles`, `apps`, `settings`) — pass any combination of tag names to `--skip` to opt out of specific stages.
-
----
-
-## Windows Target Preperation
-For Windows User's you have to run the Ansible Target Preperation Script in an elevated Powershell Instance before the playbook can be run
+#### 1c) Windows
+*Run the official Ansible Target Preperation Script in an elevated Powershell Instance*
 ```bash
 # Fetch Script from Ansible Github Repository
 $url = "https://raw.githubusercontent.com/ansible/ansible-documentation/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"
@@ -84,6 +63,41 @@ Invoke-WebRequest -Uri $url -OutFile PrepareTargetForAnsible.ps1
 # Execute Script
 ./PrepareTargetForAnsible.ps1
 ```
+
+### 2) Installation
+- Run the installation script
+- Replace the username & repo_name variables with the actual values of your Remote Repository (e.g: github):
+```bash
+username="<USERNAME>" repo_name="<REPOSITORY>" bash -c 'curl -fsSL "https://raw.githubusercontent.com/$username/$repo_name/main/scripts/install.sh" | bash'
+```
+- Restart your terminal or reload the default shell
+
+### 3) Ansible Vault Encryption
+To encrypt your Secrets (e.g: SSH Keys) you can use the `onesetup-vault` command. 
+The idea is that you encrypt them via Ansible Vault *(id: onesetup)* 
+and store them as a Variable in e.g: [encrypted.yml](./group_vars/all/encrypted.yml) or [ssh.yml](./group_vars/all/ssh.yml).
+*Use --target "ansible" to write them directly to the vars-file or "clipboard" to save them to your system clipboard first*
+```bash
+# Encrypt SSH Key (private & public key)
+onesetup-vault encrypt --file "~/.ssh/id_ed25519" --target "ansible"
+onesetup-vault encrypt --file "~/.ssh/id_ed25519.pub" --target "ansible"
+# Encrypt SSH Config
+onesetup-vault encrypt --file "~/.ssh/config" --target "ansible"
+# Encrypt everything else you wanna rollout via Ansible
+```
+
+### 4) Run Playbook
+To apply your Configuration defined in the Ansible Playbook, use the `onesetup` Command.
+```bash
+# Running without arguments will prompt you for everything that's needed
+onesetup
+# Skip individual roles
+onesetup --skip "<role_name>, <role_name>"
+```
+
+> 💡 Roles are tagged (`dotfiles`, `apps`, `settings`) — pass any combination of tag names to `--skip` to opt out of specific stages.
+
+---
 
 ## Commands
 
@@ -123,7 +137,6 @@ Encrypts or decrypts sensitive variables using Ansible Vault.
 ## ⚙️ What It Does
 
 ### Software Installation
-
 - Installs Xcode Command Line Tools & accepts the license
 - Installs Rosetta 2 (for Apple Silicon compatibility)
 - Installs [Homebrew](https://brew.sh)

@@ -11,7 +11,7 @@ function main() {
   load_utils
   tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
   set_modes || echo -e "${I_WARN}Failed to set Script Modes."
-  ensure_homebrew || { echo -e "${I_ERR}Failed to install & make Homebrew available on your system. This is required on MacOS! Please make sure brew is installed and available in your path & re-run the script"; return 1; }
+  init_brew || echo -e "${I_WARN}Failed to initialize Homebrew"
   { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
   export_ansible_vars || { echo -e "${I_ERR}Failed to export Ansible Environment Variables!"; exit 1; }
   install_deps || { echo -e "${I_ERR}Failed to install dependencies"; exit 1; }
@@ -179,13 +179,6 @@ function run_playbook() {
   # Export Ansible Environment Variables based on $target_dir
   export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-${target_dir}/ansible.cfg}"
   export ANSIBLE_INVENTORY="${ANSIBLE_INVENTORY:-${target_dir}/inventory.ini}"
-
-  # Initialize Homebrew on macOS if available
-  if [[ -f "/opt/homebrew/bin/brew" ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-  elif [[ -f "/usr/local/bin/brew" ]]; then
-    eval "$(/usr/local/bin/brew shellenv)"
-  fi
 
   echo -e "${I_OK} onesetup ==> running ansible playbook from: ${C_CYAN}${target_dir}${C_RESET}"
 

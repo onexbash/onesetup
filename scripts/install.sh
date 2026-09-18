@@ -10,7 +10,7 @@ function main() {
   load_utils "$username" "$repo_name" # Called with variables defined in the Install-Command
   tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
   set_modes || echo -e "${I_WARN}Failed to set Script Modes."
-  ensure_homebrew || { echo -e "${I_ERR}Failed to install & make Homebrew available on your system. This is required on MacOS! Please make sure brew is installed and available in your path & re-run the script"; return 1; }
+  init_brew || echo -e "${I_WARN}Failed to initialize Homebrew"
   { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
   export_ansible_vars || { echo -e "${I_ERR}Failed to export Ansible Environment Variables!"; exit 1; }
   { prerequisites && echo -e "${I_OK}Prerequesites satisfied"; } || { echo -e "${I_ERR}Failed to ensure that prerequesites are satisfied"; exit 1; }
@@ -39,23 +39,6 @@ function load_utils(){
 
 # [2] Ensure prerequisites are satisfied
 function prerequisites() {
-  # pkg-manager 
-  case "$ONESETUP_SYSTEM_OS" in
-    linux)
-      # TODO: logic to install & keep pkg manager up-to-date
-      ;;
-    macos)
-      ensure_homebrew || return 1
-      ;;
-    windows)
-      # TODO: logic to install & keep pkg manager up-to-date
-      ;;
-    unsupported)
-      echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"
-      return 1
-      ;;
-  esac
-
   # git
   if ! command -v "git" &>/dev/null; then
     case "$ONESETUP_SYSTEM_OS" in

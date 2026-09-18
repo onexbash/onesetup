@@ -10,7 +10,7 @@ system:
   username: myuser # Name of a User on your system that has sudo privileges but is not the root user
   root_user: root # Name of the Root user on your system
   config_dir: "~/.config/onesetup" # Config Directory for your config.yml
-  install_dir: "~/.local/share/onesetup" # Installation Directory
+  install_dir: "~/.local/share/onesetup" # Installation Directory (TODO: breaks if changed at the moment)
   storage_dir: "~/.local/state/onesetup" # Storage Directory
   dotfiles_dir: "~/.local/share/dotfiles" # Dotfiles Directory used to clone your Dotfiles Repo into and symlink them to the mappec locations
   bin_dir: "/usr/local/bin" # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)

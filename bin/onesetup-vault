@@ -11,7 +11,7 @@ function main() {
   load_utils
   tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
   set_modes || echo -e "${I_WARN}Failed to set Script Modes."
-  ensure_homebrew || { echo -e "${I_ERR}Failed to install & make Homebrew available on your system. This is required on MacOS! Please make sure brew is installed and available in your path & re-run the script"; return 1; }
+  init_brew || echo -e "${I_WARN}Failed to initialize Homebrew"
   { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
   export_ansible_vars || { echo -e "${I_ERR}Failed to export Ansible Environment Variables!"; exit 1; }
   install_deps || { echo -e "${I_ERR}Failed to install dependencies"; exit 1; }
@@ -20,7 +20,7 @@ function main() {
 
 # [1] Source Utility Script
 function load_utils(){
-  local system_install_dir="$HOME/.local/share/onesetup" # TODO: Implement support for customized installation directory
+  local system_install_dir="$HOME/.local/share/onesetup"
   source "${system_install_dir}/scripts/util.sh" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
 }
 
