@@ -8,7 +8,6 @@
 function main() {
   # Function Calls
   load_utils "$username" "$repo_name" # Called with variables defined in the Install-Command
-
   tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
   set_modes || echo -e "${I_WARN}Failed to set Script Modes."
   ensure_homebrew || { echo -e "${I_ERR}Failed to install & make Homebrew available on your system. This is required on MacOS! Please make sure brew is installed and available in your path & re-run the script"; return 1; }
@@ -131,6 +130,10 @@ function install() {
       sudo cp -f "$file" "${bin_dir}/" && echo -e "${I_OK}${C_GREEN}$filename${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}" || { echo -e "${I_ERR}Failed to copy ${C_RED}$filename${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"; return 1; }
     fi
   done
+
+  # Step 5: Install Ansible Modules from Ansible Galaxy
+  ansible-galaxy collection install --collections-path "${storage_dir}/collections" --requirements-file "${install_dir}/requirements.yml" --no-cache --upgrade
+  
 }
 # Call Main Function with args
 main "$@"
