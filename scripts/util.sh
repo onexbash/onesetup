@@ -69,42 +69,44 @@ function install_linux_pkg() {
 # [UTIL] Ensure Homebrew is installed & in PATH (independent of shell config files)
 function ensure_homebrew() {
   case "$(detect_os)" in
-    linux)
-      return 0
-      ;;
+    linux|windows) return 0 ;;
     macos)
-      # Load brew into PATH directly from known locations — bypasses corrupted shell config
-      if [[ -x "/opt/homebrew/bin/brew" ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-      elif [[ -x "/usr/local/bin/brew" ]]; then
-        eval "$(/usr/local/bin/brew shellenv)"
-      fi
+      _load_brew_env
 
       if command -v brew &>/dev/null; then
         return 0
       fi
 
-      echo -e "${I_WARN}Homebrew not found. Installing..."
+      echo -e "${I_WARN}Homebrew not found or broken. (Re)installing..."
       NONINTERACTIVE=1 /bin/bash -c \
         "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
         || { echo -e "${I_ERR}Homebrew installation failed."; return 1; }
 
-      # Re-check known paths after install (Apple Silicon vs Intel)
-      if [[ -x "/opt/homebrew/bin/brew" ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-      elif [[ -x "/usr/local/bin/brew" ]]; then
-        eval "$(/usr/local/bin/brew shellenv)"
-      else
-        echo -e "${I_ERR}Homebrew installed but binary not found at expected paths."
+      _load_brew_env
+
+      if ! command -v brew &>/dev/null; then
+        echo -e "${I_ERR}Homebrew still not resolvable after install."
+        echo -e "${I_INFO}Debug: $(ls -la /opt/homebrew/bin/brew /usr/local/bin/brew 2>&1)"
         return 1
       fi
-      command -v brew &>/dev/null || { echo -e "${I_ERR}Homebrew still not on PATH after install."; return 1; }
+
       echo -e "${I_OK}Homebrew ready: $(command -v brew)"
       ;;
-    windows)
-      return 0
-      ;;
   esac
+}
+
+# [UTIL] Resolve real brew binary and load shellenv, regardless of symlink health
+function _load_brew_env() {
+  local candidate
+  for candidate in "/opt/homebrew/bin/brew" "/usr/local/bin/brew"; do
+    # -e follows symlinks and checks the TARGET exists+is a regular file;
+    # -x on the resolved target catches dangling symlinks that a bare -x on the link would miss inconsistently across bash versions
+    if [[ -e "$candidate" ]] && [[ -x "$(readlink -f "$candidate" 2>/dev/null || echo "$candidate")" ]]; then
+      eval "$("$candidate" shellenv)" 2>/dev/null
+      return 0
+    fi
+  done
+  return 1
 }
 
 # [UTIL] Ensure Directory presence with right permissions
