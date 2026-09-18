@@ -52,17 +52,18 @@
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
 # Find Global Shell Files
-- name: "Find global shell files"
+- name: "Find global shell files (top-level)"
   ansible.builtin.find:
     paths: "{{ shell_global.src }}"
     file_type: file
+    recurse: true
   register: global_shell_files
 
 # Copy: Global Shell Files
 - name: "Copy global shell files to /etc"
   ansible.builtin.copy:
     src: "{{ item.path }}"
-    dest: "{{ shell_global.dest }}/{{ item.path | basename }}"
+    dest: "{{ shell_global.dest }}/{{ item.path | relpath(shell_global.src) }}"
     mode: "0644"
     owner: "root"
     group: "wheel"
@@ -70,6 +71,31 @@
     remote_src: true
   loop: "{{ global_shell_files.files }}"
   become: true
+
+# # Copy: Global Shell Files
+# - name: "Copy global shell files to /etc"
+#   ansible.builtin.copy:
+#     src: "{{ item.path }}"
+#     dest: "{{ shell_global.dest }}/{{ item.path | basename }}"
+#     mode: "0644"
+#     owner: "root"
+#     group: "wheel"
+#     force: true
+#     remote_src: true
+#   loop: "{{ global_shell_files.files }}"
+#   become: true
+
+# Copy: Global paths.d directory
+# - name: "Copy paths.d directory to /etc/paths.d"
+#   ansible.builtin.copy:
+#     src: "{{ shell_global.src }}/paths.d/"
+#     dest: "{{ shell_global.dest }}/paths.d/"
+#     mode: "0644"
+#     owner: "root"
+#     group: "wheel"
+#     force: true
+#     remote_src: true
+#   become: true
 
 # Cleanup: Shell Config Directory
 - name: "Cleanup: Shell Config Directory"
