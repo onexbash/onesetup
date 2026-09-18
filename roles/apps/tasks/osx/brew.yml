@@ -10,24 +10,15 @@
   ignore_errors: true
   register: log_tap
 
-# Get currently trusted taps
-- name: "Query: Get Currently Trusted Homebrew Taps"
-  ansible.builtin.command:
-    cmd: "brew trust --json"
-  register: brew_trust_current
-  changed_when: false
-  become: false
-
-# Store currently trusted taps
-- name: "Set Fact: Trusted Tap Names"
-  ansible.builtin.set_fact:
-    brew_already_trusted: "{{ (brew_trust_current.stdout | from_json).taps | default([]) }}"
-
-# Trust missing taps
+# Trust Taps
 - name: "Trust: Homebrew Taps"
   ansible.builtin.command:
-    cmd: "brew trust --tap {{ item }}"
-  loop: "{{ brew_trusted_taps | difference(brew_already_trusted) }}"
+    cmd: "brew trust --tap {{ item_tap }}"
+  loop: "{{ brew_taps }}"
+  loop_control:
+    loop_var: item_tap
+  changed_when: true
+  ignore_errors: true
   become: false
 
 # -- FORMULAES -- #
