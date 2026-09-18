@@ -57,6 +57,15 @@ function prerequisites() {
     unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
     esac
   fi
+  # ansible
+  if ! command -v "ansible" &>/dev/null; then
+    case "$ONESETUP_SYSTEM_OS" in
+    linux) { sudo dnf install -y ansible && echo -e "${I_OK}Installation succeeded: ansible" ;} || { echo -e "${I_ERR}Installation failed: ansible"; return 1; } ;;
+    macos) { brew install "ansible" && echo -e "${I_OK}Installation succeeded: ansible" ;} || { echo -e "${I_ERR}Installation failed: ansible"; return 1; } ;;
+    windows) echo -e "${I_ERR}Windows not supported yet"; return 1 ;;
+    unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
+    esac
+  fi
 }
 
 # [3] Run Installation
