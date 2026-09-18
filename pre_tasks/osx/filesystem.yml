@@ -1,9 +1,49 @@
+# Ensure Directory: XDG_CONFIG_HOME
+- name: "Ensure Directory exists: {{ XDG_CONFIG_HOME }}"
+  ansible.builtin.file:
+    path: "{{ XDG_CONFIG_HOME }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+  become: true
+
+# Ensure Directory: XDG_DATA_HOME
+- name: "Ensure Directory exists: {{ XDG_DATA_HOME }}"
+  ansible.builtin.file:
+    path: "{{ XDG_DATA_HOME }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+  become: true
+
+# Ensure Directory: XDG_STATE_HOME
+- name: "Ensure Directory exists: {{ XDG_STATE_HOME }}"
+  ansible.builtin.file:
+    path: "{{ XDG_STATE_HOME }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+  become: true
+
+# Ensure Directory: XDG_CACHE_HOME
+- name: "Ensure Directory exists: {{ XDG_CACHE_HOME }}"
+  ansible.builtin.file:
+    path: "{{ XDG_CACHE_HOME }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+  become: true
+
 # Ensure Directory: CONFIG_DIR
 - name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_CONFIG_DIR }}"
   ansible.builtin.file:
     path: "{{ ONESETUP_SYSTEM_CONFIG_DIR }}"
     state: directory
-    mode: "0744"
+    mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
     follow: true # follow symlink

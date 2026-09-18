@@ -40,6 +40,9 @@
     USER: "{{ ansible_facts['env']['USER'] }}"
     HOME: "{{ ansible_facts['env']['HOME'] }}"
     XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.config') }}"
+    XDG_CACHE_HOME: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.cache') }}"
+    XDG_DATA_HOME: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.local/share') }}"
+    XDG_STATE_HOME: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.local/state') }}"
     ZDOTDIR: "{{ ansible_facts['env']['ZDOTDIR'] }}"
     CARGO_HOME: "{{ ansible_facts['env']['CARGO_HOME'] }}"
   # Variable Prompts
