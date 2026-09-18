@@ -44,11 +44,7 @@ function prerequisites() {
       # TODO: logic to install & keep pkg manager up-to-date
       ;;
     macos)
-      if ! command -v "brew" &>/dev/null; then
-        # TODO: automatic installation of homebrew if possible
-        echo -e "${I_ERR}Homebrew not available. Please install from 'https://brew.sh' & re-run script"
-        return 1
-      fi
+      ensure_homebrew || return 1
       ;;
     windows)
       # TODO: logic to install & keep pkg manager up-to-date
@@ -78,6 +74,39 @@ function prerequisites() {
     esac
   fi
 }
+
+# [2.1] Ensure Homebrew is installed & in PATH (independent of shell config files)
+function ensure_homebrew() {
+  # Load brew into PATH directly from known locations — bypasses corrupted shell config
+  if [[ -x "/opt/homebrew/bin/brew" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x "/usr/local/bin/brew" ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+
+  if command -v brew &>/dev/null; then
+    return 0
+  fi
+
+  echo -e "${I_WARN}Homebrew not found. Installing..."
+  NONINTERACTIVE=1 /bin/bash -c \
+    "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+    || { echo -e "${I_ERR}Homebrew installation failed."; return 1; }
+
+  # Re-check known paths after install (Apple Silicon vs Intel)
+  if [[ -x "/opt/homebrew/bin/brew" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x "/usr/local/bin/brew" ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  else
+    echo -e "${I_ERR}Homebrew installed but binary not found at expected paths."
+    return 1
+  fi
+
+  command -v brew &>/dev/null || { echo -e "${I_ERR}Homebrew still not on PATH after install."; return 1; }
+  echo -e "${I_OK}Homebrew ready: $(command -v brew)"
+}
+
 
 # [3] Run Installation
 function install() {
