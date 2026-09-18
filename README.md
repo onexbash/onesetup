@@ -149,21 +149,39 @@ Encrypts or decrypts sensitive variables using Ansible Vault.
 ---
 
 ## 🔧 Configuration
+For configuration, onesetup will check for a config.yml in the following locations:
+$XDG_CONFIG_HOME/onesetup/config.yml
+$HOME/.config/onesetup/config.yml
 
-All variables live under `group_vars/` and are auto-loaded by `main.yml` — no manual includes required:
+Check [default.config.yml](./default.config.yml) for the Default Values.
+See all valid options below: 
 
-| File | Scope | Purpose |
-|---|---|---|
-| `group_vars/all/*.yml` | All platforms | Shared vars (SSH, general config) |
-| `group_vars/osx/*.yml` | macOS only | Brew packages, dock items, OS-specific settings |
+\`\`\`yaml
+remote:
+  provider: [github|gitlab|bitbucket|azure_devops]
+  username: ""
+  connection: [https|ssh]
+  project_repo: ""
+  dotfiles_repo: ""
 
-Secrets (SSH keys, tokens) are encrypted with **Ansible Vault**:
+system:
+  os: [macos|linux_fedora|linux_arch|linux_debian|windows]
+  username: ""
+  root_user: ""
+  config_dir: ""
+  install_dir: ""
+  storage_dir: ""
+  dotfiles_dir: ""
+  bin_dir: ""
+  tmp_dir: ""
+  user_group: ""
+  admin_group: ""
+project:
+  development: [true/false]
+  debug: [0|1|2|3]
+  ...
+\`\`\`
 
-```bash
-ansible-vault edit group_vars/all/ssh.yml
-```
-
-You'll be prompted for the vault password (`--ask-vault-pass`) when running `onesetup`.
 
 ---
 
