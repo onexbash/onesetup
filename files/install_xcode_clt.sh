@@ -31,7 +31,7 @@ function main(){
 
 
 function load_utils(){
-  local system_install_dir="$HOME/.local/share/onesetup" # TODO: Implement support for customized installation directory
+  local system_install_dir="${ONESETUP_SYSTEM_INSTALL_DIR:-$HOME/.local/share/onesetup}"
   source "${system_install_dir}/scripts/util.sh" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
 }
 
