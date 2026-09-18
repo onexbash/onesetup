@@ -65,6 +65,48 @@ function install_linux_pkg() {
   fi
 }
 
+
+# [UTIL] Ensure Homebrew is installed & in PATH (independent of shell config files)
+function ensure_homebrew() {
+  case "$(detect_os)" in
+    linux)
+      return 0
+      ;;
+    macos)
+      # Load brew into PATH directly from known locations — bypasses corrupted shell config
+      if [[ -x "/opt/homebrew/bin/brew" ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      elif [[ -x "/usr/local/bin/brew" ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      fi
+
+      if command -v brew &>/dev/null; then
+        return 0
+      fi
+
+      echo -e "${I_WARN}Homebrew not found. Installing..."
+      NONINTERACTIVE=1 /bin/bash -c \
+        "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+        || { echo -e "${I_ERR}Homebrew installation failed."; return 1; }
+
+      # Re-check known paths after install (Apple Silicon vs Intel)
+      if [[ -x "/opt/homebrew/bin/brew" ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      elif [[ -x "/usr/local/bin/brew" ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      else
+        echo -e "${I_ERR}Homebrew installed but binary not found at expected paths."
+        return 1
+      fi
+      command -v brew &>/dev/null || { echo -e "${I_ERR}Homebrew still not on PATH after install."; return 1; }
+      echo -e "${I_OK}Homebrew ready: $(command -v brew)"
+      ;;
+    windows)
+      return 0
+      ;;
+  esac
+}
+
 # [UTIL] Ensure Directory presence with right permissions
 function ensure_directory() {
   local target_dir="$1" desired_perms="$2" desired_ownership="$3" recursive="${4:-false}"
