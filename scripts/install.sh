@@ -6,13 +6,14 @@
 
 # [0] Main Function
 function main() {
-  # Call Core Functions
+  # Function Calls
   load_utils "$username" "$repo_name" # Called with variables defined in the Install-Command
 
   tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
   set_modes || echo -e "${I_WARN}Failed to set Script Modes."
   ensure_homebrew || { echo -e "${I_ERR}Failed to install & make Homebrew available on your system. This is required on MacOS! Please make sure brew is installed and available in your path & re-run the script"; return 1; }
   { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
+  export_ansible_vars || { echo -e "${I_ERR}Failed to export Ansible Environment Variables!"; exit 1; }
   { prerequisites && echo -e "${I_OK}Prerequesites satisfied"; } || { echo -e "${I_ERR}Failed to ensure that prerequesites are satisfied"; exit 1; }
   { install && echo -e "${I_OK}Installation completed"; } || { echo -e "${I_ERR}Installation failed"; exit 1; }
 }
@@ -80,6 +81,7 @@ function prerequisites() {
 function install() {
   local repo_name="${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}"
   local install_dir="$ONESETUP_SYSTEM_INSTALL_DIR"
+  local storage_dir="$ONESETUP_SYSTEM_STORAGE_DIR"
   local bin_dir="$ONESETUP_SYSTEM_BIN_DIR"
   local repo_uri="$ONESETUP_PROJECT_REPO_URI"
 

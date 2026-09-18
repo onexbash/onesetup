@@ -156,32 +156,29 @@ $HOME/.config/onesetup/config.yml
 Check [default.config.yml](./default.config.yml) for the Default Values.
 See all valid options below: 
 
-\`\`\`yaml
+```yaml
 remote:
-  provider: [github|gitlab|bitbucket|azure_devops]
+  provider: [github|gitlab|bitbucket|azure_devops] # Name of the Provider that stores your onesetup Git Repository
   username: ""
-  connection: [https|ssh]
-  project_repo: ""
-  dotfiles_repo: ""
-
+  connection: [https|ssh] # Connection Type for Repository Operations
+  project_repo: "" # Repository Name
+  dotfiles_repo: "" # Name of a seperate Git Repository that stores all your dotfiles
 system:
-  os: [macos|linux_fedora|linux_arch|linux_debian|windows]
-  username: ""
-  root_user: ""
-  config_dir: ""
-  install_dir: ""
-  storage_dir: ""
-  dotfiles_dir: ""
-  bin_dir: ""
-  tmp_dir: ""
-  user_group: ""
-  admin_group: ""
+  os: [macos|linux_fedora|linux_arch|linux_debian|windows] # Operating System (Auto-Detected but can be overridden here)
+  username: "" # Name of a User on your system that has sudo privileges but is not the root user
+  root_user: "" # Name of the Root user on your system
+  config_dir: "" # Config Directory for your config.yml
+  install_dir: "" # Installation Directory
+  storage_dir: "" # Storage Directory
+  dotfiles_dir: "" # Dotfiles Directory used to clone your Dotfiles Repo into and symlink them to the mapped locations
+  bin_dir: "" # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
+  tmp_dir: "" # Directory for Temporary Files
+  user_group: "" # Group of the system user [MacOS Default: "staff" | Linux Default: "?" | Windows Default: "?"] 
+  admin_group: "" # Group of the root user [MacOS Default: "wheel" | Linux Default: "wheel" | Windows Default: "admin"]
 project:
   development: [true/false]
-  debug: [0|1|2|3]
-  ...
-\`\`\`
-
+  debug: [0|1|2|3] # Debug Level for Console Outputs [0: Normal | 1: Info | 2: Verbose | 3: Debug]
+```
 
 ---
 

@@ -331,3 +331,7 @@ function read_config(){
 
   export ONESETUP_DIR_DEV="${ONESETUP_DIR_DEV:-$(git rev-parse --show-toplevel 2>/dev/null)}"
 }
+
+function export_ansible_vars(){
+  export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
+}
