@@ -9,9 +9,6 @@ dotfiles:
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/aerospace",
       dest: "{{ XDG_CONFIG_HOME }}/aerospace",
     }
-  # zsh
-
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/zsh", dest: "{{ XDG_CONFIG_HOME }}/zsh" }
   # atuin
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
   # eza
