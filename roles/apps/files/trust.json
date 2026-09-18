@@ -1,0 +1,14 @@
+{
+  "trustedformulae": [
+    "hashicorp/tap/terraform"
+  ],
+  "trustedtaps": [
+    "asmvik/formulae",
+    "felixkratz/formulae",
+    "fschlegelone/local",
+    "local/neovim",
+    "nikitabobko/tap",
+    "sdkman/tap",
+    "teamookla/speedtest"
+  ]
+}
