@@ -1,20 +1,7 @@
 ---
-shell_global:
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global/zshenv", dest: "/etc/zshenv" }
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global/zprofile", dest: "/etc/zprofile" }
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global/zshrc", dest: "/etc/zshrc" }
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global/zlogout", dest: "/etc/zlogout" }
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global/profile", dest: "/etc/profile" }
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global/bashrc", dest: "/etc/bashrc" }
-  - {
-      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global/bash_profile",
-      dest: "/etc/bash_profile",
-    }
-  - {
-      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global/bash_logout",
-      dest: "/etc/bash_logout",
-    }
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global/shells", dest: "/etc/shells" }
+shell_global: { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global", dest: "/etc" }
+shell_config: { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/config", dest: "{{ XDG_CONFIG_HOME }}/shell" }
+shell_home:   { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/home",   dest: "{{ HOME }}" }
 
 dotfiles:
   # aerospace
@@ -22,6 +9,9 @@ dotfiles:
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/aerospace",
       dest: "{{ XDG_CONFIG_HOME }}/aerospace",
     }
+  # zsh
+
+  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/zsh", dest: "{{ XDG_CONFIG_HOME }}/zsh" }
   # atuin
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
   # eza

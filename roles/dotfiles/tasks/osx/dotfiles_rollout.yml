@@ -51,20 +51,56 @@
     - dotfiles_clone is failed
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
+# Find Global Shell Files
+- name: "Find global shell files"
+  ansible.builtin.find:
+    paths: "{{ shell_global.src }}"
+    file_type: file
+  register: global_shell_files
+
 # Copy: Global Shell Files
-- name: "Copy: Global Shell Files"
+- name: "Copy global shell files to /etc"
   ansible.builtin.copy:
-    src: "{{ shell_file.src }}"
-    dest: "{{ shell_file.dest }}"
+    src: "{{ item.path }}"
+    dest: "{{ shell_global.dest }}/{{ item.path | basename }}"
     mode: "0644"
     owner: "root"
     group: "wheel"
     force: true
     remote_src: true
-  loop: "{{ shell_global }}"
-  loop_control:
-    loop_var: shell_file
+  loop: "{{ global_shell_files.files }}"
   become: true
+
+# Cleanup: Shell Config Directory
+- name: "Cleanup: Shell Config Directory"
+  ansible.builtin.file:
+    path: "{{ shell_config.dest }}"
+    state: absent
+    force: true
+
+# Symlink: Shell Config Directory
+- name: "Symlink shell config directory"
+  ansible.builtin.file:
+    src: "{{ shell_config.src }}"
+    dest: "{{ shell_config.dest }}"
+    state: link
+    force: true
+
+# Find: User Shell Files
+- name: "Find: User Shell Files"
+  ansible.builtin.find:
+    paths: "{{ shell_home.src }}"
+    file_type: file
+  register: user_shell_files
+
+# Symlink: User Shell Files
+- name: "Symlink: User Shell Files"
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: "{{ shell_home.dest }}/{{ item.path | basename }}"
+    state: link
+    force: true
+  loop: "{{ user_shell_files.files }}"
 
 # Cleanup: Dotfiles (dest)
 - name: "Cleanup: Dotfiles"
