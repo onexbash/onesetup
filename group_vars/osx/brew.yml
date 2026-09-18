@@ -9,10 +9,9 @@ brew_casks:
   - discord
   - session # Onion routed messenger
   - tor-browser
-  - firefox
   - firefox@developer-edition
   - gimp # Image Editor
-  - git-credential-manager
+#   - git-credential-manager # TODO: fails with err, check why
   - keepassxc # File Based Password Manager
   - stirling-pdf # PDF Viewer (self hosted)
   - insomnia # API Client (like postman)
