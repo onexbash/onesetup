@@ -1,4 +1,7 @@
 ---
+# Prefix
+brew_prefix: "{{ '/opt/homebrew' if ansible_facts['architecture'] == 'arm64' else '/usr/local' }}"
+
 # Casks
 brew_casks:
   - capso # MacOS Screenshot Tool
@@ -36,35 +39,20 @@ brew_casks:
 # Formulaes
 brew_formulaes:
   # -- LANGUAGES -- #
-  - typescript
   - ast-grep # structural code search tool
   - yazi # terminal file manager
-  - go
   - proton-pass-cli
-  - openjdk # java development kit
   - git-crypt # git repository file encryption
-  - ruby
-  - dotnet
-  - composer # php composer
-  - php # just there that mason.nvim throws no warning
   - sqlite
-  - julia # just there that mason.nvim throws no warning
-  - perl # just there that mason.nvim throws no warning
-  - postgresql # database system
   - ansible # infrastructure as code
-  - javacc # java parser
   - hashicorp/tap/terraform # infrastructure as code
-  - bc # numeric processing language
   - lua
   - imagemagick
-  - tree-sitter # exposes syntax tree used by LSPs
+  - libpq # PostgreSQL Client (without the full server & daemon that the 'postgres' formulae installs)
   # -- VERSION MANAGERS -- #
   - asdf # Version Manager for everything (extensible via plugins)
-  - pyenv # python version manager
-  - pyenv-virtualenv # python virtual environment manager
   # -- LINUX UTILITIES -- #
   - coreutils # gnu utilities
-  - gnutls # gnu utilities
   - gawk # awk (gnu version)
   - git # git (gnu version)
   - gnu-sed # sed (gnu version)
@@ -74,24 +62,17 @@ brew_formulaes:
   - iproute2mac # linux ip commands for macos (iproute2)
   # -- COMPILER, INTERPRETER, PARSER, LIBRARIES .. -- #
   - cmake
-  - cmake-docs
   - gcc # C compiler
   - xz # compression tool
   - openssh # replace built-in | ssh
   - openssl@3 # replace built-in | ssl
   - jq # json parser
-  - zlib # data-compression library required by python
-  - libgit2 # C library of git core methods
-  - ncurses # text-based UI library
   - maven # java build tool
   # -- SHELL -- #
   - bash # bash (brew version)
   - zsh # zsh (brew version)
   - powershell # microsoft powershell
   - azure-cli # cli for azure
-  - zsh-autocomplete
-  - zsh-fast-syntax-highlighting # better version of zsh-syntax-highlighting
-  - zsh-autosuggestions
   # -- PACKAGE & VERSION MANAGER -- #
   - luarocks # lua package manager
   - poetry # python package manager
@@ -118,9 +99,7 @@ brew_formulaes:
   - gh # Github CLI
   - defaultbrowser # utility to set default browser
   - catimg # ascii image preview
-  - cheat # cheatsheet engine
   - sketchybar # custom macos menubar
-  - fontconfig # font configuration API
   - bat # better cat
   - ripgrep # better grep
   - fastfetch # system info

@@ -45,6 +45,14 @@
   ignore_errors: true # failed tasks should not exit the playbook (to ensure that one broken package doesnt break everything)
   register: log_formulae # register output for debugging
 
+# Link Formulaes
+- name: "Link libpq (keg-only formula)"
+  ansible.builtin.command:
+    cmd: brew link --force libpq
+  args:
+    creates: "{{ brew_prefix }}/bin/psql"
+  become: false
+
 # -- CASKS -- #
 - name: "install casks"
   community.general.homebrew_cask:
