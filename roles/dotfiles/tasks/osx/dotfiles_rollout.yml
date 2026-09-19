@@ -9,7 +9,7 @@
     remote: origin
     update: true
     recursive: true # whether submodules should be included/skipped
-  become: true
+  become: false
   register: dotfiles_clone
   failed_when: false # suppresses possible error message as this is handled down below
   # ignore_errors: true
@@ -31,7 +31,7 @@
     remote: origin
     update: true
     recursive: true # whether submodules should be included/skipped
-  become: true
+  become: false
   when:
     - dotfiles_clone is failed
     - dotfiles_overwrite_prompt.user_input | lower == 'y'
