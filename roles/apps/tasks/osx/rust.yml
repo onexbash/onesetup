@@ -12,13 +12,13 @@
   when: cargo_exists is failed
   get_url:
     url: "https://sh.rustup.rs"
-    dest: "{{ onesetup_tmpdir }}/rustup/rustup.rs" # TODO: ensure tmpdir exists
+    dest: "{{ ONESETUP_SYSTEM_TMP_DIR }}/rustup/rustup.rs" # TODO: ensure tmpdir exists
     mode: "0755"
     force: true
 
 - name: "Rust | Installation"
   when: cargo_exists is failed
-  shell: "{{ onesetup_tmpdir }}/rustup/rustup.rs -y --no-modify-path" # TODO: check if no-modify-path works
+  shell: "{{ ONESETUP_SYSTEM_TMP_DIR }}/rustup/rustup.rs -y --no-modify-path" # TODO: check if no-modify-path works
   environment:
     CARGO_HOME: "{{ XDG_CONFIG_HOME }}/cargo"
     RUSTUP_HOME: "{{ XDG_CONFIG_HOME }}/rustup"

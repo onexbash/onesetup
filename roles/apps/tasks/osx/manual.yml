@@ -11,9 +11,9 @@
         url: "https://downloads.caldigit.com/CalDigit-USB-Hub-Support-Driver.pkg.zip"
 
 # Create tmp dirs
-- name: "Create Caldigit tmpdir under {{ onesetup_tmpdir }}"
+- name: "Create Caldigit tmpdir under {{ ONESETUP_SYSTEM_TMP_DIR }}"
   ansible.builtin.file:
-    path: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}"
+    path: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}"
     state: directory
     mode: "0755"
     owner: "root"
@@ -27,7 +27,7 @@
 - name: "Download Caldigit Packages"
   ansible.builtin.get_url:
     url: "{{ item.url }}"
-    dest: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}/caldigit-{{ item.name }}.zip"
+    dest: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}/caldigit-{{ item.name }}.zip"
     mode: "0644"
     owner: "{{ USER }}"
     group: "staff"
@@ -39,8 +39,8 @@
 # Extract Packages
 - name: "Extract Caldigit Packages to tmpdir"
   ansible.builtin.unarchive:
-    src: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}/caldigit-{{ item.name }}.zip"
-    dest: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}"
+    src: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}/caldigit-{{ item.name }}.zip"
+    dest: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}"
     remote_src: true
   become: true
   loop: "{{ caldigit_downloads }}"
@@ -50,7 +50,7 @@
 # Find extracted installers
 - name: "Find extracted installer"
   ansible.builtin.find:
-    paths: "{{ onesetup_tmpdir }}/caldigit-{{ item.name }}"
+    paths: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}"
     patterns: "*.pkg"
     recurse: true
   register: caldigit_pkgs
