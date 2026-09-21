@@ -1,0 +1,132 @@
+---
+# # Install zsh (Linux)
+# - name: "Install zsh"
+#   ansible.builtin.package:
+#     name: zsh
+#     state: present # TODO: check if "latest" is supported on Arch/Fedora/Debian
+#   become: true
+# 
+# # Set User's Default Shell (Linux)
+# - name: "Set User's Default Shell"
+#   ansible.builtin.user:
+#     name: "{{ ONESETUP_SYSTEM_USERNAME }}"
+#     shell: "/usr/bin/zsh"
+#   when: ONESETUP_SYSTEM_OS == "linux"
+# 
+# # Set User's Default Shell (MacOS)
+# - name: "Set User's Default Shell"
+#   ansible.builtin.user:
+#     name: "{{ ONESETUP_SYSTEM_USERNAME }}"
+#     shell: "/bin/zsh"
+#   when: ONESETUP_SYSTEM_OS == "osx"
+# 
+# # Get Default Shell (Linux)
+# - name: "Get Default Shell (Linux)"
+#   ansible.builtin.command:
+#     cmd: 'getent passwd "$USER" | cut -d: -f7'
+#   register: default_shell
+#   when: ONESETUP_SYSTEM_OS == "linux"
+# 
+# # Get Default Shell (MacOS)
+# - name: "Get Default Shell (MacOS)"
+#   ansible.builtin.command:
+#     cmd: dscl . -read "/Users/$USER" UserShell | awk '{print $2}'
+#   register: default_shell
+#   when: ONESETUP_SYSTEM_OS == "osx"
+# 
+# # Resolve bash intepreter path
+# - name: "Resolve bash interpeter path"
+#   ansible.builtin.shell: command -v bash
+#   register: bash_path
+#   changed_when: false
+#   become: false
+# 
+# # Resolve zsh intepreter path
+# - name: "Resolve zsh interpeter path"
+#   ansible.builtin.shell: command -v zsh
+#   register: zsh_path
+#   changed_when: false
+#   become: false
+
+
+
+# Install zsh (Linux)
+- name: "Install zsh"
+  ansible.builtin.package:
+    name: zsh
+    state: present # TODO: check if "latest" is supported on Arch/Fedora/Debian
+  become: true
+  when: ONESETUP_SYSTEM_OS == "linux"
+
+# Determine expected Default Shell Path
+- name: "Determine expected Default Shell Path"
+  ansible.builtin.set_fact:
+    expected_shell_path: "{{ '/usr/bin/zsh' if ONESETUP_SYSTEM_OS == 'linux' else '/bin/zsh' }}"
+
+# Set User's Default Shell
+- name: "Set User's Default Shell"
+  ansible.builtin.user:
+    name: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    shell: "{{ expected_shell_path }}"
+  become: true
+
+# Query actual Default Shell (Linux)
+- name: "Query actual Default Shell (Linux)"
+  ansible.builtin.command:
+    cmd: 'getent passwd "{{ ONESETUP_SYSTEM_USERNAME }}"'
+  register: passwd_entry
+  changed_when: false
+  when: ONESETUP_SYSTEM_OS == "linux"
+
+# Query actual Default Shell (MacOS)
+- name: "Query actual Default Shell (MacOS)"
+  ansible.builtin.command:
+    cmd: 'dscl . -read "/Users/{{ ONESETUP_SYSTEM_USERNAME }}" UserShell'
+  register: dscl_entry
+  changed_when: false
+  when: ONESETUP_SYSTEM_OS == "osx"
+
+# Extract actual Default Shell Path from query output
+- name: "Extract actual Default Shell Path"
+  ansible.builtin.set_fact:
+    actual_shell_path: >-
+      {{
+        (passwd_entry.stdout.split(':')[6] | trim)
+        if ONESETUP_SYSTEM_OS == "linux"
+        else (dscl_entry.stdout.split()[1] | trim)
+      }}
+
+# Verify Default Shell was set correctly
+- name: "Verify Default Shell is set correctly"
+  ansible.builtin.assert:
+    that:
+      - actual_shell_path == expected_shell_path
+    fail_msg: "Default Shell mismatch: expected '{{ expected_shell_path }}', but got '{{ actual_shell_path }}'"
+    success_msg: "Default Shell verified: {{ actual_shell_path }}"
+
+# Store verified Default Shell Path as Ansible Fact
+- name: "Store Default Shell Path as Ansible Fact"
+  ansible.builtin.set_fact:
+    default_shell: "{{ actual_shell_path }}"
+
+# Resolve bash interpreter path
+- name: "Resolve bash interpreter path"
+  ansible.builtin.command:
+    cmd: command -v bash
+  register: bash_path_result
+  changed_when: false
+  become: false
+
+# Resolve zsh interpreter path
+- name: "Resolve zsh interpreter path"
+  ansible.builtin.command:
+    cmd: command -v zsh
+  register: zsh_path_result
+  changed_when: false
+  become: false
+
+# Set Ansible Facts bash_path & zsh_path
+- name: "Store resolved interpreter paths as Ansible Facts"
+  ansible.builtin.set_fact:
+    bash_path: "{{ bash_path_result.stdout | trim }}"
+    zsh_path: "{{ zsh_path_result.stdout | trim }}"

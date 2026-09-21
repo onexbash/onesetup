@@ -24,8 +24,9 @@
 
   # -- PRE-TASKS -- #
   pre_tasks:
-    # Include Pre-Task for Environment-Variable Discovery & Validation (+ Normalization)
-    - include_tasks: pre_tasks/all/env_validation.yml
+    # Include Pre-Tasks
+    - include_tasks: pre_tasks/all/env.yml # Environment-Variable Discovery & Validation (+ Normalization)
+    - include_tasks: pre_tasks/all/shell.yml
     
     # Pre-Task: Include OS-Specific Variables
     - name: "group_vars | Include OS-specific variables ({{ ONESETUP_SYSTEM_OS }})"
