@@ -1,5 +1,4 @@
 ---
-shell_global: { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/global", dest: "/etc" }
 shell_config: { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/config", dest: "{{ XDG_CONFIG_HOME }}/shell" }
 shell_home:   { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/home",   dest: "{{ HOME }}" }
 

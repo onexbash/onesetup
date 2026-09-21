@@ -51,51 +51,58 @@
     - dotfiles_clone is failed
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
-# Find Global Shell Files
-- name: "Find global shell files (top-level)"
-  ansible.builtin.find:
-    paths: "{{ shell_global.src }}"
-    file_type: file
-    recurse: true
-  register: global_shell_files
-
-# Copy: Global Shell Files
-- name: "Copy global shell files to /etc"
-  ansible.builtin.copy:
-    src: "{{ item.path }}"
-    dest: "{{ shell_global.dest }}/{{ item.path | relpath(shell_global.src) }}"
-    mode: "0644"
-    owner: "root"
-    group: "wheel"
-    force: true
-    remote_src: true
-  loop: "{{ global_shell_files.files }}"
+# Remove path_helper invocation from /etc/zprofile & /etc/profile on MacOS
+- name: "Remove path_helper invocation from /etc/zprofile & /etc/profile on MacOS"
+  ansible.builtin.replace:
+    path: "{{ item }}"
+    regexp: '(?m)^if \[ -x /usr/libexec/path_helper \]; then\n\teval `/usr/libexec/path_helper -s`\nfi\n?'
+    replace: ''
+  loop:
+    - /etc/profile
+    - /etc/zprofile
   become: true
+  when: ansible_facts['ONESETUP_SYSTEM_OS'] == "osx"
 
-# # Copy: Global Shell Files
-# - name: "Copy global shell files to /etc"
-#   ansible.builtin.copy:
-#     src: "{{ item.path }}"
-#     dest: "{{ shell_global.dest }}/{{ item.path | basename }}"
-#     mode: "0644"
-#     owner: "root"
-#     group: "wheel"
-#     force: true
-#     remote_src: true
-#   loop: "{{ global_shell_files.files }}"
+# # Comment-Out path_helper invocation from /etc/zprofile & /etc/profile on MacOS
+# - name: "Comment-Out path_helper invocation from /etc/zprofile & /etc/profile on MacOS"
+#   ansible.builtin.replace:
+#     path: "{{ item }}"
+#     regexp: '(?m)^(if \[ -x /usr/libexec/path_helper \]; then|\teval `/usr/libexec/path_helper -s`|fi)$'
+#     replace: '# \1'
 #   become: true
+#   loop:
+#     - /etc/profile
+#     - /etc/zprofile
+#   when: ansible_facts['ONESETUP_SYSTEM_OS'] == "osx"
 
-# Copy: Global paths.d directory
-# - name: "Copy paths.d directory to /etc/paths.d"
-#   ansible.builtin.copy:
-#     src: "{{ shell_global.src }}/paths.d/"
-#     dest: "{{ shell_global.dest }}/paths.d/"
-#     mode: "0644"
-#     owner: "root"
-#     group: "wheel"
-#     force: true
-#     remote_src: true
-#   become: true
+# Add custom PATH entries to /etc/paths.d/
+- name: "Add custom PATH entries to /etc/paths.d/"
+  copy:
+    dest: /etc/paths.d/homebrew
+    content: "/opt/homebrew/bin\n/opt/homebrew/sbin\n"
+    mode: "0644"
+  become: true
+  when: ansible_facts["ONESETUP_SYSTEM_OS"] == "osx"
+
+# Ensure specified login shells exist in /etc/shells
+- name: "Ensure specified login shells exist in /etc/shells"
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    line: "{{ item }}"
+    create: false
+  loop:
+    - /bin/bash
+    - /bin/csh
+    - /bin/dash
+    - /bin/ksh
+    - /bin/sh
+    - /bin/tcsh
+    - /bin/zsh
+    - /opt/homebrew/bin/bash
+    - /opt/homebrew/bin/zsh
+    - /opt/homebrew/bin/pwsh
+    - /opt/homebrew/opt/powershell/bin/pwsh
+  become: true
 
 # Cleanup: Shell Config Directory
 - name: "Cleanup: Shell Config Directory"
