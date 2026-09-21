@@ -45,7 +45,7 @@ function detect_os() {
   platform=$(uname -s)
   case "$platform" in
     Linux*) echo "linux" ;;
-    Darwin*) echo "macos" ;;
+    Darwin*) echo "osx" ;;
     CYGWIN* | MINGW* | MSYS*) echo "windows" ;;
     *) echo "unsupported" ;;
   esac
@@ -78,7 +78,7 @@ function ensure_directory() {
   else
     # Check Permissions on existing Directory
     local current_owner current_perms
-    if [[ "$(detect_os)" == "macos" ]]; then
+    if [[ "$(detect_os)" == "osx" ]]; then
       current_owner=$(stat -f "%Su:%Sg" "$target_dir")
       current_perms=$(stat -f "%Lp" "$target_dir")
     else
@@ -106,7 +106,7 @@ function copy_to_clipboard() {
 # [UTIL] Initialize Homebrew on macOS if installed but not available (missing PATH)
 function init_brew(){
   local os="$(detect_os)"
-  if [[ "$os" == "macos" ]]; then
+  if [[ "$os" == "osx" ]]; then
     
     if ! command -v brew >/dev/null 2>&1; then
         if [[ -x "/opt/homebrew/bin/brew" ]]; then
@@ -121,7 +121,16 @@ function init_brew(){
 
 # [UTIL] Read User Config File 'onesetup.yml'
 function read_config(){
-  # Set Default Config Values
+  local config_file
+
+  # Function to override Default Values set in config.yml
+  _apply_override() {
+    local -n _target="$1"; local _val
+    _val="$(yq "$2" "$config_file" 2>/dev/null)"
+    [[ -n "$_val" && "$_val" != "null" ]] && _target="${_val/#\~/$HOME}"
+  }
+
+  # -- Default Values -- #
   # [Remote]
   local remote_provider="github"
   local remote_username="onexbash"
@@ -129,29 +138,40 @@ function read_config(){
   local remote_project_repo="onesetup"
   local remote_dotfiles_repo="dotfiles"
   # [System]
-  local system_os="$(detect_os)"
-  local system_username="$USER"
-  local system_root_user="root"
+  # Operating System (Auto-Detect)
+  local system_os; system_os="$(detect_os)"
+  # Username & Group of Default User & Admin/Root User (Auto-Detect)
+  local system_username system_root_user system_user_group system_admin_group
+  case "$system_os" in
+    osx|linux)
+      system_username="$USER"
+      system_root_user="$(id -nu 0)"
+      system_user_group="$(id -ng)"
+      system_admin_group="$(id -ng 0)"
+      ;;
+    windows)
+    system_username="${USERNAME:-$(whoami | sed 's/.*\\//')}"
+    system_root_user="$(powershell.exe -NoProfile -Command '(Get-LocalUser -ErrorAction SilentlyContinue | Where-Object { $_.SID -like "*-500" }).Name' | tr -d '\r')"
+    system_user_group="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-545" }).Name' | tr -d '\r')"
+    system_admin_group="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-544" }).Name' | tr -d '\r')"
+    ;;
+    *)
+      echo -e "${I_ERR}Unsupported Operating System: $system_os"; return 1 ;;
+  esac
+
+  # Directory Locations of: Config-Dir, Install-Dir, Storage-Dir, Dotfiles-Dir, Bin-Dir, TMP-Dir
   local system_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/onesetup"
-  local system_install_dir="$HOME/.local/share/onesetup"
-  local system_storage_dir="$HOME/.local/state/onesetup"
-  local system_dotfiles_dir="$HOME/.local/share/dotfiles"
+  local system_install_dir="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
+  local system_storage_dir="${XDG_STATE_HOME:-$HOME/.local/state}/onesetup"
+  local system_dotfiles_dir="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
   local system_bin_dir="/usr/local/bin"
   local system_tmp_dir="/tmp"
-  local system_admin_group system_user_group
-  if [[ "$system_os" == "linux" ]]; then
-    system_admin_group="wheel"
-    system_user_group="$(id -gn "$system_username" 2>/dev/null || echo "$system_username")"
-  elif [[ "$system_os" == "macos" ]]; then
-    system_admin_group="wheel"
-    system_user_group="staff"
-  elif [[ "$system_os" == "windows" ]]; then
-    system_admin_group="admin"
-    system_user_group="staff"
-  fi
   # [Project]
+  # Development-Mode to specify whether to run playbook on Install-Dir or the Git Repo (for executing the onesetup executable via ./bin/onesetup instead of the command rolled-out to Bin-Dir)
   local project_development="false"
+  # Debug-Level for Scripts & Ansible itself
   local project_debug="0"
+  # -- / -- #
   
   # Ensure Config Directory exists with right permissions
   local config_file="${system_config_dir}/config.yml"
@@ -161,7 +181,7 @@ function read_config(){
   if ! command -v "yq" &>/dev/null; then
     case "$system_os" in
       linux) { sudo dnf install -y "yq" && echo -e "${I_OK}Installation succeeded: yq" ;} || { echo -e "${I_ERR}Installation failed: yq"; return 1; } ;;
-      macos) { brew install "yq" && echo -e "${I_OK}Installation succeeded: yq" ;} || { echo -e "${I_ERR}Installation failed: yq"; return 1; } ;;
+      osx) { brew install "yq" && echo -e "${I_OK}Installation succeeded: yq" ;} || { echo -e "${I_ERR}Installation failed: yq"; return 1; } ;;
       windows) echo -e "${I_ERR}Windows not supported yet"; return 1 ;;
       unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
     esac
@@ -169,140 +189,61 @@ function read_config(){
  
   # Overwrite Defaults with Config File Values
   if [[ -f "$config_file" ]]; then
-    local val
-    # [remote]: provider
-    val=$(yq '.remote.provider' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      remote_provider="$val"
-    fi
-    # [remote]: username
-    val=$(yq '.remote.username' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      remote_username="$val"
-    fi
-    # [remote]: connection
-    val=$(yq '.remote.connection' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      remote_connection="$val"
-    fi
-    # [remote]: project_repo
-    val=$(yq '.remote.project_repo' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      remote_project_repo="$val"
-    fi
-    # [remote]: dotfiles_repo
-    val=$(yq '.remote.dotfiles_repo' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      remote_dotfiles_repo="$val"
-    fi
-    # [system]: os
-    val=$(yq '.system.os' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_os="$val"
-    fi
-    # [system]: username
-    val=$(yq '.system.username' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_username="$val"
-    fi
-    # [system]: root_user
-    val=$(yq '.system.root_user' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_root_user="$val"
-    fi
-    # [system]: config_dir
-    val=$(yq '.system.config_dir' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_config_dir="${val/#\~/$HOME}"
-    fi
-    # [system]: install_dir
-    val=$(yq '.system.install_dir' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_install_dir="${val/#\~/$HOME}"
-    fi
-    # [system]: storage_dir
-    val=$(yq '.system.storage_dir' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_storage_dir="${val/#\~/$HOME}"
-    fi
-    # [system]: dotfiles_dir
-    val=$(yq '.system.dotfiles_dir' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_dotfiles_dir="${val/#\~/$HOME}"
-    fi
-    # [system]: bin_dir
-    val=$(yq '.system.bin_dir' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_bin_dir="${val/#\~/$HOME}"
-    fi
-    # [system]: bin_dir
-    val=$(yq '.system.tmp_dir' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_tmp_dir="${val/#\~/$HOME}"
-    fi
-    # [system]: user_group
-    val=$(yq '.system.user_group' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_user_group="$val"
-    fi
-    # [system]: admin_group
-    val=$(yq '.system.admin_group' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      system_admin_group="$val"
-    fi
-    # [project]: development
-    val=$(yq '.project.development' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      project_development="$val"
-    fi
-    # [project]: debug
-    val=$(yq '.project.debug' "$config_file" 2>/dev/null)
-    if [[ -n "$val" && "$val" != "null" ]]; then
-      project_debug="$val"
-    fi
+    _apply_override      remote_provider       '.remote.provider'
+    _apply_override      remote_username       '.remote.username'
+    _apply_override      remote_connection     '.remote.connection'
+    _apply_override      remote_project_repo   '.remote.project_repo'
+    _apply_override      remote_dotfiles_repo  '.remote.dotfiles_repo'
+    _apply_override      system_os             '.system.os'
+    _apply_override      system_username       '.system.username'
+    _apply_override      system_root_user      '.system.root_user'
+    _apply_override_path system_config_dir     '.system.config_dir'
+    _apply_override_path system_install_dir    '.system.install_dir'
+    _apply_override_path system_storage_dir    '.system.storage_dir'
+    _apply_override_path system_dotfiles_dir   '.system.dotfiles_dir'
+    _apply_override_path system_bin_dir        '.system.bin_dir'
+    _apply_override_path system_tmp_dir        '.system.tmp_dir'
+    _apply_override      system_user_group     '.system.user_group'
+    _apply_override      system_admin_group    '.system.admin_group'
+    _apply_override      project_development   '.project.development'
+    _apply_override      project_debug         '.project.debug'
   fi
+  unset -f _apply_override
 
-  # Environment Variables: Config Keys
-  # Section 'remote'
+  # -- Export Values as Environment Variables consumed by Ansible -- #
   export ONESETUP_REMOTE_PROVIDER="${remote_provider}"
   export ONESETUP_REMOTE_USERNAME="${remote_username}"
   export ONESETUP_REMOTE_CONNECTION="${remote_connection}"
   export ONESETUP_REMOTE_PROJECT_REPO="${remote_project_repo}"
-  export ONESETUP_REMOTE_DOTFILES_REPO="${remote_dotfiles_repo}" 
-  # Section 'system'
+  export ONESETUP_REMOTE_DOTFILES_REPO="${remote_dotfiles_repo}"
   export ONESETUP_SYSTEM_OS="${system_os}"
   export ONESETUP_SYSTEM_USERNAME="${system_username}"
   export ONESETUP_SYSTEM_ROOT_USER="${system_root_user}"
+  export ONESETUP_SYSTEM_USER_GROUP="${system_user_group}"
+  export ONESETUP_SYSTEM_ADMIN_GROUP="${system_admin_group}"
   export ONESETUP_SYSTEM_CONFIG_DIR="${system_config_dir}"
   export ONESETUP_SYSTEM_INSTALL_DIR="${system_install_dir}"
   export ONESETUP_SYSTEM_STORAGE_DIR="${system_storage_dir}"
   export ONESETUP_SYSTEM_DOTFILES_DIR="${system_dotfiles_dir}"
   export ONESETUP_SYSTEM_BIN_DIR="${system_bin_dir}"
   export ONESETUP_SYSTEM_TMP_DIR="${system_tmp_dir}"
-  export ONESETUP_SYSTEM_USER_GROUP="${system_user_group}"
-  export ONESETUP_SYSTEM_ADMIN_GROUP="${system_admin_group}"
-  # Section 'project'
   export ONESETUP_PROJECT_DEVELOPMENT="${project_development}"
   export ONESETUP_PROJECT_DEBUG="${project_debug}"
-
-  # Environment Variables: Dynamic
+  
+  # Dynamic Environment Variables
   local project_uri dotfiles_uri
   case "${ONESETUP_REMOTE_CONNECTION}" in
     ssh)
       project_uri="git@github.com:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
-      dotfiles_uri="git@github.com:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git"
-      ;;
-    https|*) # default to HTTPS if connection is not set
+      dotfiles_uri="git@github.com:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git" ;;
+    https|*)
       project_uri="https://github.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
-      dotfiles_uri="https://github.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git"
-      ;;
+      dotfiles_uri="https://github.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git" ;;
   esac
   export ONESETUP_PROJECT_REPO_URI="${project_uri}"
   export ONESETUP_DOTFILES_REPO_URI="${dotfiles_uri}"
-
   export ONESETUP_PROJECT_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/main"
   export ONESETUP_DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/main"
-
   export ONESETUP_DIR_DEV="${ONESETUP_DIR_DEV:-$(git rev-parse --show-toplevel 2>/dev/null)}"
 }
 

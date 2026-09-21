@@ -38,7 +38,7 @@ function install_deps() {
     echo -e "${I_INFO}Dependency missing: ${C_RED}$pkg${C_RESET}. Installing..."
 
     case "$os" in
-    macos)
+    osx)
       if ! command -v "brew" &>/dev/null; then
         echo -e "${I_ERR}Homebrew is not installed on your system. Please install & re-run this script."
         echo -e "${I_INFO}Install Homebrew from: ${C_BLUE}https://brew.sh${C_RESET}"

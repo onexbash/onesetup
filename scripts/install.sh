@@ -43,7 +43,7 @@ function prerequisites() {
   if ! command -v "git" &>/dev/null; then
     case "$ONESETUP_SYSTEM_OS" in
     linux) { sudo dnf install -y git && echo -e "${I_OK}Installation succeeded: git" ;} || { echo -e "${I_ERR}Installation failed: git"; return 1; } ;;
-    macos) { brew install git && echo -e "${I_OK}Installation succeeded: git" ;} || { echo -e "${I_ERR}Installation failed: git"; return 1; } ;;
+    osx) { brew install git && echo -e "${I_OK}Installation succeeded: git" ;} || { echo -e "${I_ERR}Installation failed: git"; return 1; } ;;
     windows) echo -e "${I_ERR}Windows not supported yet"; return 1 ;;
     unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
     esac
@@ -52,7 +52,7 @@ function prerequisites() {
   if ! command -v "gum" &>/dev/null; then
     case "$ONESETUP_SYSTEM_OS" in
     linux) { sudo dnf install -y "gum" && echo -e "${I_OK}Installation succeeded: gum" ;} || { echo -e "${I_ERR}Failed to install gum!"; return 1; } ;;
-    macos) { brew install "gum" && echo -e "${I_OK}Installation succeeded: gum" ;} || { echo -e "${I_ERR}Failed to install gum!"; return 1; } ;;
+    osx) { brew install "gum" && echo -e "${I_OK}Installation succeeded: gum" ;} || { echo -e "${I_ERR}Failed to install gum!"; return 1; } ;;
     windows) echo -e "${I_WARN}Windows not supported yet"; return 1 ;;
     unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
     esac
@@ -61,7 +61,7 @@ function prerequisites() {
   if ! command -v "ansible" &>/dev/null; then
     case "$ONESETUP_SYSTEM_OS" in
     linux) { sudo dnf install -y ansible && echo -e "${I_OK}Installation succeeded: ansible" ;} || { echo -e "${I_ERR}Installation failed: ansible"; return 1; } ;;
-    macos) { brew install "ansible" && echo -e "${I_OK}Installation succeeded: ansible" ;} || { echo -e "${I_ERR}Installation failed: ansible"; return 1; } ;;
+    osx) { brew install "ansible" && echo -e "${I_OK}Installation succeeded: ansible" ;} || { echo -e "${I_ERR}Installation failed: ansible"; return 1; } ;;
     windows) echo -e "${I_ERR}Windows not supported yet"; return 1 ;;
     unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
     esac

@@ -1,23 +1,26 @@
+# Default config.yml consumed by onesetup.
+# Expected Location: $XDG_CONFIG_HOME/onesetup/config.yml or $HOME/.config/onesetup/config.yml
+# Can't use environment variables here but ~/ can be used & reffers to $HOME/
+---
 remote:
-  provider: github # Name of the Provider that stores your onesetup Git Repository [github/gitlab/bitbucket/azure_devops]
-  username: onexbash
-  connection: https # Connection Type for Repository Operations [https/ssh]
-  project_repo: onesetup # Repository Name
-  dotfiles_repo: dotfiles # Name of a seperate Git Repository that stores all your dotfiles
-
+  provider: "github" # Default: github
+  username: "onexbash" # Default: onexbash
+  connection: "https" # Default: https
+  project_repo: "onesetup" # Default: onesetup
+  dotfiles_repo: "dotfiles" # Default: dotfiles
 system:
-  os: macos            # Operating System (Auto-Detected but can be overridden here) [macos|linux|windows]
-  username: myuser # Name of a User on your system that has sudo privileges but is not the root user
-  root_user: root # Name of the Root user on your system
-  config_dir: "~/.config/onesetup" # Config Directory for your config.yml
-  install_dir: "~/.local/share/onesetup" # Installation Directory (TODO: breaks if changed at the moment)
-  storage_dir: "~/.local/state/onesetup" # Storage Directory
-  dotfiles_dir: "~/.local/share/dotfiles" # Dotfiles Directory used to clone your Dotfiles Repo into and symlink them to the mappec locations
-  bin_dir: "/usr/local/bin" # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
-  tmp_dir: "/tmp" # Directory for Temporary Files
-  user_group: staff    # Group of the system user [MacOS Default: "staff" | Linux Default: "?" | Windows Default: "?"] 
-  admin_group: wheel   # Group of the root user [MacOS Default: "wheel" | Linux Default: "wheel" | Windows Default: "admin"]
+  os: "" # Default: Auto-Detected by detect_os() function in ./scripts/util.sh
+  username: "" # Default: Value from Environment Variable "$USER"
+  root_user: "" # Default: Value from Command "id -nu 0"
+  user_group: "" # Default: Value from Command "id -ng"
+  admin_group: "" # Default: Value from Command "id -ng 0"
+  config_dir: "" # Default: $XDG_CONFIG_HOME/onesetup or $HOME/.config/onesetup
+  install_dir: "" # Default: $XDG_DATA_HOME/onesetup or $HOME/.local/share/onesetup
+  storage_dir: "" # Default: $XDG_STATE_HOME/onesetup or $HOME/.local/state/onesetup
+  dotfiles_dir: "" # Default: $XDG_DATA_HOME/dotfiles or $HOME/.local/share/dotfiles
+  bin_dir: "/usr/local/bin" # Default: /usr/local/bin
+  tmp_dir: "/tmp" # Default: /tmp
 
 project:
-  development: false
-  debug: 0 # Debug Level for Console Outputs [0: Normal | 1: Info | 2: Verbose | 3: Debug]
+  development: false # Default: false
+  debug: 0 # Default: 0

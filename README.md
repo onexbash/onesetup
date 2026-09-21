@@ -19,12 +19,12 @@ Bootstrap a fresh Mac into your fully configured dev machine with a single comma
 
 - [Supported Platforms](#-supported-platforms)
 - [Getting Started](#-getting-started)
+- [Configuration](#-configuration)
 - [What It Does](#-what-it-does)
   - [Software Installation](#software-installation)
   - [Dotfiles](#dotfiles)
   - [System Settings](#system-settings)
   - [SSH](#ssh)
-- [Configuration](#-configuration)
 - [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
 
@@ -134,6 +134,41 @@ Encrypts or decrypts sensitive variables using Ansible Vault.
 | :--- | :--- |
 | `onesetup-vault` | If run without arguments or subcommands, you will be prompted interactively. |
 | `onesetup-vault --help` | Displays usage instructions for vault operations. |
+
+## 🔧 Configuration
+For configuration, onesetup will check for a config.yml in the following locations:
+$XDG_CONFIG_HOME/onesetup/config.yml
+$HOME/.config/onesetup/config.yml
+
+Check [default.config.yml](./default.config.yml) for the Default Values.
+See Explanation and all valid options below:
+
+```yaml
+remote:
+  provider: [github|gitlab|bitbucket|azure_devops] # Provider of the Git Repository Remote for your Ansible Playbook Source-Code [github/gitlab/bitbucket/azure_devops]
+  username: [String] # Username on your Remote Repository (e.g: Github Username)
+  connection: [https|ssh] # Connection Type for Repository Operations
+  project_repo: [String] # Repository Name
+  dotfiles_repo: [String] # Name of a seperate Git Repository that stores all your dotfiles
+system:
+  os: [osx|linux|windows] # Operating System (Auto-Detected but can be overridden here)
+  username: [String] # Name of a User on your system that has sudo privileges but is not the root user
+  root_user: [String] # Name of the Root user on your system
+  user_group: [String] # Group of the system user
+  admin_group: [String] # Group of the root user
+  config_dir: [String] # Config Directory for your config.yml
+  install_dir: [String] # Installation Directory
+  storage_dir: [String] # Storage Directory
+  dotfiles_dir: [String] # Dotfiles Directory used to clone your Dotfiles Repo into and symlink them to the mapped locations
+  bin_dir: [String] # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
+  tmp_dir: [String] # Directory for Temporary Files
+project:
+  development: [true/false]
+  debug: [0|1|2|3] # Debug Level for Console Outputs [0: Normal | 1: Info | 2: Verbose | 3: Debug]
+```
+
+---
+
 ## ⚙️ What It Does
 
 ### Software Installation
@@ -158,40 +193,6 @@ Encrypts or decrypts sensitive variables using Ansible Vault.
 
 - Decrypts vault-encrypted SSH keys & known hosts from [`group_vars/all/ssh.yml`](./group_vars/all/ssh.yml)
 - Rolls out keys, `authorized_keys`, and `known_hosts` to `~/.ssh` with correct permissions
-
----
-
-## 🔧 Configuration
-For configuration, onesetup will check for a config.yml in the following locations:
-$XDG_CONFIG_HOME/onesetup/config.yml
-$HOME/.config/onesetup/config.yml
-
-Check [default.config.yml](./default.config.yml) for the Default Values.
-See all valid options below: 
-
-```yaml
-remote:
-  provider: [github|gitlab|bitbucket|azure_devops] # Name of the Provider that stores your onesetup Git Repository
-  username: ""
-  connection: [https|ssh] # Connection Type for Repository Operations
-  project_repo: "" # Repository Name
-  dotfiles_repo: "" # Name of a seperate Git Repository that stores all your dotfiles
-system:
-  os: [macos|linux_fedora|linux_arch|linux_debian|windows] # Operating System (Auto-Detected but can be overridden here)
-  username: "" # Name of a User on your system that has sudo privileges but is not the root user
-  root_user: "" # Name of the Root user on your system
-  config_dir: "" # Config Directory for your config.yml
-  install_dir: "" # Installation Directory
-  storage_dir: "" # Storage Directory
-  dotfiles_dir: "" # Dotfiles Directory used to clone your Dotfiles Repo into and symlink them to the mapped locations
-  bin_dir: "" # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
-  tmp_dir: "" # Directory for Temporary Files
-  user_group: "" # Group of the system user [MacOS Default: "staff" | Linux Default: "?" | Windows Default: "?"] 
-  admin_group: "" # Group of the root user [MacOS Default: "wheel" | Linux Default: "wheel" | Windows Default: "admin"]
-project:
-  development: [true/false]
-  debug: [0|1|2|3] # Debug Level for Console Outputs [0: Normal | 1: Info | 2: Verbose | 3: Debug]
-```
 
 ---
 
