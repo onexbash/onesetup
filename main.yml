@@ -24,6 +24,13 @@
 
   # -- PRE-TASKS -- #
   pre_tasks:
+    # Pre-Task: Set Become Password as Ansible Fact
+    - name: "Set become password gathered in user-prompt as Ansible Fact"
+      set_fact:
+        ansible_become_password: "{{ SUDO_PASSWORD }}"
+        cacheable: false
+      no_log: true
+
     # Include Pre-Tasks
     - include_tasks: pre_tasks/all/env.yml # Environment-Variable Discovery & Validation (+ Normalization)
     - include_tasks: pre_tasks/all/shell.yml # Set Default Shell & Gather Shell Paths
@@ -35,14 +42,7 @@
         extensions:
           - yml
       ignore_errors: true  # Skip if OS-specific folder doesn't exist
-
-    # Pre-Task: Set Become Password as Ansible Fact
-    - name: "auth | set become password gathered in user-prompt"
-      set_fact:
-        ansible_become_password: "{{ SUDO_PASSWORD }}"
-        cacheable: false
-      no_log: true
-    
+  
     # Pre-Task: Include OS-specific pre_tasks
     - include_tasks: pre_tasks/osx/dependencies.yml
       when: ONESETUP_SYSTEM_OS == 'osx'
