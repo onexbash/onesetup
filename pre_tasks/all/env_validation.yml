@@ -1,0 +1,68 @@
+# Read & Normalize Environment Variable Values
+- name: "Read value of every Environment Variable defined in group_vars/all/env.yml"
+  ansible.builtin.set_fact:
+    onesetup_env_values: >-
+      {{ onesetup_env_values | default({}) | combine({
+        item.name: (
+          (lookup('vars', item.name, default='') | string)
+          if not (item.normalize | default(true))
+          else (lookup('vars', item.name, default='') | string | lower | trim)
+        )
+      }) }}
+  loop: "{{ onesetup_env_vars }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# Set each Environment Variable as an Ansible Fact 
+- name: "Set each Environment Variable as an Ansible Fact"
+  ansible.builtin.set_fact:
+    "{{ item.name }}": "{{ onesetup_env_values[item.name] }}"
+    cacheable: false  # intentional: re-read from env every run, never fact-cached
+  loop: "{{ onesetup_env_vars }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# Validate Environment Variable Values
+- name: "Validate Value of each Environment Variable"
+  ansible.builtin.set_fact:
+    onesetup_env_report: >-
+      {{ onesetup_env_report | default([]) + [{
+        'name': item.name,
+        'value': onesetup_env_values[item.name],
+        'mandatory': item.mandatory,
+        'valid': (
+          onesetup_env_values[item.name] | length > 0
+          and (item.validate is not defined
+               or onesetup_env_values[item.name] is match(item.validate))
+        )
+      }] }}
+  loop: "{{ onesetup_env_vars }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# Warning for non-mandatory Environment Variables
+- name: "Warning for non-mandatory Environment Variables"
+  ansible.builtin.debug:
+    msg: >-
+      ⚠️  {{ item.name }} is {{ 'unset' if item.value == '' else 'invalid: ' ~ item.value }}.
+      A role/task-level default will be used instead.
+  loop: "{{ onesetup_env_report }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - not item.valid
+    - not item.mandatory
+
+# Get invalid mandatory Environment Variables
+- name: "Collect mandatory vars that failed validation"
+  ansible.builtin.set_fact:
+    onesetup_env_fatal: "{{ onesetup_env_report | selectattr('mandatory') | rejectattr('valid') | map(attribute='name') | list }}"
+
+# Error for mandatory Environment Variables
+- name: "Error for mandatory Environment Variables"
+  ansible.builtin.fail:
+    msg: >-
+      Missing/invalid mandatory ONESETUP variable(s): {{ onesetup_env_fatal | join(', ') }}.
+      Set them in $XDG_CONFIG_HOME/onesetup/config.yml, or export before running
+      ./bin/onesetup — it should already populate these with defaults.
+  when: onesetup_env_fatal | length > 0 

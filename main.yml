@@ -3,39 +3,34 @@
 # --   MAIN PLAYBOOK   -- #
 - name: onesetup
   
-  # -- CONNECTION -- #
-  hosts: localhost
-  connection: local
-  
   # -- VARIABLES -- #
   vars:
-    # Environment Variables: Remote 
-    ONESETUP_REMOTE_PROVIDER: "{{ ansible_facts['env']['ONESETUP_REMOTE_PROVIDER'] }}"
-    ONESETUP_REMOTE_USERNAME: "{{ ansible_facts['env']['ONESETUP_REMOTE_USERNAME'] }}"
-    ONESETUP_REMOTE_CONNECTION: "{{ ansible_facts['env']['ONESETUP_REMOTE_CONNECTION'] }}"
-    ONESETUP_REMOTE_PROJECT_REPO: "{{ ansible_facts['env']['ONESETUP_REMOTE_PROJECT_REPO'] }}"
-    ONESETUP_REMOTE_DOTFILES_REPO: "{{ ansible_facts['env']['ONESETUP_REMOTE_DOTFILES_REPO'] }}" 
-    # Environment Variables: System
-    ONESETUP_SYSTEM_OS: "{{ ansible_facts['env']['ONESETUP_SYSTEM_OS'] }}"
-    ONESETUP_SYSTEM_USERNAME: "{{ ansible_facts['env']['ONESETUP_SYSTEM_USERNAME'] }}"
-    ONESETUP_SYSTEM_ROOT_USER: "{{ ansible_facts['env']['ONESETUP_SYSTEM_ROOT_USER'] }}"
-    ONESETUP_SYSTEM_CONFIG_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_CONFIG_DIR'] }}"
-    ONESETUP_SYSTEM_INSTALL_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_INSTALL_DIR'] }}"
-    ONESETUP_SYSTEM_STORAGE_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_STORAGE_DIR'] }}"
-    ONESETUP_SYSTEM_DOTFILES_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_DOTFILES_DIR'] }}"
-    ONESETUP_SYSTEM_BIN_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_BIN_DIR'] }}"
-    ONESETUP_SYSTEM_TMP_DIR: "{{ ansible_facts['env']['ONESETUP_SYSTEM_TMP_DIR'] }}"
-    ONESETUP_SYSTEM_USER_GROUP: "{{ ansible_facts['env']['ONESETUP_SYSTEM_USER_GROUP'] }}"
-    ONESETUP_SYSTEM_ADMIN_GROUP: "{{ ansible_facts['env']['ONESETUP_SYSTEM_ADMIN_GROUP'] }}"
-    # Environment Variables: Project
-    ONESETUP_PROJECT_DEVELOPMENT: "{{ ansible_facts['env']['ONESETUP_PROJECT_DEVELOPMENT'] }}"
-    ONESETUP_PROJECT_DEBUG: "{{ ansible_facts['env']['ONESETUP_PROJECT_DEBUG'] }}"
-    # Environment Variables: Dynamic
-    ONESETUP_PROJECT_REPO_URI: "{{ ansible_facts['env']['ONESETUP_PROJECT_REPO_URI'] }}"
-    ONESETUP_DOTFILES_REPO_URI: "{{ ansible_facts['env']['ONESETUP_DOTFILES_REPO_URI'] }}"
-    ONESETUP_PROJECT_REPO_RAW: "{{ ansible_facts['env']['ONESETUP_PROJECT_REPO_RAW'] }}"
-    ONESETUP_DOTFILES_REPO_RAW: "{{ ansible_facts['env']['ONESETUP_DOTFILES_REPO_RAW'] }}"
-    ONESETUP_DIR_DEV: "{{ ansible_facts['env']['ONESETUP_DIR_DEV'] }}"
+    # Environment Variables: Config_Key [remote]
+    ONESETUP_REMOTE_PROVIDER: "{{ lookup('env', 'ONESETUP_REMOTE_PROVIDER', default='') }}"
+    ONESETUP_REMOTE_USERNAME: "{{ lookup('env', 'ONESETUP_REMOTE_USERNAME', default='') }}"
+    ONESETUP_REMOTE_CONNECTION: "{{ lookup('env', 'ONESETUP_REMOTE_CONNECTION', default='') }}"
+    ONESETUP_REMOTE_PROJECT_REPO: "{{ lookup('env', 'ONESETUP_REMOTE_PROJECT_REPO', default='') }}"
+    ONESETUP_REMOTE_DOTFILES_REPO: "{{ lookup('env', 'ONESETUP_REMOTE_DOTFILES_REPO', default='') }}"
+    # Environment Variables: Config_Key [system] 
+    ONESETUP_SYSTEM_OS: "{{ lookup('env', 'ONESETUP_SYSTEM_OS', default='') }}"
+    ONESETUP_SYSTEM_USERNAME: "{{ lookup('env', 'ONESETUP_SYSTEM_USERNAME', default='') }}"
+    ONESETUP_SYSTEM_ROOT_USER: "{{ lookup('env', 'ONESETUP_SYSTEM_ROOT_USER', default='') }}"
+    ONESETUP_SYSTEM_CONFIG_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_CONFIG_DIR', default='') }}"
+    ONESETUP_SYSTEM_INSTALL_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_INSTALL_DIR', default='') }}"
+    ONESETUP_SYSTEM_STORAGE_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_STORAGE_DIR', default='') }}"
+    ONESETUP_SYSTEM_DOTFILES_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_DOTFILES_DIR', default='') }}"
+    ONESETUP_SYSTEM_BIN_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_BIN_DIR', default='') }}"
+    ONESETUP_SYSTEM_TMP_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_TMP_DIR', default='') }}"
+    ONESETUP_SYSTEM_USER_GROUP: "{{ lookup('env', 'ONESETUP_SYSTEM_USER_GROUP', default='') }}"
+    ONESETUP_SYSTEM_ADMIN_GROUP: "{{ lookup('env', 'ONESETUP_SYSTEM_ADMIN_GROUP', default='') }}"
+    # Environment Variables: Config_Key [project] 
+    ONESETUP_PROJECT_DEVELOPMENT: "{{ lookup('env', 'ONESETUP_PROJECT_DEVELOPMENT', default='') }}"
+    ONESETUP_PROJECT_DEBUG: "{{ lookup('env', 'ONESETUP_PROJECT_DEBUG', default='') }}"
+    ONESETUP_PROJECT_REPO_URI: "{{ lookup('env', 'ONESETUP_PROJECT_REPO_URI', default='') }}"
+    ONESETUP_DOTFILES_REPO_URI: "{{ lookup('env', 'ONESETUP_DOTFILES_REPO_URI', default='') }}"
+    ONESETUP_PROJECT_REPO_RAW: "{{ lookup('env', 'ONESETUP_PROJECT_REPO_RAW', default='') }}"
+    ONESETUP_DOTFILES_REPO_RAW: "{{ lookup('env', 'ONESETUP_DOTFILES_REPO_RAW', default='') }}"
+    ONESETUP_DIR_DEV: "{{ lookup('env', 'ONESETUP_DIR_DEV', default='') }}"
     # Environment Variables: User Environment
     USER: "{{ ansible_facts['env']['USER'] }}"
     HOME: "{{ ansible_facts['env']['HOME'] }}"
@@ -53,36 +48,31 @@
 
   # -- PRE-TASKS -- #
   pre_tasks:
-    # Set Become Password
+    # Include Pre-Task for Environment-Variable Discovery & Validation (+ Normalization)
+    - include_tasks: pre_tasks/all/env_validation.yml
+    
+    # Pre-Task: Include OS-Specific Variables
+    - name: "group_vars | Include OS-specific variables ({{ ONESETUP_SYSTEM_OS }})"
+      ansible.builtin.include_vars:
+        dir: "{{ playbook_dir }}/group_vars/{{ ONESETUP_SYSTEM_OS }}" # The variables in group_vars/all/ are already auto-loaded by ansible
+        extensions:
+          - yml
+      ignore_errors: true  # Skip if OS-specific folder doesn't exist
+
+    # Pre-Task: Set Become Password as Ansible Fact
     - name: "auth | set become password gathered in user-prompt"
       set_fact:
         ansible_become_password: "{{ SUDO_PASSWORD }}"
         cacheable: false
       no_log: true
-    # Include pre_task for System Discovery
-    - name: "pre_tasks | System Discovery"
-      ansible.builtin.include_tasks: "{{ playbook_dir }}/pre_tasks/all/system_discovery.yml"
-    # Include OS-Independent pre_tasks (for every OS)
-    - name: "pre_tasks | OS-Independent (all)"
-      ansible.builtin.include_tasks: "{{ item_pretask }}"
-      with_fileglob:
-        - "{{ playbook_dir }}/pre_tasks/all/*.yml"
-      loop_control:
-        loop_var: item_pretask
-    # Include OS-Specific pre_tasks
-    - name: "pre_tasks | OS-Specific ({{ onesetup_os }})"
-      ansible.builtin.include_tasks: "{{ item_pretask }}"
-      with_fileglob:
-        - "{{ playbook_dir }}/pre_tasks/{{ onesetup_os }}/*.yml"
-      loop_control:
-        loop_var: item_pretask
-    # Include OS-Specific Variables
-    - name: "group_vars | Include OS-specific variables ({{ onesetup_os }})"
-      ansible.builtin.include_vars:
-        dir: "{{ playbook_dir }}/group_vars/{{ onesetup_os }}"
-        extensions:
-          - yml
-      ignore_errors: true # Skip if OS-specific folder doesnt exist
+    
+    # Include OS-specific pre_tasks
+    - include_tasks: pre_tasks/osx/dependencies.yml
+      when: ONESETUP_SYSTEM_OS == 'osx'
+    - include_tasks: pre_tasks/osx/filesystem.yml
+      when: ONESETUP_SYSTEM_OS == 'osx'
+    - include_tasks: pre_tasks/osx/xcode.yml
+      when: ONESETUP_SYSTEM_OS == 'osx'
   
   # -- ROLES -- #
   roles:

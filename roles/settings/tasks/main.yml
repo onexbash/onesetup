@@ -7,10 +7,10 @@
   loop_control:
     loop_var: item_roletask
 
-# Include OS-Specific Tasks for `{{ onesetup_os }}`
-- name: "Include OS-Specific Tasks for {{ onesetup_os }}"
+# Include OS-Specific Tasks for `{{ ONESETUP_SYSTEM_OS }}`
+- name: "Include OS-Specific Tasks for {{ ONESETUP_SYSTEM_OS }}"
   ansible.builtin.include_tasks: "{{ item_roletask }}"
   with_fileglob:
-    - "{{ role_path }}/tasks/{{ onesetup_os }}/*.yml"
+    - "{{ role_path }}/tasks/{{ ONESETUP_SYSTEM_OS }}/*.yml"
   loop_control:
     loop_var: item_roletask
