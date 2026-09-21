@@ -71,10 +71,6 @@ function parse_args() {
     shift
     parse_encrypt_args "$@"
     ;;
-  decrypt)
-    shift
-    parse_decrypt_args "$@"
-    ;;
   help | --help | -h)
     print_help
     ;;
@@ -99,9 +95,6 @@ Commands:
   encrypt                  Encrypt secrets with Ansible-Vault
     --string               Interactively encrypt a plain text string
     --file <path> [var]    Encrypt file contents as an Ansible variable
-  decrypt                  Decrypt secrets with Ansible-Vault
-    --arg1                 Placeholder for decrypt option 1
-    --arg2                 Placeholder for decrypt option 2
   help, -h, --help         Display this help message
 EOF
 }
@@ -314,16 +307,6 @@ function encrypt_file() {
   handle_encrypted_output "$encrypted_res" "$varname" "$target"
 }
 
-# Subcommand 'decrypt': --arg1
-function decrypt_arg1() {
-  echo -e "${I_INFO}: Coming soon.."
-}
-
-# Subcommand 'decrypt': --arg2
-function decrypt_arg2() {
-  echo -e "${I_INFO}: Coming soon.."
-}
-
 # Prompt args for Subcommand 'encrypt'
 function prompt_encrypt() {
   local choice
@@ -344,31 +327,11 @@ function prompt_encrypt() {
   esac
 }
 
-# Prompt args for Subcommand 'decrypt'
-function prompt_decrypt() {
-  local choice
-  choice=$(
-    gum choose "arg1" "arg2" \
-      --cursor.foreground "#cba6f7" \
-      --header.foreground "#cba6f7" \
-      --selected.foreground "#cba6f7" \
-      --header "Choose:" \
-      --no-show-help \
-      --ordered || true
-  )
-
-  case "$choice" in
-  "arg1") decrypt_arg1 ;;
-  "arg2") decrypt_arg2 ;;
-  *) echo -e "${I_WARN}Operation cancelled." ;;
-  esac
-}
-
 # Prompt for Subcommand to run
 function prompt_subcommand() {
   local choice
   choice=$(
-    gum choose "Encrypt" "Decrypt" \
+    gum choose "Encrypt" "Help" \
       --cursor.foreground "#cba6f7" \
       --header.foreground "#cba6f7" \
       --selected.foreground "#cba6f7" \
@@ -379,7 +342,7 @@ function prompt_subcommand() {
 
   case "$choice" in
   "Encrypt") prompt_encrypt ;;
-  "Decrypt") prompt_decrypt ;;
+  "Help") print_help ;;
   *) echo -e "${I_WARN}Operation cancelled." ;;
   esac
 }
@@ -438,30 +401,6 @@ function parse_encrypt_args() {
   *)
     echo -e "${I_ERR}Missing encrypt option."
     echo -e "${I_INFO}Usage: $(basename "$0") encrypt [--string | --file <path> [varname]] [--target clipboard|ansible]"
-    exit 1
-    ;;
-  esac
-}
-
-# Parse Subcommand 'decrypt'
-function parse_decrypt_args() {
-  if [[ $# -eq 0 ]]; then
-    prompt_decrypt
-    return 0
-  fi
-
-  case "${1:-}" in
-  --arg1)
-    shift
-    decrypt_arg1 "$@"
-    ;;
-  --arg2)
-    shift
-    decrypt_arg2 "$@"
-    ;;
-  *)
-    echo -e "${I_ERR}Unknown argument for 'decrypt': $1"
-    echo -e "${I_INFO}Usage: $(basename "$0") decrypt [--arg1 | --arg2]"
     exit 1
     ;;
   esac

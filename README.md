@@ -128,7 +128,7 @@ Applies defined system configurations using Ansible.
 ---
 
 ### [`onesetup-vault`](./bin/onesetup-vault)
-Encrypts or decrypts sensitive variables using Ansible Vault.
+Encrypts sensitive variables using Ansible Vault.
 
 | Command | Description |
 | :--- | :--- |
