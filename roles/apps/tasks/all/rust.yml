@@ -29,7 +29,7 @@
   ansible.builtin.shell: |
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
   args:
-    executable: "{{ bash_path.stdout | trim | default('/bin/bash', true) }}" # bash_path collected in ./pre_tasks/all/shell.yml
+    executable: "{{ bash_path | default('/bin/bash', true) }}"
   environment:
     CARGO_HOME: "{{ CARGO_HOME }}"
     RUSTUP_HOME: "{{ RUSTUP_HOME }}"
