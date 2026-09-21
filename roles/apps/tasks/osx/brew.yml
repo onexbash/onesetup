@@ -10,14 +10,32 @@
   ignore_errors: true
   register: log_tap
 
-# Cleanup Trust Store
+# Check current Trust Store state
+- name: "Check: Homebrew Trust Store file"
+  ansible.builtin.stat:
+    path: "{{ XDG_CONFIG_HOME }}/homebrew/trust.json"
+  register: trust_file
+
+# Load Homebrew Trust Store contents
+- name: "Load: Homebrew Trust Store contents"
+  ansible.builtin.set_fact:
+    trust_store_data: "{{ (lookup('file', trust_file.stat.path) | from_json).trustedtaps | default([]) | map('lower') | list }}"
+  when: trust_file.stat.exists
+
+# Check if all Taps are already trusted
+- name: "Check if all Taps are already trusted"
+  ansible.builtin.set_fact:
+    taps_fully_trusted: "{{ trust_file.stat.exists and (brew_taps | map('lower') | list | difference(trust_store_data | default([]))) | length == 0 }}"
+
+# Cleanup Trust Store if incomplete
 - name: "Cleanup: Homebrew Trust Store"
   ansible.builtin.file:
     path: "{{ XDG_CONFIG_HOME }}/homebrew"
     state: absent
   become: true
+  when: not taps_fully_trusted
 
-# Trust Taps
+# Trust Taps if incomplete trust-store
 - name: "Trust: Homebrew Taps"
   ansible.builtin.command:
     cmd: "brew trust --tap {{ item_tap }}"
@@ -27,6 +45,7 @@
   changed_when: true
   ignore_errors: true
   become: false
+  when: not taps_fully_trusted
 
 # -- FORMULAES -- #
 - name: "install formulaes"
