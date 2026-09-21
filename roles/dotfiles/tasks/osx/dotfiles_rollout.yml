@@ -61,7 +61,7 @@
     - /etc/profile
     - /etc/zprofile
   become: true
-  when: ansible_facts['ONESETUP_SYSTEM_OS'] == "osx"
+  when: ONESETUP_SYSTEM_OS == "osx"
 
 # # Comment-Out path_helper invocation from /etc/zprofile & /etc/profile on MacOS
 # - name: "Comment-Out path_helper invocation from /etc/zprofile & /etc/profile on MacOS"
@@ -73,7 +73,7 @@
 #   loop:
 #     - /etc/profile
 #     - /etc/zprofile
-#   when: ansible_facts['ONESETUP_SYSTEM_OS'] == "osx"
+# when: ONESETUP_SYSTEM_OS == "osx"
 
 # Add custom PATH entries to /etc/paths.d/
 - name: "Add custom PATH entries to /etc/paths.d/"
@@ -82,7 +82,7 @@
     content: "/opt/homebrew/bin\n/opt/homebrew/sbin\n"
     mode: "0644"
   become: true
-  when: ansible_facts["ONESETUP_SYSTEM_OS"] == "osx"
+  when: ONESETUP_SYSTEM_OS == "osx"
 
 # Ensure specified login shells exist in /etc/shells
 - name: "Ensure specified login shells exist in /etc/shells"
