@@ -6,32 +6,6 @@
   
   # -- VARIABLES -- #
   vars:
-    # Environment Variables: Config_Key [remote]
-    ONESETUP_REMOTE_PROVIDER: "{{ lookup('env', 'ONESETUP_REMOTE_PROVIDER', default='') }}"
-    ONESETUP_REMOTE_USERNAME: "{{ lookup('env', 'ONESETUP_REMOTE_USERNAME', default='') }}"
-    ONESETUP_REMOTE_CONNECTION: "{{ lookup('env', 'ONESETUP_REMOTE_CONNECTION', default='') }}"
-    ONESETUP_REMOTE_PROJECT_REPO: "{{ lookup('env', 'ONESETUP_REMOTE_PROJECT_REPO', default='') }}"
-    ONESETUP_REMOTE_DOTFILES_REPO: "{{ lookup('env', 'ONESETUP_REMOTE_DOTFILES_REPO', default='') }}"
-    # Environment Variables: Config_Key [system] 
-    ONESETUP_SYSTEM_OS: "{{ lookup('env', 'ONESETUP_SYSTEM_OS', default='') }}"
-    ONESETUP_SYSTEM_USERNAME: "{{ lookup('env', 'ONESETUP_SYSTEM_USERNAME', default='') }}"
-    ONESETUP_SYSTEM_ROOT_USER: "{{ lookup('env', 'ONESETUP_SYSTEM_ROOT_USER', default='') }}"
-    ONESETUP_SYSTEM_CONFIG_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_CONFIG_DIR', default='') }}"
-    ONESETUP_SYSTEM_INSTALL_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_INSTALL_DIR', default='') }}"
-    ONESETUP_SYSTEM_STORAGE_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_STORAGE_DIR', default='') }}"
-    ONESETUP_SYSTEM_DOTFILES_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_DOTFILES_DIR', default='') }}"
-    ONESETUP_SYSTEM_BIN_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_BIN_DIR', default='') }}"
-    ONESETUP_SYSTEM_TMP_DIR: "{{ lookup('env', 'ONESETUP_SYSTEM_TMP_DIR', default='') }}"
-    ONESETUP_SYSTEM_USER_GROUP: "{{ lookup('env', 'ONESETUP_SYSTEM_USER_GROUP', default='') }}"
-    ONESETUP_SYSTEM_ADMIN_GROUP: "{{ lookup('env', 'ONESETUP_SYSTEM_ADMIN_GROUP', default='') }}"
-    # Environment Variables: Config_Key [project] 
-    ONESETUP_PROJECT_DEVELOPMENT: "{{ lookup('env', 'ONESETUP_PROJECT_DEVELOPMENT', default='') }}"
-    ONESETUP_PROJECT_DEBUG: "{{ lookup('env', 'ONESETUP_PROJECT_DEBUG', default='') }}"
-    ONESETUP_PROJECT_REPO_URI: "{{ lookup('env', 'ONESETUP_PROJECT_REPO_URI', default='') }}"
-    ONESETUP_DOTFILES_REPO_URI: "{{ lookup('env', 'ONESETUP_DOTFILES_REPO_URI', default='') }}"
-    ONESETUP_PROJECT_REPO_RAW: "{{ lookup('env', 'ONESETUP_PROJECT_REPO_RAW', default='') }}"
-    ONESETUP_DOTFILES_REPO_RAW: "{{ lookup('env', 'ONESETUP_DOTFILES_REPO_RAW', default='') }}"
-    ONESETUP_DIR_DEV: "{{ lookup('env', 'ONESETUP_DIR_DEV', default='') }}"
     # Environment Variables: User Environment
     USER: "{{ ansible_facts['env']['USER'] }}"
     HOME: "{{ ansible_facts['env']['HOME'] }}"

@@ -12,7 +12,7 @@ function main() {
   set_modes || echo -e "${I_WARN}Failed to set Script Modes."
   init_brew || echo -e "${I_WARN}Failed to initialize Homebrew"
   { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
-  export_ansible_vars || { echo -e "${I_ERR}Failed to export Ansible Environment Variables!"; exit 1; }
+  export_dynamic_vars || { echo -e "${I_ERR}Failed to export Dynamic Environment Variables!"; exit 1; }
   { prerequisites && echo -e "${I_OK}Prerequesites satisfied"; } || { echo -e "${I_ERR}Failed to ensure that prerequesites are satisfied"; exit 1; }
   { install && echo -e "${I_OK}Installation completed"; } || { echo -e "${I_ERR}Installation failed"; exit 1; }
 }

@@ -120,7 +120,7 @@ Applies defined system configurations using Ansible.
 **Available Options for `onesetup run`:**
 
 * `--directory <dev|prod>` (Default: `prod`)
-  * `dev`: Executes the playbook from your local **Git Repository Root** (`$ONESETUP_DIR_DEV`). This only works when the command is run from your onesetup git repository.
+  * `dev`: Executes the playbook from your local **Git Repository Root**. This only works when the command is run from your onesetup git repository.
   * `prod`: Executes the playbook from the **Installation Directory** (`$ONESETUP_DIR`).
 * `--roles <role1,role2>` — Runs only the specified comma-separated roles/tags.
 * `--skip-roles <role1,...>` — Skips the specified comma-separated roles/tags.
@@ -168,6 +168,26 @@ project:
 ```
 
 ---
+
+### Configuration: Environment Variables
+Each Config Key also exists as Environment Variable. For example:
+```bash
+export ONESETUP_REMOTE_PROVIDER # Equals the Config-Key 'remote.provider'
+export ONESETUP_SYSTEM_CONFIG_DIR # # Equals the Config-Key 'system.config_dir'
+# ... etc. etc.
+```
+So instead of using the [config.yml](./default.config.yml) you can pass them to the `onesetup` and `onesetup-vault` command as well.
+
+Additionally there are Environment Variables exported that are dynamically constructed based on other Values and doesn't exist as Config-Keys in [config.yml](./default.config.yml).
+It's pretty much useless to use them tho ^^ Maybe for edge-cases where the Repository URI is not constructed right or something like that.
+These are:
+```bash
+export ONESETUP_PROJECT_REPO_URI # Constructed based on: remote.provider, remote.connection, remote.username & remote.project_repo
+export ONESETUP_DOTFILES_REPO_URI # Constructed based on: .., & remote.dotfiles_repo
+export ONESETUP_PROJECT_REPO_RAW # Constructed based on: .., & remote.project_repo
+export ONESETUP_DOTFILES_REPO_RAW # Constructed based on: .., & remote.dotfiles_repo
+```
+
 
 ## ⚙️ What It Does
 

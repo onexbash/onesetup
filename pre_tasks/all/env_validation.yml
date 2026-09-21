@@ -4,9 +4,9 @@
     onesetup_env_values: >-
       {{ onesetup_env_values | default({}) | combine({
         item.name: (
-          (lookup('vars', item.name, default='') | string)
+          (lookup('env', item.name, default='') | string)
           if not (item.normalize | default(true))
-          else (lookup('vars', item.name, default='') | string | lower | trim)
+          else (lookup('env', item.name, default='') | string | lower | trim)
         )
       }) }}
   loop: "{{ onesetup_env_vars }}"

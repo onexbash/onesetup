@@ -208,24 +208,24 @@ function read_config(){
  
   # Overwrite Defaults with Config File Values
   if [[ -f "$config_file" ]]; then
-    _get_config_value remote_provider       '.remote.provider'
-    _get_config_value remote_username       '.remote.username'
-    _get_config_value remote_connection     '.remote.connection'
-    _get_config_value remote_project_repo   '.remote.project_repo'
-    _get_config_value remote_dotfiles_repo  '.remote.dotfiles_repo'
-    _get_config_value system_os             '.system.os'
-    _get_config_value system_username       '.system.username'
-    _get_config_value system_root_user      '.system.root_user'
-    _get_config_value system_config_dir     '.system.config_dir'
-    _get_config_value system_install_dir    '.system.install_dir'
-    _get_config_value system_storage_dir    '.system.storage_dir'
-    _get_config_value system_dotfiles_dir   '.system.dotfiles_dir'
-    _get_config_value system_bin_dir        '.system.bin_dir'
-    _get_config_value system_tmp_dir        '.system.tmp_dir'
-    _get_config_value system_user_group     '.system.user_group'
-    _get_config_value system_admin_group    '.system.admin_group'
-    _get_config_value project_development   '.project.development'
-    _get_config_value project_debug         '.project.debug'
+    _get_config_value remote_provider           '.remote.provider'
+    _get_config_value remote_username           '.remote.username'
+    _get_config_value remote_connection         '.remote.connection'
+    _get_config_value remote_project_repo       '.remote.project_repo'
+    _get_config_value remote_dotfiles_repo      '.remote.dotfiles_repo'
+    _get_config_value system_os                 '.system.os'
+    _get_config_value system_username           '.system.username'
+    _get_config_value system_root_user          '.system.root_user'
+    _get_config_value system_config_dir         '.system.config_dir'
+    _get_config_value system_install_dir        '.system.install_dir'
+    _get_config_value system_storage_dir        '.system.storage_dir'
+    _get_config_value system_dotfiles_dir       '.system.dotfiles_dir'
+    _get_config_value system_bin_dir            '.system.bin_dir'
+    _get_config_value system_tmp_dir            '.system.tmp_dir'
+    _get_config_value system_user_group         '.system.user_group'
+    _get_config_value system_admin_group        '.system.admin_group'
+    _get_config_value project_development       '.project.development'
+    _get_config_value project_debug             '.project.debug'
   fi
   unset -f _apply_override
 
@@ -247,25 +247,72 @@ function read_config(){
   export ONESETUP_SYSTEM_BIN_DIR="${system_bin_dir}"
   export ONESETUP_SYSTEM_TMP_DIR="${system_tmp_dir}"
   export ONESETUP_PROJECT_DEVELOPMENT="${project_development}"
-  export ONESETUP_PROJECT_DEBUG="${project_debug}"
-  
-  # Dynamic Environment Variables
-  local project_uri dotfiles_uri
-  case "${ONESETUP_REMOTE_CONNECTION}" in
-    ssh)
-      project_uri="git@github.com:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
-      dotfiles_uri="git@github.com:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git" ;;
-    https|*)
-      project_uri="https://github.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
-      dotfiles_uri="https://github.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git" ;;
-  esac
-  export ONESETUP_PROJECT_REPO_URI="${project_uri}"
-  export ONESETUP_DOTFILES_REPO_URI="${dotfiles_uri}"
-  export ONESETUP_PROJECT_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/main"
-  export ONESETUP_DOTFILES_REPO_RAW="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/main"
-  export ONESETUP_DIR_DEV="${ONESETUP_DIR_DEV:-$(git rev-parse --show-toplevel 2>/dev/null)}"
+  export ONESETUP_PROJECT_DEBUG="${project_debug}" 
 }
 
-function export_ansible_vars(){
+
+# Function to export Dynamic Environment Variables that are constructed based on the Env-Vars in read_config()
+function export_dynamic_vars(){
+
+  local project_uri dotfiles_uri
+  local git_host="" project_uri_raw="" dotfiles_uri_raw=""
+
+  case "${ONESETUP_REMOTE_PROVIDER}" in
+    github)
+      git_host="github.com"
+      project_uri_raw="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/main"
+      dotfiles_uri_raw="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/main"
+      ;;
+    gitlab)
+      git_host="gitlab.com"
+      project_uri_raw="https://gitlab.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/-/raw/main"
+      dotfiles_uri_raw="https://gitlab.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/-/raw/main"
+      ;;
+    bitbucket)
+      git_host="bitbucket.org"
+      project_uri_raw="https://bitbucket.org/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/raw/main"
+      dotfiles_uri_raw="https://bitbucket.org/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/raw/main"
+      ;;
+    azure_devops)
+      # NOTE: org/project/repo hierarchy — ONESETUP_REMOTE_USERNAME is treated as
+      # the ORG, and project is assumed to match the repo name (simple-setup convention).
+      # Raw content is a REST call (?path=&api-version=), NOT path-appendable like the
+      # other three providers — see caveat above before relying on ONESETUP_*_REPO_RAW here.
+      project_uri_raw="https://dev.azure.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/_apis/git/repositories/${ONESETUP_REMOTE_PROJECT_REPO}/items?api-version=7.0&versionDescriptor.version=main&path="
+      dotfiles_uri_raw="https://dev.azure.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/_apis/git/repositories/${ONESETUP_REMOTE_DOTFILES_REPO}/items?api-version=7.0&versionDescriptor.version=main&path="
+      ;;
+    *)
+      echo -e "${I_ERR}Unsupported Remote Provider: ${ONESETUP_REMOTE_PROVIDER}"
+      return 1
+      ;;
+  esac
+
+  case "${ONESETUP_REMOTE_CONNECTION}" in
+    ssh)
+      if [[ "${ONESETUP_REMOTE_PROVIDER}" == "azure_devops" ]]; then
+        project_uri="git@ssh.dev.azure.com:v3/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/${ONESETUP_REMOTE_PROJECT_REPO}"
+        dotfiles_uri="git@ssh.dev.azure.com:v3/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/${ONESETUP_REMOTE_DOTFILES_REPO}"
+      else
+        project_uri="git@${git_host}:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
+        dotfiles_uri="git@${git_host}:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git"
+      fi
+      ;;
+    https|*)
+      if [[ "${ONESETUP_REMOTE_PROVIDER}" == "azure_devops" ]]; then
+        project_uri="https://dev.azure.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/_git/${ONESETUP_REMOTE_PROJECT_REPO}"
+        dotfiles_uri="https://dev.azure.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/_git/${ONESETUP_REMOTE_DOTFILES_REPO}"
+      else
+        project_uri="https://${git_host}/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
+        dotfiles_uri="https://${git_host}/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git"
+      fi
+      ;;
+  esac
+  
+
+  export ONESETUP_PROJECT_REPO_URI="${project_uri}"
+  export ONESETUP_DOTFILES_REPO_URI="${dotfiles_uri}"
+  export ONESETUP_PROJECT_REPO_RAW="${project_uri_raw}"
+  export ONESETUP_DOTFILES_REPO_RAW="${dotfiles_uri_raw}"
+
   export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
 }
