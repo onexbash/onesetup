@@ -77,6 +77,10 @@ function install() {
   local bin_dir="$ONESETUP_SYSTEM_BIN_DIR"
   local tmp_dir="$ONESETUP_SYSTEM_TMP_DIR"
   local repo_uri="$ONESETUP_PROJECT_REPO_URI"
+  local default_user="$ONESETUP_SYSTEM_USERNAME"
+  local root_user="$ONESETUP_SYSTEM_ROOT_USER"
+  local default_group="$ONESETUP_SYSTEM_USER_GROUP"
+  local root_group="$ONESETUP_SYSTEM_ADMIN_GROUP"
 
   # Step 1: Remove installation directory if invalid/corrupted
   if [[ -d "$install_dir" ]]; then
@@ -114,23 +118,28 @@ function install() {
   fi
 
   # Step 4: Ensure Directory permissions & ownership
-  ensure_directory "$config_dir" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}" true
-  ensure_directory "$install_dir" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}" true
-  ensure_directory "$storage_dir" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}" true
-  ensure_directory "$tmp_dir" "1777" "${ONESETUP_SYSTEM_ROOT_USER}:${ONESETUP_SYSTEM_ADMIN_GROUP}" false
+  ensure_directory "$config_dir" "755" "${default_user}:${default_group}" true
+  ensure_directory "$install_dir" "755" "${default_user}:${default_group}" true
+  ensure_directory "$storage_dir" "755" "${default_user}:${default_group}" true
+  ensure_directory "$tmp_dir" "1777" "${root_user}:${root_group}" false
 
-  
   # Step 5: Rollout Executables
   if is_writable "$bin_dir"; then
     for file in "${install_dir}"/bin/*; do
       if [[ -f "$file" ]]; then
         local filename
         filename=$(basename "$file")
-        { sudo cp -f "$file" "${bin_dir}/" && echo -e "${I_OK}${C_GREEN}$filename${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}"; } || { echo -e "${I_ERR}Failed to copy ${C_RED}$filename${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"; return 1; }
+
+        if sudo install -m 755 -o "${root_user}" -g "${root_group}" "$file" "${bin_dir}/${filename}"; then
+          echo -e "${I_OK}${C_GREEN}$filename${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}"
+        else
+          echo -e "${I_ERR}Failed to roll-out executable ${C_RED}$filename${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"
+          return 1
+        fi
       fi
     done
   else
-    echo -e "${I_ERR}The Bin-Directory you've set is not writable, which is mostly caused by the MacOS System Integrity Protection. Please set 'system.bin_dir' in your config.yml to a Directory that is writable with sudo rights."
+    echo -e "${I_ERR}The Bin-Directory you've set is not writable, which is mostly caused by macOS System Integrity Protection. Please set 'system.bin_dir' in your config.yml to a Directory that is writable with sudo rights."
     echo -e "${I_INFO}Please re-run the Installation Script after."
     exit 1
   fi
