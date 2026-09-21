@@ -26,7 +26,6 @@
   pre_tasks:
     # Include Pre-Tasks
     - include_tasks: pre_tasks/all/env.yml # Environment-Variable Discovery & Validation (+ Normalization)
-    - include_tasks: pre_tasks/all/shell.yml
     
     # Pre-Task: Include OS-Specific Variables
     - name: "group_vars | Include OS-specific variables ({{ ONESETUP_SYSTEM_OS }})"
@@ -43,7 +42,7 @@
         cacheable: false
       no_log: true
     
-    # Include OS-specific pre_tasks
+    # Pre-Task: Include OS-specific pre_tasks
     - include_tasks: pre_tasks/osx/dependencies.yml
       when: ONESETUP_SYSTEM_OS == 'osx'
     - include_tasks: pre_tasks/osx/filesystem.yml
@@ -53,6 +52,7 @@
   
   # -- ROLES -- #
   roles:
+    - { role: shell, tags: ["shell"] }
     - { role: dotfiles, tags: ["dotfiles"] }
     - { role: apps, tags: ["apps"] }
     - { role: settings, tags: ["settings"] }
