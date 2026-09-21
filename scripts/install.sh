@@ -121,13 +121,19 @@ function install() {
 
   
   # Step 5: Rollout Executables
-  for file in "${install_dir}"/bin/*; do
-    if [[ -f "$file" ]]; then
-      local filename
-      filename=$(basename "$file")
-      { sudo cp -f "$file" "${bin_dir}/" && echo -e "${I_OK}${C_GREEN}$filename${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}"; } || { echo -e "${I_ERR}Failed to copy ${C_RED}$filename${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"; return 1; }
-    fi
-  done
+  if is_writable "$bin_dir"; then
+    for file in "${install_dir}"/bin/*; do
+      if [[ -f "$file" ]]; then
+        local filename
+        filename=$(basename "$file")
+        { sudo cp -f "$file" "${bin_dir}/" && echo -e "${I_OK}${C_GREEN}$filename${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}"; } || { echo -e "${I_ERR}Failed to copy ${C_RED}$filename${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"; return 1; }
+      fi
+    done
+  else
+    echo -e "${I_ERR}The Bin-Directory you've set is not writable, which is mostly caused by the MacOS System Integrity Protection. Please set 'system.bin_dir' in your config.yml to a Directory that is writable with sudo rights."
+    echo -e "${I_INFO}Please re-run the Installation Script after."
+    exit 1
+  fi
 
   # Step 6: Install Ansible Modules from Ansible Galaxy
   ansible-galaxy collection install --collections-path "${storage_dir}/collections" --requirements-file "${install_dir}/requirements.yml" --no-cache --upgrade

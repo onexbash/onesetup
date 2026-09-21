@@ -65,6 +65,27 @@ function install_linux_pkg() {
   fi
 }
 
+
+# [UTIL] Check if a Directory is sudo-writable or protected with MacOS System Integrity Protection
+function is_writable() {
+  local dir="$1"
+  local test_file
+
+  if [[ ! -d "$dir" ]]; then
+    echo -e "${I_ERR}Directory does not exist: $dir"
+    return 2
+  fi
+
+  test_file="${dir}/.onesetup_write_test_$$"
+
+  if sudo touch "$test_file" &>/dev/null; then
+    sudo rm -f "$test_file" &>/dev/null
+    return 0   # writable
+  else
+    return 1   # not writable (SIP, read-only mount, ACL, etc.)
+  fi
+}
+
 # [UTIL] Ensure Directory presence with right permissions
 function ensure_directory() {
   local target_dir="$1" desired_perms="$2" desired_ownership="$3" recursive="${4:-false}"
@@ -124,7 +145,7 @@ function read_config(){
   local config_file
 
   # Function to override Default Values set in config.yml
-  _apply_override() {
+  _get_config_value() {
     local -n _target="$1"; local _val
     _val="$(yq "$2" "$config_file" 2>/dev/null)"
     [[ -n "$_val" && "$_val" != "null" ]] && _target="${_val/#\~/$HOME}"
@@ -189,24 +210,24 @@ function read_config(){
  
   # Overwrite Defaults with Config File Values
   if [[ -f "$config_file" ]]; then
-    _apply_override remote_provider       '.remote.provider'
-    _apply_override remote_username       '.remote.username'
-    _apply_override remote_connection     '.remote.connection'
-    _apply_override remote_project_repo   '.remote.project_repo'
-    _apply_override remote_dotfiles_repo  '.remote.dotfiles_repo'
-    _apply_override system_os             '.system.os'
-    _apply_override system_username       '.system.username'
-    _apply_override system_root_user      '.system.root_user'
-    _apply_override system_config_dir     '.system.config_dir'
-    _apply_override system_install_dir    '.system.install_dir'
-    _apply_override system_storage_dir    '.system.storage_dir'
-    _apply_override system_dotfiles_dir   '.system.dotfiles_dir'
-    _apply_override system_bin_dir        '.system.bin_dir'
-    _apply_override system_tmp_dir        '.system.tmp_dir'
-    _apply_override system_user_group     '.system.user_group'
-    _apply_override system_admin_group    '.system.admin_group'
-    _apply_override project_development   '.project.development'
-    _apply_override project_debug         '.project.debug'
+    _get_config_value remote_provider       '.remote.provider'
+    _get_config_value remote_username       '.remote.username'
+    _get_config_value remote_connection     '.remote.connection'
+    _get_config_value remote_project_repo   '.remote.project_repo'
+    _get_config_value remote_dotfiles_repo  '.remote.dotfiles_repo'
+    _get_config_value system_os             '.system.os'
+    _get_config_value system_username       '.system.username'
+    _get_config_value system_root_user      '.system.root_user'
+    _get_config_value system_config_dir     '.system.config_dir'
+    _get_config_value system_install_dir    '.system.install_dir'
+    _get_config_value system_storage_dir    '.system.storage_dir'
+    _get_config_value system_dotfiles_dir   '.system.dotfiles_dir'
+    _get_config_value system_bin_dir        '.system.bin_dir'
+    _get_config_value system_tmp_dir        '.system.tmp_dir'
+    _get_config_value system_user_group     '.system.user_group'
+    _get_config_value system_admin_group    '.system.admin_group'
+    _get_config_value project_development   '.project.development'
+    _get_config_value project_debug         '.project.debug'
   fi
   unset -f _apply_override
 
