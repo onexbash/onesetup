@@ -13,15 +13,6 @@
   loop_control:
     label: "{{ item.name }}"
 
-# Set each Environment Variable as an Ansible Fact 
-- name: "Set each Environment Variable as an Ansible Fact"
-  ansible.builtin.set_fact:
-    "{{ item.name }}": "{{ onesetup_env_values[item.name] }}"
-    cacheable: false  # intentional: re-read from env every run, never fact-cached
-  loop: "{{ onesetup_env_vars }}"
-  loop_control:
-    label: "{{ item.name }}"
-
 # Validate Environment Variable Values
 - name: "Validate Value of each Environment Variable"
   ansible.builtin.set_fact:
@@ -58,11 +49,20 @@
   ansible.builtin.set_fact:
     onesetup_env_fatal: "{{ onesetup_env_report | selectattr('mandatory') | rejectattr('valid') | map(attribute='name') | list }}"
 
-# Error for mandatory Environment Variables
+# Error for mandatory Environment Variables — play stops here if any failed
 - name: "Error for mandatory Environment Variables"
   ansible.builtin.fail:
     msg: >-
       Missing/invalid mandatory ONESETUP variable(s): {{ onesetup_env_fatal | join(', ') }}.
       Set them in $XDG_CONFIG_HOME/onesetup/config.yml, or export before running
       ./bin/onesetup — it should already populate these with defaults.
-  when: onesetup_env_fatal | length > 0 
+  when: onesetup_env_fatal | length > 0
+
+# Set Environment Variables as Ansible Facts
+- name: "Set each Environment Variable as an Ansible Fact"
+  ansible.builtin.set_fact:
+    "{{ item.name }}": "{{ onesetup_env_values[item.name] }}"
+    cacheable: false
+  loop: "{{ onesetup_env_vars }}"
+  loop_control:
+    label: "{{ item.name }}"
