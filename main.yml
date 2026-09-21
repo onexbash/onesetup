@@ -14,7 +14,8 @@
     XDG_DATA_HOME: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.local/share') }}"
     XDG_STATE_HOME: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.local/state') }}"
     ZDOTDIR: "{{ ansible_facts['env']['ZDOTDIR'] }}"
-    CARGO_HOME: "{{ ansible_facts['env']['CARGO_HOME'] }}"
+    CARGO_HOME: "{{ ansible_facts['env']['CARGO_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.cargo') }}"
+    RUSTUP_HOME: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.rustup') }}"
   # Variable Prompts
   vars_prompt:
     - name: SUDO_PASSWORD
