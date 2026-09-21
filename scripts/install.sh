@@ -71,9 +71,11 @@ function prerequisites() {
 # [3] Run Installation
 function install() {
   local repo_name="${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}"
+  local config_dir="$ONESETUP_SYSTEM_CONFIG_DIR"
   local install_dir="$ONESETUP_SYSTEM_INSTALL_DIR"
   local storage_dir="$ONESETUP_SYSTEM_STORAGE_DIR"
   local bin_dir="$ONESETUP_SYSTEM_BIN_DIR"
+  local tmp_dir="$ONESETUP_SYSTEM_TMP_DIR"
   local repo_uri="$ONESETUP_PROJECT_REPO_URI"
 
   # Step 1: Remove installation directory if invalid/corrupted
@@ -111,19 +113,23 @@ function install() {
     git clone --depth 1 --single-branch "$repo_uri" "$install_dir" && echo -e "${I_OK}Installation complete!"
   fi
 
-  # Step 4: Ensure permissions and deploy binaries
+  # Step 4: Ensure Directory permissions & ownership
+  ensure_directory "$config_dir" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}" true
   ensure_directory "$install_dir" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}" true
-  ensure_directory "$bin_dir" "755" "${ONESETUP_SYSTEM_ROOT_USER}:${ONESETUP_SYSTEM_ADMIN_GROUP}"
+  ensure_directory "$storage_dir" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}" true
+  ensure_directory "$tmp_dir" "1777" "${ONESETUP_SYSTEM_ROOT_USER}:${ONESETUP_SYSTEM_ADMIN_GROUP}" false
 
+  
+  # Step 5: Rollout Executables
   for file in "${install_dir}"/bin/*; do
     if [[ -f "$file" ]]; then
       local filename
       filename=$(basename "$file")
-      sudo cp -f "$file" "${bin_dir}/" && echo -e "${I_OK}${C_GREEN}$filename${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}" || { echo -e "${I_ERR}Failed to copy ${C_RED}$filename${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"; return 1; }
+      { sudo cp -f "$file" "${bin_dir}/" && echo -e "${I_OK}${C_GREEN}$filename${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}"; } || { echo -e "${I_ERR}Failed to copy ${C_RED}$filename${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"; return 1; }
     fi
   done
 
-  # Step 5: Install Ansible Modules from Ansible Galaxy
+  # Step 6: Install Ansible Modules from Ansible Galaxy
   ansible-galaxy collection install --collections-path "${storage_dir}/collections" --requirements-file "${install_dir}/requirements.yml" --no-cache --upgrade
   
 }
