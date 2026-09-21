@@ -100,8 +100,8 @@ function ensure_directory() {
     # Check Permissions on existing Directory
     local current_owner current_perms
     if [[ "$(detect_os)" == "osx" ]]; then
-      current_owner=$(stat -f "%Su:%Sg" "$target_dir")
-      current_perms=$(stat -f "%Lp" "$target_dir")
+      current_owner=$(/usr/bin/stat -f "%Su:%Sg" "$target_dir")
+      current_perms=$(/usr/bin/stat -f "%Lp" "$target_dir")
     else
       current_owner=$(stat -c "%U:%G" "$target_dir")
       current_perms=$(stat -c "%a" "$target_dir")
@@ -128,7 +128,6 @@ function copy_to_clipboard() {
 function init_brew(){
   local os="$(detect_os)"
   if [[ "$os" == "osx" ]]; then
-    
     if ! command -v brew >/dev/null 2>&1; then
         if [[ -x "/opt/homebrew/bin/brew" ]]; then
             eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)"
@@ -136,7 +135,6 @@ function init_brew(){
             eval "$(/usr/local/bin/brew shellenv 2>/dev/null)"
         fi
     fi
-
   fi
 }
 
