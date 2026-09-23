@@ -4,7 +4,7 @@
   vars:
     nerdfonts_version: "v3.5.1"
     nerdfonts_base_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerdfonts_version }}"
-    nerdfonts_dest_dir: "{{ (HOME ~ '/Library/Fonts') if ONESETUP_SYSTEM_OS == 'macos' else (XDG_DATA_HOME ~ '/fonts') }}"
+    nerdfonts_dest_dir: "{{ (HOME ~ '/Library/Fonts') if ONESETUP_SYSTEM_OS == 'osx' else (XDG_DATA_HOME ~ '/fonts') }}"
     nerdfonts:
       - { name: FiraCode,             prefix: FiraCodeNerdFont,      styles: [Regular, Bold] }
       - { name: CascadiaCode,         prefix: CaskaydiaCoveNerdFont, styles: [Regular, Bold, Italic, BoldItalic] }
