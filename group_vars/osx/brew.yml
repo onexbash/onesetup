@@ -10,6 +10,8 @@ brew_casks:
   - appcleaner # App Uninstaller
   # - alacritty # Terminal Emulator (Cross Platform) # TODO: create local cask for installation because the official cask was disabled (cause the devs didnt want to use a paid apple developer account to sign it for gatekeeper)
   - wezterm # Terminal Emulator (Cross Platform)
+  - kitty # Terminal Emulator (MacOS & Linux)
+  - ghostty # Terminal Emulator (MacOS & Linux)
   - deepl
   - discord
   - session # Onion routed messenger

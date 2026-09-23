@@ -431,8 +431,8 @@
   community.general.osx_defaults:
     domain: NSGlobalDomain
     key: NSWindowShouldDragOnGesture
-    type: string
-    value: "YES"
+    type: bool
+    value: true # TODO: previously this was string & "YES", check which one is correct
 
 # -- -- -- -- -- -- -- -- #
 # --  MISSION CONTROL  -- #    

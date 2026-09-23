@@ -1,16 +1,40 @@
 ---
-# Include OS-Independent Tasks for all Operating Systems
-- name: "Include OS-Independent Tasks for all Operating Systems"
-  ansible.builtin.include_tasks: "{{ item_roletask }}"
-  with_fileglob:
-    - "{{ role_path }}/tasks/all/*.yml"
-  loop_control:
-    loop_var: item_roletask
+# Set Font Directory (different on MacOS & Linux)
+- name: "Fonts | Set destination directory"
+  ansible.builtin.set_fact:
+    nerdfonts_dest_dir: "{{ (HOME ~ '/Library/Fonts') if ONESETUP_SYSTEM_OS == 'osx' else (XDG_DATA_HOME ~ '/fonts') }}"
 
-# Include OS-Specific Tasks for `{{ ONESETUP_SYSTEM_OS }}`
-- name: "Include OS-Specific Tasks for {{ ONESETUP_SYSTEM_OS }}"
-  ansible.builtin.include_tasks: "{{ item_roletask }}"
-  with_fileglob:
-    - "{{ role_path }}/tasks/{{ ONESETUP_SYSTEM_OS }}/*.yml"
+# Ensure Directory exists with correct permissions
+- name: "Fonts | Ensure destination directory exists"
+  ansible.builtin.file:
+    path: "{{ nerdfonts_dest_dir }}"
+    state: directory
+    mode: "0755"
+
+# Check if already installed
+- name: "Fonts | Check installed files"
+  ansible.builtin.stat:
+    path: "{{ nerdfonts_dest_dir }}/{{ item.0.prefix }}-{{ item.1 }}.{{ item.0.ext | default('ttf') }}"
+  loop: "{{ nerdfonts | subelements('styles') }}"
   loop_control:
-    loop_var: item_roletask
+    label: "{{ item.0.prefix }}-{{ item.1 }}"
+  register: nerdfonts_stat
+
+# Download & install missing Fonts
+- name: "Fonts | Download & install missing fonts"
+  ansible.builtin.unarchive:
+    src: "{{ nerdfonts_base_url }}/{{ item.name }}.zip"
+    dest: "{{ nerdfonts_dest_dir }}"
+    remote_src: true
+    mode: "0644"
+    include: "{{ item.styles | map('regex_replace', '^', item.prefix ~ '-') | map('regex_replace', '$', '.' ~ (item.ext | default('ttf'))) | list }}"
+  loop: "{{ nerdfonts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.name in (nerdfonts_stat.results | rejectattr('stat.exists') | map(attribute='item.0.name') | list)
+  register: nerdfonts_installed
+
+# Rebuild Font Cache
+- name: "fonts | rebuild font cache (linux)"
+  ansible.builtin.command: fc-cache -f "{{ nerdfonts_dest_dir }}"
+  when: ONESETUP_SYSTEM_OS == 'linux' and nerdfonts_installed is changed

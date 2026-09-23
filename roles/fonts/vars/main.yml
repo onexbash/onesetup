@@ -1,0 +1,13 @@
+---
+nerdfonts_version: "v3.5.1"
+nerdfonts_base_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerdfonts_version }}"
+nerdfonts:
+  - { name: FiraCode,             prefix: FiraCodeNerdFont,       styles: [Regular, Bold] }
+  - { name: CascadiaCode,         prefix: CaskaydiaCoveNerdFont,  styles: [Regular, Bold, Italic, BoldItalic] }
+  - { name: SourceCodePro,        prefix: SauceCodeProNerdFont,   styles: [Regular, Bold, Italic, BoldItalic] }
+  - { name: JetBrainsMono,        prefix: JetBrainsMonoNerdFont,  styles: [Regular, Bold, Italic, BoldItalic] }
+  - { name: Inconsolata,          prefix: InconsolataNerdFont,    styles: [Regular, Bold] }
+  - { name: Terminus,             prefix: TerminessNerdFont,      styles: [Regular, Bold, Italic, BoldItalic] }
+  - { name: Hermit,               prefix: HurmitNerdFont,         styles: [Regular, Bold, Italic, BoldItalic], ext: otf }
+  - { name: ShareTechMono,        prefix: ShureTechMonoNerdFont,  styles: [Regular] }
+  - { name: NerdFontsSymbolsOnly, prefix: SymbolsNerdFont,        styles: [Regular] }

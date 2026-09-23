@@ -54,5 +54,6 @@
   # -- ROLES -- #
   roles:
     - { role: dotfiles, tags: ["dotfiles"] }
+    - { role: fonts, tags: ["fonts"] }
     - { role: apps, tags: ["apps"] }
     - { role: settings, tags: ["settings"] }
