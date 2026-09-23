@@ -213,7 +213,7 @@ function run_playbook() {
   fi
 
   # Run Ansible Playbook
-  if ansible-playbook "$playbook" "${ansible_args[@]}"; then
+  if ansible-playbook "$entrypoint" "${ansible_args[@]}"; then
     echo -e "${I_OK}onesetup ==> ansible playbook finished"
   else
     echo -e "${I_ERR}onesetup ==> ansible playbook failed" >&2
