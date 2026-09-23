@@ -1,6 +1,11 @@
 ---
-shell_config: { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/config", dest: "{{ XDG_CONFIG_HOME }}/shell" }
-shell_home:   { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/home",   dest: "{{ HOME }}" }
+shell_config:
+  {
+    src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/config",
+    dest: "{{ XDG_CONFIG_HOME }}/shell",
+  }
+shell_home:
+  { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/shell/home", dest: "{{ HOME }}" }
 
 dotfiles:
   # aerospace
@@ -9,31 +14,62 @@ dotfiles:
       dest: "{{ XDG_CONFIG_HOME }}/aerospace",
     }
   # atuin
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/atuin", dest: "{{ XDG_CONFIG_HOME }}/atuin" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/atuin",
+      dest: "{{ XDG_CONFIG_HOME }}/atuin",
+    }
   # eza
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/eza", dest: "{{ XDG_CONFIG_HOME }}/eza" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/eza",
+      dest: "{{ XDG_CONFIG_HOME }}/eza",
+    }
   # ghostty
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/ghostty", dest: "{{ XDG_CONFIG_HOME }}/ghostty" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/ghostty",
+      dest: "{{ XDG_CONFIG_HOME }}/ghostty",
+    }
   # wezterm
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/wezterm", dest: "{{ XDG_CONFIG_HOME }}/wezterm" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/wezterm",
+      dest: "{{ XDG_CONFIG_HOME }}/wezterm",
+    }
   # git
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/git", dest: "{{ XDG_CONFIG_HOME }}/git" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/git",
+      dest: "{{ XDG_CONFIG_HOME }}/git",
+    }
   # lazygit
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/lazygit", dest: "{{ XDG_CONFIG_HOME }}/lazygit" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/lazygit",
+      dest: "{{ XDG_CONFIG_HOME }}/lazygit",
+    }
   # nvim
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/nvim", dest: "{{ XDG_CONFIG_HOME }}/nvim" }
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/nvim_onevim", dest: "{{ XDG_CONFIG_HOME }}/nvim_onevim" }
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/nvim_astro", dest: "{{ XDG_CONFIG_HOME }}/nvim_astro" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/nvim",
+      dest: "{{ XDG_CONFIG_HOME }}/nvim",
+    }
   # powershell
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/powershell", dest: "{{ XDG_CONFIG_HOME }}/powershell" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/powershell",
+      dest: "{{ XDG_CONFIG_HOME }}/powershell",
+    }
   # karabiner
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/karabiner", dest: "{{ XDG_CONFIG_HOME }}/karabiner" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/karabiner",
+      dest: "{{ XDG_CONFIG_HOME }}/karabiner",
+    }
   # starship
   - {
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/starship",
       dest: "{{ XDG_CONFIG_HOME }}/starship",
     }
   # vim
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/vim", dest: "{{ XDG_CONFIG_HOME }}/vim" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/vim",
+      dest: "{{ XDG_CONFIG_HOME }}/vim",
+    }
   # zed
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/zed", dest: "{{ XDG_CONFIG_HOME }}/zed" }
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/zed",
+      dest: "{{ XDG_CONFIG_HOME }}/zed",
+    }
