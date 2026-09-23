@@ -117,6 +117,7 @@ brew_formulaes:
   - unar # unarchiving tool
   # - poppler # pdf rendering library
   - tree
+  - tree-sitter-cli # Tree-Sitter CLI required for nvim-treesitter to work
   - wget
   - svgo # svg optimizer
   - starship
