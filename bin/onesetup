@@ -207,7 +207,7 @@ function run_playbook() {
   local ansible_args=("--ask-vault-pass")
 
   if [[ -n "$roles" ]]; then
-    ansible_args+=("--tags" "$roles")
+    ansible_args+=("--tags" "${roles},untagged")
   elif [[ -n "$skip_roles" ]]; then
     ansible_args+=("--skip-tags" "$skip_roles")
   fi
