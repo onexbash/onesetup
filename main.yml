@@ -52,7 +52,7 @@
         - xcode
       loop_control:
         label: "{{ item }}"
-      when: ONESETUP_SYSTEM_OS == 'macos'
+      when: ONESETUP_SYSTEM_OS == 'osx'
     
     # Pre-Task: Include Linux Pre-Tasks
     - name: "Include Pre-Tasks (linux)"
@@ -71,7 +71,6 @@
       loop_control:
         label: "{{ item }}"
       when: ONESETUP_SYSTEM_OS == 'windows'
-
   # -- ROLES -- #
   roles:
     - { role: dotfiles, tags: ["dotfiles"] }
