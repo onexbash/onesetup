@@ -1,0 +1,53 @@
+---
+- name: "Fonts | Install Nerd Fonts"
+# Define Fonts
+  vars:
+    nerdfonts_version: "v3.5.1"
+    nerdfonts_base_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerdfonts_version }}"
+    nerdfonts_dest_dir: "{{ (HOME ~ '/Library/Fonts') if ONESETUP_SYSTEM_OS == 'macos' else (XDG_DATA_HOME ~ '/fonts') }}"
+    nerdfonts:
+      - { name: FiraCode,             prefix: FiraCodeNerdFont,      styles: [Regular, Bold] }
+      - { name: CascadiaCode,         prefix: CaskaydiaCoveNerdFont, styles: [Regular, Bold, Italic, BoldItalic] }
+      - { name: SourceCodePro,        prefix: SauceCodeProNerdFont,  styles: [Regular, Bold, Italic, BoldItalic] }
+      - { name: JetBrainsMono,        prefix: JetBrainsMonoNerdFont, styles: [Regular, Bold, Italic, BoldItalic] }
+      - { name: Inconsolata,          prefix: InconsolataNerdFont,   styles: [Regular, Bold] }
+      - { name: Terminus,             prefix: TerminessNerdFont,     styles: [Regular, Bold, Italic, BoldItalic] }
+      - { name: Hermit,               prefix: HurmitNerdFont,        styles: [Regular, Bold, Italic, BoldItalic] }
+      - { name: ShareTechMono,        prefix: ShureTechMonoNerdFont, styles: [Regular] }
+      - { name: NerdFontsSymbolsOnly, prefix: SymbolsNerdFont,       styles: [Regular] }
+  block:
+    # Ensure Directory exists with correct permissions
+    - name: "Fonts | Ensure destination directory exists"
+      ansible.builtin.file:
+        path: "{{ nerdfonts_dest_dir }}"
+        state: directory
+        mode: "0755"
+
+    # Check if already installed (one file per style, any extension)
+    - name: "Fonts | Check installed files"
+      ansible.builtin.find:
+        paths: "{{ nerdfonts_dest_dir }}"
+        patterns: "{{ item.styles | map('regex_replace', '^(.*)$', item.prefix ~ '-\\1.*') | list }}"
+      loop: "{{ nerdfonts }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: nerdfonts_check
+
+    # Download & install missing Fonts (all variants, ttf + otf)
+    - name: "Fonts | Download & install missing fonts"
+      ansible.builtin.unarchive:
+        src: "{{ nerdfonts_base_url }}/{{ item.item.name }}.zip"
+        dest: "{{ nerdfonts_dest_dir }}"
+        remote_src: true
+        mode: "0644"
+        include: "{{ item.item.styles | map('regex_replace', '^(.*)$', '*-\\1.*') | list }}"
+      loop: "{{ nerdfonts_check.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      when: item.matched < (item.item.styles | length)
+      register: nerdfonts_installed
+
+    # Rebuild Font Cache
+    - name: "Fonts | Rebuild font cache (linux)"
+      ansible.builtin.command: fc-cache -f "{{ nerdfonts_dest_dir }}"
+      when: ONESETUP_SYSTEM_OS == 'linux' and nerdfonts_installed is changed
