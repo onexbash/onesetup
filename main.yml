@@ -43,13 +43,28 @@
           - yml
       ignore_errors: true  # Skip if OS-specific folder doesn't exist
   
-    # Pre-Task: Include OS-specific pre_tasks
-    - include_tasks: pre_tasks/osx/dependencies.yml
+    # Pre-Task: Include MacOS Pre-Tasks
+    - name: "Include Pre-Task: {{ item }}"
+      ansible.builtin.include_tasks: "pre_tasks/osx/{{ item }}.yml"
+      loop:
+        - dependencies
+        - filesystem
+        - xcode
       when: ONESETUP_SYSTEM_OS == 'osx'
-    - include_tasks: pre_tasks/osx/filesystem.yml
-      when: ONESETUP_SYSTEM_OS == 'osx'
-    - include_tasks: pre_tasks/osx/xcode.yml
-      when: ONESETUP_SYSTEM_OS == 'osx'
+
+    # Pre-Task: Include Linux Pre-Tasks
+    - name: "Include Pre-Task: {{ item }}"
+      ansible.builtin.include_tasks: "pre_tasks/linux/{{ item }}.yml"
+      loop:
+        - distro
+      when: ONESETUP_SYSTEM_OS == 'linux'
+
+    # Pre-Task: Include Windows Pre-Tasks
+    - name: "Include Pre-Task: {{ item }}"
+      ansible.builtin.include_tasks: "pre_tasks/windows/{{ item }}.yml"
+      loop:
+        - main
+      when: ONESETUP_SYSTEM_OS == 'windows'
   
   # -- ROLES -- #
   roles:
