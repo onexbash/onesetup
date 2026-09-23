@@ -1,7 +1,10 @@
 ---
 # Include OS-Independent Tasks for all Operating Systems
 - name: "Include OS-Independent Tasks (all)"
-  ansible.builtin.include_tasks: "{{ item_roletask }}"
+  ansible.builtin.include_tasks:
+    file: "{{ item_roletask }}"
+    apply:
+      tags: ["{{ role_name }}"]
   loop: "{{ (query('ansible.builtin.fileglob', role_tasks_dir ~ '/*.yml') | sort) if role_tasks_dir is directory else [] }}"
   loop_control:
     loop_var: item_roletask
@@ -11,7 +14,10 @@
 
 # Include OS-Specific Tasks
 - name: "Include OS-Specific Tasks ({{ ONESETUP_SYSTEM_OS }})"
-  ansible.builtin.include_tasks: "{{ item_roletask }}"
+  ansible.builtin.include_tasks:
+    file: "{{ item_roletask }}"
+    apply:
+      tags: ["{{ role_name }}"]
   loop: "{{ (query('ansible.builtin.fileglob', role_tasks_dir ~ '/*.yml') | sort) if role_tasks_dir is directory else [] }}"
   loop_control:
     loop_var: item_roletask
