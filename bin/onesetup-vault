@@ -20,8 +20,9 @@ function main() {
 
 # [1] Source Utility Script
 function load_utils(){
-  local system_install_dir="$HOME/.local/share/onesetup"
-  source "${system_install_dir}/scripts/util.sh" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
+  resolve_target_dir # Call that $TARGET_DIR has a value  
+  local util_script="${TARGET_DIR}/scripts/util.sh"
+  source "$util_script" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
 }
 
 # [2] Dependency Installation
@@ -80,6 +81,19 @@ function parse_args() {
     exit 1
     ;;
   esac
+}
+
+
+# Function to set $TARGET_DIR value based on dev_dir or install_dir (fallback to default)
+function resolve_target_dir() {
+  local default_dir="$HOME/.local/share/onesetup"
+  local dir="${ARG_DEV_DIR:-${ONESETUP_PROJECT_DEV_DIR:-${ONESETUP_SYSTEM_INSTALL_DIR:-$default_dir}}}"
+
+  if [[ ! -d "$dir" ]]; then
+    echo -e "${I_ERR}Target directory does not exist: ${C_CYAN}${dir}${C_RESET}" >&2
+    exit 1
+  fi
+  TARGET_DIR="$(CDPATH='' cd -- "$dir" && pwd -P)"
 }
 
 # --                              -- #

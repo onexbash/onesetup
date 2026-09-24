@@ -5,7 +5,7 @@
 # --                         -- #
 # Rolled out by 'install.sh' | Registers Command 'onesetup'
 
-# [0] Main Function
+# Main Function
 function main() {
   # Function Calls
   load_utils
@@ -18,13 +18,14 @@ function main() {
   parse_args "$@" || { echo -e "${I_ERR}Failed to parse Command arguments"; exit 1; }
 }
 
-# [1] Source Utility Script
+# Source Utility Script
 function load_utils(){
-  local system_install_dir="$HOME/.local/share/onesetup" # TODO: Implement support for customized installation directory
-  source "${system_install_dir}/scripts/util.sh" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
+  resolve_target_dir # Call that $TARGET_DIR has a value  
+  local util_script="${TARGET_DIR}/scripts/util.sh"
+  source "$util_script" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
 }
 
-# [2] Dependency Installation
+# Dependency Installation
 function install_deps() {
   local os pkg_list
   os="$(detect_os)"
@@ -59,7 +60,7 @@ function install_deps() {
   done
 }
 
-# [3] Command Arguments Parser
+# Command Arguments Parser
 function parse_args() {
   if [[ $# -eq 0 ]]; then
     prompt_subcommand
@@ -97,31 +98,6 @@ function require_value() {
     echo -e "${I_ERR}Flag '$1' requires a value." >&2
     exit 1
   fi
-}
-
-# Resolve Target Dir based on dev_dir & install_dir
-function resolve_target_dir() {
-  local dir source
-
-  if [[ -n "$OPT_DEV_DIR" ]]; then
-    dir="$OPT_DEV_DIR" source="--dev-dir"
-  elif [[ -n "${ONESETUP_PROJECT_DEV_DIR:-}" ]]; then
-    dir="$ONESETUP_PROJECT_DEV_DIR" source="ONESETUP_PROJECT_DEV_DIR"
-  else
-    dir="${ONESETUP_SYSTEM_INSTALL_DIR:-}" source="ONESETUP_SYSTEM_INSTALL_DIR"
-  fi
-
-  if [[ -z "$dir" ]]; then
-    echo -e "${I_ERR}Target directory is empty. Is ${C_CYAN}${source}${C_RESET} set?" >&2
-    exit 1
-  elif [[ ! -d "$dir" ]]; then
-    echo -e "${I_ERR}Target directory (from ${source}) does not exist: ${C_CYAN}${dir}${C_RESET}" >&2
-    exit 1
-  fi
-
-  TARGET_DIR="$(cd "$dir" && pwd -P)"
-  [[ "$source" != "ONESETUP_SYSTEM_INSTALL_DIR" ]] &&
-    echo -e "${I_INFO}onesetup ==> Using dev directory (via ${source})"
 }
 
 # Parse Playbook arguments [used by run_playbook() & test_playbook()]
@@ -162,10 +138,21 @@ function parse_playbook_args() {
   done
 }
 
-# Validate & Execute the Ansible Playbook
-# called by run_playbook() & test_playbook()
+# Function to set $TARGET_DIR value based on dev_dir or install_dir (fallback to default)
+function resolve_target_dir() {
+  local default_dir="$HOME/.local/share/onesetup"
+  local dir="${ARG_DEV_DIR:-${ONESETUP_PROJECT_DEV_DIR:-${ONESETUP_SYSTEM_INSTALL_DIR:-$default_dir}}}"
+
+  if [[ ! -d "$dir" ]]; then
+    echo -e "${I_ERR}Target directory does not exist: ${C_CYAN}${dir}${C_RESET}" >&2
+    exit 1
+  fi
+  TARGET_DIR="$(CDPATH='' cd -- "$dir" && pwd -P)"
+}
+
+# Validate & Execute the Ansible Playbook (called by run_playbook() & test_playbook())
 function exec_playbook() {
-  resolve_target_dir # Get $TARGET_DIR Value
+  resolve_target_dir # Call that $TARGET_DIR has a value
   
   local entrypoint="${TARGET_DIR}/main.yml" # Playbook Entrypoint (main.yml)
   local ansible_args=("--ask-vault-pass" "$@") # Playbook Arguments (+passed in exec_playbook call)
@@ -188,10 +175,10 @@ function exec_playbook() {
   echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
   
   # Add --tags or --skip-tags to ansible_args
-  if [[ -n "$OPT_ROLES" ]]; then
-    ansible_args+=("--tags" "${OPT_ROLES},untagged")
-  elif [[ -n "$OPT_SKIP_ROLES" ]]; then
-    ansible_args+=("--skip-tags" "$OPT_SKIP_ROLES")
+  if [[ -n "$ARG_ROLES" ]]; then
+    ansible_args+=("--tags" "${ARG_ROLES},untagged")
+  elif [[ -n "$ARG_SKIP_ROLES" ]]; then
+    ansible_args+=("--skip-tags" "$ARG_SKIP_ROLES")
   fi
   
   # Run Playbook with Entrypoint & Args set before
@@ -232,7 +219,7 @@ function run_playbook() {
 function test_playbook() {
   parse_playbook_args test "$@"
   local args=("--check")
-  if [[ "$OPT_DIFF" == true ]]; then
+  if [[ "$ARG_DIFF" == true ]]; then
     args+=("--diff")
   fi
   exec_playbook "${args[@]}"

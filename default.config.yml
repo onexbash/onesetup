@@ -15,12 +15,10 @@ system:
   user_group: "" # Default: Value from Command "id -ng"
   admin_group: "" # Default: Value from Command "id -ng 0"
   config_dir: "" # Default: $XDG_CONFIG_HOME/onesetup or $HOME/.config/onesetup
-  install_dir: "" # Default: $XDG_DATA_HOME/onesetup or $HOME/.local/share/onesetup
   storage_dir: "" # Default: $XDG_STATE_HOME/onesetup or $HOME/.local/state/onesetup
   dotfiles_dir: "" # Default: $XDG_DATA_HOME/dotfiles or $HOME/.local/share/dotfiles
   bin_dir: "/usr/local/bin" # Default: /usr/local/bin
   tmp_dir: "/tmp" # Default: /tmp
 
 project:
-  dev_repo: "" # Default: null
   debug: 0 # Default: 0

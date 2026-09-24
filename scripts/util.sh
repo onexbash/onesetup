@@ -180,14 +180,12 @@ function read_config(){
 
   # Directory Locations of: Config-Dir, Install-Dir, Storage-Dir, Dotfiles-Dir, Bin-Dir, TMP-Dir
   local system_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/onesetup"
-  local system_install_dir="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
   local system_storage_dir="${XDG_STATE_HOME:-$HOME/.local/state}/onesetup"
   local system_dotfiles_dir="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
   local system_bin_dir="/usr/local/bin"
   local system_tmp_dir="/tmp"
   # [Project]
-  # Development Repository where the Ansible Playbook is executed (used instead of the installation directory when set)
-  local project_dev_repo
+  # Development Directory where the Ansible Playbook is executed (used instead of the installation directory when set)
   local project_debug="0" # Debug-Level for Scripts & Ansible itself
   # -- / -- #
   
@@ -216,14 +214,12 @@ function read_config(){
     _get_config_value system_username           '.system.username'
     _get_config_value system_root_user          '.system.root_user'
     _get_config_value system_config_dir         '.system.config_dir'
-    _get_config_value system_install_dir        '.system.install_dir'
     _get_config_value system_storage_dir        '.system.storage_dir'
     _get_config_value system_dotfiles_dir       '.system.dotfiles_dir'
     _get_config_value system_bin_dir            '.system.bin_dir'
     _get_config_value system_tmp_dir            '.system.tmp_dir'
     _get_config_value system_user_group         '.system.user_group'
     _get_config_value system_admin_group        '.system.admin_group'
-    _get_config_value project_dev_repo          '.project.dev_repo'
     _get_config_value project_debug             '.project.debug'
   fi
   unset -f _apply_override
@@ -240,15 +236,12 @@ function read_config(){
   export ONESETUP_SYSTEM_USER_GROUP="${system_user_group}"
   export ONESETUP_SYSTEM_ADMIN_GROUP="${system_admin_group}"
   export ONESETUP_SYSTEM_CONFIG_DIR="${system_config_dir}"
-  export ONESETUP_SYSTEM_INSTALL_DIR="${system_install_dir}"
   export ONESETUP_SYSTEM_STORAGE_DIR="${system_storage_dir}"
   export ONESETUP_SYSTEM_DOTFILES_DIR="${system_dotfiles_dir}"
   export ONESETUP_SYSTEM_BIN_DIR="${system_bin_dir}"
   export ONESETUP_SYSTEM_TMP_DIR="${system_tmp_dir}"
-  export ONESETUP_PROJECT_DEV_REPO="${project_dev_repo}"
-  export ONESETUP_PROJECT_DEBUG="${project_debug}" 
+  export ONESETUP_PROJECT_DEBUG="${project_debug}"
 }
-
 
 # Function to export Dynamic Environment Variables that are constructed based on the Env-Vars in read_config()
 function export_dynamic_vars(){

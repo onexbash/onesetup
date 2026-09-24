@@ -72,7 +72,7 @@ function prerequisites() {
 function install() {
   local repo_name="${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}"
   local config_dir="$ONESETUP_SYSTEM_CONFIG_DIR"
-  local install_dir="$ONESETUP_SYSTEM_INSTALL_DIR"
+  local install_dir="${ONESETUP_SYSTEM_INSTALL_DIR:-$HOME/.local/share/onesetup}"
   local storage_dir="$ONESETUP_SYSTEM_STORAGE_DIR"
   local bin_dir="$ONESETUP_SYSTEM_BIN_DIR"
   local tmp_dir="$ONESETUP_SYSTEM_TMP_DIR"

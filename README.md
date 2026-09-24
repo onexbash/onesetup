@@ -157,13 +157,11 @@ system:
   user_group: [String] # Group of the system user
   admin_group: [String] # Group of the root user
   config_dir: [String] # Config Directory for your config.yml
-  install_dir: [String] # Installation Directory
   storage_dir: [String] # Storage Directory
   dotfiles_dir: [String] # Dotfiles Directory used to clone your Dotfiles Repo into and symlink them to the mapped locations
   bin_dir: [String] # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
   tmp_dir: [String] # Directory for Temporary Files
 project:
-  dev_repo: [String|null] # Directory of the onesetup Repository you are developing in. If this is set, this is used for playbook execution instead of the installation directory. !! Only set for testing during development !!
   debug: [0|1|2|3] # Debug Level for Console Outputs [0: Normal | 1: Info | 2: Verbose | 3: Debug]
 ```
 
@@ -188,8 +186,27 @@ export ONESETUP_PROJECT_REPO_RAW # Constructed based on: .., & remote.project_re
 export ONESETUP_DOTFILES_REPO_RAW # Constructed based on: .., & remote.dotfiles_repo
 ```
 
-## Creating your own Playbook
-TODO: Implement & Document Logic to whipe my personal playbook and have a Starting Point for users.
+### Configuration: Installation Directory
+The Installation Directory can **not** be set via the Config-File [onesetup.yml](./default.config.yml):
+*This is a limitation because of a chicken-egg-problem:
+The read_config() function is defined inside of [util.sh](./scripts/util.sh) that all scripts & executables are sourcing.
+But to source it, they need to know where it's located. Therefore the Value needs to be available upfront.*
+No worries, you can still configure it by exporting the environment variable before running the installation script:
+```bash
+export ONESETUP_SYSTEM_INSTALL_DIR="<path to custom install dir>"
+```
+
+## Development
+During development, you probably want to test or apply playbook changes without having to run the Installation Script everytime. 
+For this purpose, you can export an environment variable or pass the `--dev-dir` argument to the `onesetup` command:
+```bash
+# Set by exporting Environment Variable
+export ONESETUP_PROJECT_DEV_DIR="<path to dev directory>"
+# Set by passing an argument
+onesetup run --dev-dir # Runs & Applies the Playbook
+onesetup test --dev-dir # Tests the changes that it would make without applying them
+```
+*NOTE: The Installation Directory is not used anymore and completely ignored when a development directory is set!*
 
 ## ⚙️ What It Does
 
