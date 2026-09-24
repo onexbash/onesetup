@@ -29,12 +29,12 @@ function main(){
   exit "$status"
 }
 
-
+# Source Utility Script
 function load_utils(){
-  local system_install_dir="${ONESETUP_SYSTEM_INSTALL_DIR:-$HOME/.local/share/onesetup}"
-  source "${system_install_dir}/scripts/util.sh" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
+  resolve_target_dir # Call that $TARGET_DIR has a value  
+  local util_script="${TARGET_DIR}/scripts/util.sh"
+  source "$util_script" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
 }
-
 
 # Returns latest CLT update label offered by softwareupdate (empty if none)
 # NOTE: sort -V sorts whole lines; assumes all matched labels share the same prefix ("Command Line Tools for Xcode-")

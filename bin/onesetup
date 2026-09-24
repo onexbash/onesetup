@@ -148,6 +148,7 @@ function resolve_target_dir() {
     exit 1
   fi
   TARGET_DIR="$(CDPATH='' cd -- "$dir" && pwd -P)"
+  export ONESETUP_SYSTEM_TARGET_DIR="$TARGET_DIR" # just for ansible
 }
 
 # Validate & Execute the Ansible Playbook (called by run_playbook() & test_playbook())

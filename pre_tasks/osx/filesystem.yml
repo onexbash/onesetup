@@ -49,10 +49,10 @@
     follow: true # follow symlink
   become: true
 
-# Ensure Directory: INSTALL_DIR
-- name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_INSTALL_DIR }}"
+# Ensure Directory: TARGET_DIR (Installation or Development Directory)
+- name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_TARGET_DIR }}"
   ansible.builtin.file:
-    path: "{{ ONESETUP_SYSTEM_INSTALL_DIR }}"
+    path: "{{ ONESETUP_SYSTEM_TARGET_DIR }}"
     state: directory
     mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
