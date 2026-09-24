@@ -36,6 +36,19 @@ function load_utils(){
   source "$util_script" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
 }
 
+# Function to set $TARGET_DIR value based on dev_dir or install_dir (fallback to default)
+function resolve_target_dir() {
+  local default_dir="$HOME/.local/share/onesetup"
+  local dir="${ARG_DEV_DIR:-${ONESETUP_PROJECT_DEV_DIR:-${ONESETUP_SYSTEM_INSTALL_DIR:-$default_dir}}}"
+
+  if [[ ! -d "$dir" ]]; then
+    echo -e "${I_ERR}Target directory does not exist: ${C_CYAN}${dir}${C_RESET}" >&2
+    exit 1
+  fi
+  TARGET_DIR="$(CDPATH='' cd -- "$dir" && pwd -P)"
+  export ONESETUP_SYSTEM_TARGET_DIR="$TARGET_DIR" # just for ansible
+}
+
 # Returns latest CLT update label offered by softwareupdate (empty if none)
 # NOTE: sort -V sorts whole lines; assumes all matched labels share the same prefix ("Command Line Tools for Xcode-")
 # If Apple changes the prefix, this will break or at least not reliably pick the label with the latest version
