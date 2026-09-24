@@ -1,0 +1,64 @@
+---
+# -- PRE_TASK: Ensure Xcode Command Line Tools are installed (macOS) -- #
+- name: "xcode-clt | check package receipt"
+  ansible.builtin.command: pkgutil --pkg-info=com.apple.pkg.CLTools_Executables
+  register: clt_pkg
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: "xcode-clt | check xcode-select path"
+  ansible.builtin.command: xcode-select -p
+  register: clt_select
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: "xcode-clt | check install directory"
+  ansible.builtin.stat:
+    path: "{{ clt_path }}"
+  register: clt_dir
+
+- name: "xcode-clt | evaluate state"
+  ansible.builtin.set_fact:
+    clt_missing: "{{ clt_pkg.rc != 0 or clt_select.rc != 0 or not clt_dir.stat.exists }}"
+
+- name: "xcode-clt | install"
+  when:
+    - clt_missing | bool
+    - not ansible_check_mode
+  become: true
+  block:
+    - name: "xcode-clt | create on-demand marker"
+      ansible.builtin.file:
+        path: "{{ clt_marker }}"
+        state: touch
+        mode: "0644"
+
+    - name: "xcode-clt | find latest label"
+      ansible.builtin.shell: |
+        set -o pipefail
+        softwareupdate -l 2>/dev/null \
+          | sed -n 's/^\* Label: \(Command Line Tools.*\)$/\1/p' \
+          | grep -vi beta \
+          | sort -V \
+          | tail -n1
+      args:
+        executable: /bin/bash
+      register: clt_label
+      changed_when: false
+      failed_when: clt_label.stdout | length == 0
+      timeout: "{{ softwareupdate_timeout }}"
+
+    - name: "xcode-clt | install {{ clt_label.stdout | default('') }}"
+      ansible.builtin.command:
+        argv: [softwareupdate, --install, "{{ clt_label.stdout }}", --verbose]
+      register: clt_install
+      timeout: "{{ softwareupdate_timeout }}"
+      failed_when: clt_install.rc != 0 or 'Error installing updates.' in clt_install.stdout
+
+  always:
+    - name: "xcode-clt | remove on-demand marker"
+      ansible.builtin.file:
+        path: "{{ clt_marker }}"
+        state: absent

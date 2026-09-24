@@ -3,7 +3,7 @@
 # --   MAIN PLAYBOOK   -- #
 - name: onesetup
   hosts: localhost
-  
+
   # -- VARIABLES -- #
   vars:
     # Environment Variables: User Environment
@@ -34,26 +34,26 @@
     # Include Pre-Tasks
     - include_tasks: pre_tasks/all/env.yml # Environment-Variable Discovery & Validation (+ Normalization)
     - include_tasks: pre_tasks/all/shell.yml # Set Default Shell & Gather Shell Paths
-    
+
     # Pre-Task: Include OS-Specific Variables
     - name: "group_vars | Include OS-specific variables ({{ ONESETUP_SYSTEM_OS }})"
       ansible.builtin.include_vars:
         dir: "{{ playbook_dir }}/group_vars/{{ ONESETUP_SYSTEM_OS }}" # The variables in group_vars/all/ are already auto-loaded by ansible
         extensions:
           - yml
-      ignore_errors: true  # Skip if OS-specific folder doesn't exist
-  
+      ignore_errors: true # Skip if OS-specific folder doesn't exist
+
     # Pre-Task: Include MacOS Pre-Tasks
     - name: "Include Pre-Tasks (macos)"
       ansible.builtin.include_tasks: "pre_tasks/osx/{{ item }}.yml"
       loop:
         - dependencies
         - filesystem
-        - xcode
+        - clt
       loop_control:
         label: "{{ item }}"
       when: ONESETUP_SYSTEM_OS == 'osx'
-    
+
     # Pre-Task: Include Linux Pre-Tasks
     - name: "Include Pre-Tasks (linux)"
       ansible.builtin.include_tasks: "pre_tasks/linux/{{ item }}.yml"
@@ -62,7 +62,7 @@
       loop_control:
         label: "{{ item }}"
       when: ONESETUP_SYSTEM_OS == 'linux'
-    
+
     # Pre-Task: Include Windows Pre-Tasks
     - name: "Include Pre-Tasks (windows)"
       ansible.builtin.include_tasks: "pre_tasks/windows/{{ item }}.yml"

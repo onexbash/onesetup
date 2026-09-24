@@ -1,0 +1,4 @@
+---
+clt_path: /Library/Developer/CommandLineTools
+clt_marker: /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+softwareupdate_timeout: 1800 # How long to wait for 'softwareupdate' before timing out. 0 => never timeout
