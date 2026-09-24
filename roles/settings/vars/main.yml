@@ -1,5 +1,5 @@
 # kbd_key & kbd_mapping for setting keyboard shortcuts
-kbd_key: "com.apple.keyboard.modifiermapping.12815-20550-0"
+kbd_key: "com.apple.keyboard.modifiermapping.12815-20550-0" # Find Key with `defaults -currentHost read -g | grep modifiermapping`
 kbd_mapping: |
   <array>
     <!-- LOpt -> LCmd -->
