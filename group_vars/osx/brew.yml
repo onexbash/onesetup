@@ -18,7 +18,7 @@ brew_casks:
   - tor-browser
   - firefox@developer-edition
   - gimp # Image Editor
-#   - git-credential-manager # TODO: fails with err, check why
+  #   - git-credential-manager # TODO: fails with err, check why
   - keepassxc # File Based Password Manager
   - stirling-pdf # PDF Viewer (self hosted)
   - insomnia # API Client (like postman)
@@ -127,6 +127,7 @@ brew_formulaes:
   - eza # better ls
   - fd # better find
   - fzf # fuzzy finder
+  - sk # fuzzy finder
   - kubectl # kubernetes cli
   - atuin # shell history tool
   - podman
