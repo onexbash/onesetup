@@ -163,7 +163,7 @@ system:
   bin_dir: [String] # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
   tmp_dir: [String] # Directory for Temporary Files
 project:
-  development: [true/false]
+  dev_repo: [String|null] # Directory of the onesetup Repository you are developing in. If this is set, this is used for playbook execution instead of the installation directory. !! Only set for testing during development !!
   debug: [0|1|2|3] # Debug Level for Console Outputs [0: Normal | 1: Info | 2: Verbose | 3: Debug]
 ```
 
@@ -188,6 +188,8 @@ export ONESETUP_PROJECT_REPO_RAW # Constructed based on: .., & remote.project_re
 export ONESETUP_DOTFILES_REPO_RAW # Constructed based on: .., & remote.dotfiles_repo
 ```
 
+## Creating your own Playbook
+TODO: Implement & Document Logic to whipe my personal playbook and have a Starting Point for users.
 
 ## ⚙️ What It Does
 

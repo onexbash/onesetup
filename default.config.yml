@@ -22,5 +22,5 @@ system:
   tmp_dir: "/tmp" # Default: /tmp
 
 project:
-  development: false # Default: false
+  dev_repo: "" # Default: null
   debug: 0 # Default: 0

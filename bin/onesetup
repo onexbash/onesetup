@@ -71,9 +71,9 @@ function parse_args() {
     shift
     run_playbook "$@"
     ;;
-  tbd)
+  test)
     shift
-    cmd_tbd "$@"
+    test_playbook "$@"
     ;;
   help | --help | -h)
     print_help
@@ -84,6 +84,123 @@ function parse_args() {
     exit 1
     ;;
   esac
+}
+
+ARG_ROLES=""
+ARG_SKIP_ROLES=""
+ARG_DEV_DIR=""
+ARG_DIFF="false"
+
+# Ensure a flag has a value: require_value <flag> <value>
+function require_value() {
+  if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
+    echo -e "${I_ERR}Flag '$1' requires a value." >&2
+    exit 1
+  fi
+}
+
+# Resolve Target Dir based on dev_dir & install_dir
+function resolve_target_dir() {
+  local dir source
+
+  if [[ -n "$OPT_DEV_DIR" ]]; then
+    dir="$OPT_DEV_DIR" source="--dev-dir"
+  elif [[ -n "${ONESETUP_PROJECT_DEV_DIR:-}" ]]; then
+    dir="$ONESETUP_PROJECT_DEV_DIR" source="ONESETUP_PROJECT_DEV_DIR"
+  else
+    dir="${ONESETUP_SYSTEM_INSTALL_DIR:-}" source="ONESETUP_SYSTEM_INSTALL_DIR"
+  fi
+
+  if [[ -z "$dir" ]]; then
+    echo -e "${I_ERR}Target directory is empty. Is ${C_CYAN}${source}${C_RESET} set?" >&2
+    exit 1
+  elif [[ ! -d "$dir" ]]; then
+    echo -e "${I_ERR}Target directory (from ${source}) does not exist: ${C_CYAN}${dir}${C_RESET}" >&2
+    exit 1
+  fi
+
+  TARGET_DIR="$(cd "$dir" && pwd -P)"
+  [[ "$source" != "ONESETUP_SYSTEM_INSTALL_DIR" ]] &&
+    echo -e "${I_INFO}onesetup ==> Using dev directory (via ${source})"
+}
+
+# Parse Playbook arguments [used by run_playbook() & test_playbook()]
+function parse_playbook_args() {
+  local subcmd="$1"
+  shift
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --roles)
+      require_value "$1" "${2:-}"
+      ARG_ROLES="$2"
+      shift 2
+      ;;
+    --skip-roles)
+      require_value "$1" "${2:-}"
+      ARG_SKIP_ROLES="$2"
+      shift 2
+      ;;
+    --dev-dir)
+      require_value "$1" "${2:-}"
+      ARG_DEV_DIR="$2"
+      shift 2
+      ;;
+    --diff)
+      if [[ "$subcmd" != "test" ]]; then
+        echo -e "${I_ERR}Flag '--diff' is only valid for 'test'." >&2
+        exit 1
+      fi
+      ARG_DIFF=true
+      shift
+      ;;
+    *)
+      echo -e "${I_ERR}Unknown option for '${subcmd}': $1" >&2
+      exit 1
+      ;;
+    esac
+  done
+}
+
+# Validate & Execute the Ansible Playbook
+# called by run_playbook() & test_playbook()
+function exec_playbook() {
+  resolve_target_dir # Get $TARGET_DIR Value
+  
+  local entrypoint="${TARGET_DIR}/main.yml" # Playbook Entrypoint (main.yml)
+  local ansible_args=("--ask-vault-pass" "$@") # Playbook Arguments (+passed in exec_playbook call)
+  
+  # Check if main.yml exists in target_dir
+  if [[ ! -f "$entrypoint" || ! -r "$entrypoint" ]]; then
+    echo -e "${I_ERR}No readable Playbook Entrypoint found at: ${C_CYAN}${entrypoint}${C_RESET}" >&2
+    exit 1
+  fi
+  
+  # Export & Validate Ansible Env-Vars
+  export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-${TARGET_DIR}/ansible.cfg}"
+  export ANSIBLE_INVENTORY="${ANSIBLE_INVENTORY:-${TARGET_DIR}/inventory.ini}"
+  [[ -f "$ANSIBLE_CONFIG" ]]    || echo -e "${I_WARN}Ansible config not found: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}" >&2
+  [[ -f "$ANSIBLE_INVENTORY" ]] || echo -e "${I_WARN}Ansible inventory not found: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}" >&2 
+
+  # Display Messages
+  echo -e "${I_OK}onesetup ==> Using Ansible Playbook from: ${C_CYAN}${TARGET_DIR}${C_RESET}"
+  echo -e "${I_INFO}onesetup ==> Ansible Config file: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}"
+  echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
+  
+  # Add --tags or --skip-tags to ansible_args
+  if [[ -n "$OPT_ROLES" ]]; then
+    ansible_args+=("--tags" "${OPT_ROLES},untagged")
+  elif [[ -n "$OPT_SKIP_ROLES" ]]; then
+    ansible_args+=("--skip-tags" "$OPT_SKIP_ROLES")
+  fi
+  
+  # Run Playbook with Entrypoint & Args set before
+  if ansible-playbook "$entrypoint" "${ansible_args[@]}"; then
+    echo -e "${I_OK}onesetup ==> ansible playbook finished"
+  else
+    echo -e "${I_ERR}onesetup ==> ansible playbook failed" >&2
+    exit 1
+  fi
 }
 
 # --                              -- #
@@ -97,140 +214,35 @@ Usage: $(basename "$0") <command> [options]
 
 Sub-Commands:
   run                         Run Ansible Playbook
-    --directory [dev/prod]    Ansible Playbook Directory: Git repo root (dev) or Installation Directory (prod). Default: prod
     --roles <role1,role2>     Comma-separated list of roles/tags to run
     --skip-roles <role1,...>  Comma-separated list of roles/tags to skip
-  tbd                         To Be Defined
-    --arg1                    Placeholder arg1
-    --arg2                    Placeholder arg2
+  test                        Test Playbook Changes without applying them
+    --diff                    Show the Content diffs for modules like copy/lineinfile/..
   help, --help, -h            Display this help message
 EOF
 }
 
 # Subcommand 'run': Run Ansible Playbook
 function run_playbook() {
-  local roles=""
-  local skip_roles=""
-  local development="${ONESETUP_PROJECT_DEVELOPMENT}"
-  # local development="${ONESETUP_PROJECT_DEVELOPMENT:-false}"
-
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-    --development)
-      if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
-        echo -e "${I_ERR}Flag '--development' requires a value: [true/false]" >&2
-        exit 1
-      fi
-      development="$2"
-      shift 2
-      ;;
-    --development=*)
-      development="${1#*=}"
-      shift
-      ;;
-    --roles)
-      if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
-        echo -e "${I_ERR}Flag '--roles' requires a comma-separated list of roles." >&2
-        exit 1
-      fi
-      roles="$2"
-      shift 2
-      ;;
-    --skip-roles)
-      if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
-        echo -e "${I_ERR}Flag '--skip-roles' requires a comma-separated list of roles." >&2
-        exit 1
-      fi
-      skip_roles="$2"
-      shift 2
-      ;;
-    *)
-      echo -e "${I_ERR}Unknown option for 'run': $1" >&2
-      exit 1
-      ;;
-    esac
-  done
-
-  # Validate --development value
-  development="$(echo "$development" | tr '[:upper:]' '[:lower:]')"
-  if [[ "$development" != "true" && "$development" != "false" ]]; then
-    echo -e "${I_ERR}Invalid value '$development' for '--development'. Allowed values are 'true' or 'false'." >&2
-    exit 1
-  fi
-
-  # Mutual Exclusion Checks for roles
-  if [[ -n "$roles" && -n "$skip_roles" ]]; then
-    echo -e "${I_ERR}Cannot specify both '--roles' and '--skip-roles' at the same time." >&2
-    exit 1
-  fi
-
-  # Determine target directory based on development flag (true -> git repo_root | false -> installation directory)
-  local target_dir
-  if [[ "$development" == "true" ]]; then
-    target_dir="$(git rev-parse --show-toplevel 2>/dev/null)"
-    if [[ -z "$target_dir" ]]; then
-      echo -e "${I_ERR}Development mode requested ('--development true'), but current directory is not inside a Git repository." >&2
-      exit 1
-    fi
-  else
-    target_dir="$ONESETUP_SYSTEM_INSTALL_DIR"
-  fi
-
-  # Validate target directory & entrypoint file
-  local entrypoint="${target_dir}/main.yml"
-  if [[ -z "$target_dir" ]]; then
-    echo -e "${I_ERR}Target directory is empty. Is ${C_CYAN}ONESETUP_SYSTEM_INSTALL_DIR${C_RESET} set?" >&2
-    exit 1
-  elif [[ ! -d "$target_dir" ]]; then
-    echo -e "${I_ERR}Target directory does not exist: ${C_CYAN}${target_dir}${C_RESET}" >&2
-    [[ "$development" != "true" ]] && echo -e "${I_INFO}Re-run install.sh or use '--development true'." >&2
-    exit 1
-  elif [[ ! -f "$entrypoint" || ! -r "$entrypoint" ]]; then
-    echo -e "${I_ERR}No readable Playbook Entrypoint found at: ${C_CYAN}${entrypoint}${C_RESET}" >&2
-    [[ "$development" == "true" ]] && echo -e "${I_INFO}Are you inside the onesetup repository?" >&2
-    exit 1
-  fi
-
-  # Export Ansible Environment Variables based on $target_dir
-  export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-${target_dir}/ansible.cfg}"
-  export ANSIBLE_INVENTORY="${ANSIBLE_INVENTORY:-${target_dir}/inventory.ini}"
-
-  # Warn if config/inventory file missing
-  [[ -f "$ANSIBLE_CONFIG" ]]    || echo -e "${I_WARN}Ansible config not found: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}" >&2
-  [[ -f "$ANSIBLE_INVENTORY" ]] || echo -e "${I_WARN}Ansible inventory not found: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}" >&2
-
-  echo -e "${I_OK}onesetup ==> Running Ansible Playbook from: ${C_CYAN}${target_dir}${C_RESET}"
-  echo -e "${I_INFO}onesetup ==> Ansible Config file: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}"
-  echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
-
-  # Construct Ansible playbook arguments dynamically
-  local ansible_args=("--ask-vault-pass")
-
-  if [[ -n "$roles" ]]; then
-    ansible_args+=("--tags" "${roles},untagged")
-  elif [[ -n "$skip_roles" ]]; then
-    ansible_args+=("--skip-tags" "$skip_roles")
-  fi
-
-  # Run Ansible Playbook
-  if ansible-playbook "$entrypoint" "${ansible_args[@]}"; then
-    echo -e "${I_OK}onesetup ==> ansible playbook finished"
-  else
-    echo -e "${I_ERR}onesetup ==> ansible playbook failed" >&2
-    exit 1
-  fi
+  parse_playbook_args run "$@"
+  exec_playbook
 }
 
-# Subcommand 'tbd': To Be Defined
-function cmd_tbd() {
-  echo -e "${I_INFO}Coming Soon.."
+# Subcommand: 'test': Test Playbook Changes without applying them
+function test_playbook() {
+  parse_playbook_args test "$@"
+  local args=("--check")
+  if [[ "$OPT_DIFF" == true ]]; then
+    args+=("--diff")
+  fi
+  exec_playbook "${args[@]}"
 }
 
 # Prompt for Subcommand when run without arguments
 function prompt_subcommand() {
   local choice
   choice=$(
-    gum choose "Run Playbook" "TBD" \
+    gum choose "Run Playbook" "Test Playbook" \
       --cursor.foreground "#cba6f7" \
       --header.foreground "#cba6f7" \
       --selected.foreground "#cba6f7" \
@@ -241,7 +253,7 @@ function prompt_subcommand() {
 
   case "$choice" in
   "Run Playbook") run_playbook ;;
-  "TBD") cmd_tbd ;;
+  "Test Playbook") test_playbook ;;
   *) echo -e "${I_WARN}Operation cancelled." ;;
   esac
 }

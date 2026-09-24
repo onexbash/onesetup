@@ -186,10 +186,9 @@ function read_config(){
   local system_bin_dir="/usr/local/bin"
   local system_tmp_dir="/tmp"
   # [Project]
-  # Development-Mode to specify whether to run playbook on Install-Dir or the Git Repo (for executing the onesetup executable via ./bin/onesetup instead of the command rolled-out to Bin-Dir)
-  local project_development="false"
-  # Debug-Level for Scripts & Ansible itself
-  local project_debug="0"
+  # Development Repository where the Ansible Playbook is executed (used instead of the installation directory when set)
+  local project_dev_repo
+  local project_debug="0" # Debug-Level for Scripts & Ansible itself
   # -- / -- #
   
   # Ensure Config Directory exists with right permissions
@@ -224,7 +223,7 @@ function read_config(){
     _get_config_value system_tmp_dir            '.system.tmp_dir'
     _get_config_value system_user_group         '.system.user_group'
     _get_config_value system_admin_group        '.system.admin_group'
-    _get_config_value project_development       '.project.development'
+    _get_config_value project_dev_repo          '.project.dev_repo'
     _get_config_value project_debug             '.project.debug'
   fi
   unset -f _apply_override
@@ -246,7 +245,7 @@ function read_config(){
   export ONESETUP_SYSTEM_DOTFILES_DIR="${system_dotfiles_dir}"
   export ONESETUP_SYSTEM_BIN_DIR="${system_bin_dir}"
   export ONESETUP_SYSTEM_TMP_DIR="${system_tmp_dir}"
-  export ONESETUP_PROJECT_DEVELOPMENT="${project_development}"
+  export ONESETUP_PROJECT_DEV_REPO="${project_dev_repo}"
   export ONESETUP_PROJECT_DEBUG="${project_debug}" 
 }
 
