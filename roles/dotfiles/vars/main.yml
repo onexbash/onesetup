@@ -23,6 +23,11 @@ dotfiles:
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/eza",
       dest: "{{ XDG_CONFIG_HOME }}/eza",
     }
+  # scripts
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/scripts",
+      dest: "{{ XDG_CONFIG_HOME }}/scripts",
+    }
   # ghostty
   - {
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/ghostty",
