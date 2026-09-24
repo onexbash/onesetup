@@ -4,6 +4,7 @@ brew_prefix: "{{ '/opt/homebrew' if ansible_facts['architecture'] == 'arm64' els
 
 # Casks
 brew_casks:
+  - aerospace # Tiling Window Manager with workspaces
   - capso # MacOS Screenshot Tool
   - shotcut # Video Editing
   - alt-tab # Alt-Tab replacement
@@ -135,7 +136,6 @@ brew_formulaes:
 
 # Taps
 brew_taps:
-  - asmvik/formulae # used by: yabai
   - FelixKratz/formulae # used by: SketchyBar, JankyBorders
   - hashicorp/tap # used by: terraform and other hashicorp software
   - nikitabobko/tap # used by: aerospace
