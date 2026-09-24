@@ -1,6 +1,6 @@
 ---
 # -- -- -- -- -- -- -- -- #
-# --      GENERAL      -- #    
+# --      GENERAL      -- #
 # -- -- -- -- -- -- -- -- #
 # Measurement Units
 - name: "Set measurement units to centimeters"
@@ -43,7 +43,7 @@
     value: false
 
 # -- -- -- -- -- -- -- -- #
-# --      APPSTORE     -- #    
+# --      APPSTORE     -- #
 # -- -- -- -- -- -- -- -- #
 # Automatic Updates
 - name: "Appstore | enable automatic updates"
@@ -61,7 +61,7 @@
     value: true
 
 # -- -- -- -- -- -- -- -- #
-# --   USER INTERFACE  -- #    
+# --   USER INTERFACE  -- #
 # -- -- -- -- -- -- -- -- #
 # Highlight Color
 - name: "Set highlight color"
@@ -86,7 +86,7 @@
     value: Always
 
 # -- -- -- -- -- -- -- #
-# --      DOCK      -- #    
+# --      DOCK      -- #
 # -- -- -- -- -- -- -- #
 # Dock Position
 - name: "Dock | position"
@@ -170,7 +170,7 @@
   notify: restart_dock
 
 # -- -- -- -- -- -- -- #
-# --    FINDER      -- #    
+# --    FINDER      -- #
 # -- -- -- -- -- -- -- #
 # Show Quit Option
 - name: "Finder | show quit option"
@@ -270,7 +270,7 @@
   notify: restart_finder
 
 # -- -- -- -- -- -- -- -- #
-# --      DESKTOP      -- #    
+# --      DESKTOP      -- #
 # -- -- -- -- -- -- -- -- #
 # Keep Folders on top
 - name: "Desktop | keep folders on top"
@@ -322,7 +322,7 @@
   notify: restart_finder
 
 # -- -- -- -- -- -- -- -- #
-# --      MENUBAR      -- #    
+# --      MENUBAR      -- #
 # -- -- -- -- -- -- -- -- #
 # Clock Seperator
 - name: "Menubar | blink clock separator"
@@ -342,7 +342,7 @@
   notify: restart_systemui_server
 
 # -- -- -- -- -- -- -- -- #
-# --       MOUSE       -- #    
+# --       MOUSE       -- #
 # -- -- -- -- -- -- -- -- #
 # Mouse Acceleration
 - name: "Mouse | acceleration"
@@ -360,7 +360,7 @@
     value: 1.5 # values: https://macos-defaults.com/mouse/scaling.html#set-to-1-default-value
 
 # -- -- -- -- -- -- -- -- #
-# --      TERMINAL     -- #    
+# --      TERMINAL     -- #
 # -- -- -- -- -- -- -- -- #
 # Terminal follow mouse focus
 - name: "Terminal | focus follows mouse"
@@ -371,7 +371,7 @@
     value: true
 
 # -- -- -- -- -- -- -- -- #
-# --     TRACKPAD      -- #    
+# --     TRACKPAD      -- #
 # -- -- -- -- -- -- -- -- #
 # Click weight
 - name: "Trackpad | click weight"
@@ -403,7 +403,7 @@
     value: false
 
 # -- -- -- -- -- -- -- -- #
-# --     KEYBOARD      -- #    
+# --     KEYBOARD      -- #
 # -- -- -- -- -- -- -- -- #
 # Key Hold Behaviour
 - name: "Keyboard | key hold behaviour"
@@ -434,8 +434,22 @@
     type: bool
     value: true # TODO: previously this was string & "YES", check which one is correct
 
+# Swap Cmd & Option on external USB keyboard (corrupted for some reason on my GMMK keyboard)
+- name: "Swap Cmd & Option on external USB keyboard"
+  become: false
+  ansible.builtin.shell: |
+    before=$(defaults -currentHost read -g "$KEY" 2>/dev/null)
+    defaults -currentHost write -g "$KEY" "$MAPPING"
+    after=$(defaults -currentHost read -g "$KEY")
+    [ "$before" != "$after" ] && echo changed || true
+  environment:
+    KEY: "{{ kbd_key }}"
+    MAPPING: "{{ kbd_mapping }}"
+  register: kbd
+  changed_when: "'changed' in kbd.stdout"
+
 # -- -- -- -- -- -- -- -- #
-# --  MISSION CONTROL  -- #    
+# --  MISSION CONTROL  -- #
 # -- -- -- -- -- -- -- -- #
 # Rearrange Spaces
 - name: "Mission Control | auto rearrange spaces based on recent use"
@@ -470,7 +484,7 @@
   notify: restart_dock
 
 # -- -- -- -- -- -- -- -- -- #
-# --   ACTIVITY MONITOR   -- #    
+# --   ACTIVITY MONITOR   -- #
 # -- -- -- -- -- -- -- -- -- #
 # Update Frequency
 - name: "Activity Monitor | update frequency"
@@ -488,7 +502,7 @@
     value: 0 # 0: default icon | 2: network usage | 3: disk usage | 5: cpu usage
 
 # -- -- -- -- -- -- -- -- #
-# --   MISCELLANEOUS   -- #    
+# --   MISCELLANEOUS   -- #
 # -- -- -- -- -- -- -- -- #
 # Help Menu Position
 - name: "Help Menu | position"
@@ -566,7 +580,6 @@
   become: true
   changed_when: true
 
-
 # NOTE: The settings below are not verified yet
 # -- SECURITY -- #
 - name: "Security | enable firewall"
@@ -579,47 +592,47 @@
 # MacOS Inactivity Configuration
 - name: "Inactivity Configuration"
   block:
-  # 1) Screen Saver (5m inactivity)
-  - name: "Set Screen Saver to start after 5 minutes inactivity"
-    community.general.osx_defaults:
-      domain: com.apple.screensaver
-      key: idleTime
-      type: int
-      value: 300
-      state: present
-  # 2) Lock Screen (25m after screen saver)
-  - name: "Require password after Screen Saver"
-    community.general.osx_defaults:
-      domain: com.apple.screensaver
-      key: askForPassword
-      type: int
-      value: 1
-      state: present
-  - name: "Set Sleep Mode Password Prompt Delay"
-    community.general.osx_defaults:
-      domain: com.apple.screensaver
-      key: askForPasswordDelay
-      type: int
-      value: 1500
-      state: present
-  # 3) Auto LogOut (25m after screen saver)
-  - name: "Set Auto LogOut Delay to 30 minutes"
-    community.general.osx_defaults:
-      domain: NSGlobalDomain
-      key: com.apple.autologout.AutoLogOutDelay
-      type: int
-      value: 1800 # 30min => 25m after screen saver
-      state: present
-    become: true # set system-wide # TODO: check if this should use become or not
-  # 4) Power Management (25m after screen saver)
-  - name: "Set Display sleep to 30 minutes"
-    ansible.builtin.command: "pmset -a displaysleep 30"
-    changed_when: false
-    become: true
-  - name: "Set System sleep to 30 minutes"
-    ansible.builtin.command: "pmset -a sleep 30"
-    changed_when: false
-    become: true
+    # 1) Screen Saver (5m inactivity)
+    - name: "Set Screen Saver to start after 5 minutes inactivity"
+      community.general.osx_defaults:
+        domain: com.apple.screensaver
+        key: idleTime
+        type: int
+        value: 300
+        state: present
+    # 2) Lock Screen (25m after screen saver)
+    - name: "Require password after Screen Saver"
+      community.general.osx_defaults:
+        domain: com.apple.screensaver
+        key: askForPassword
+        type: int
+        value: 1
+        state: present
+    - name: "Set Sleep Mode Password Prompt Delay"
+      community.general.osx_defaults:
+        domain: com.apple.screensaver
+        key: askForPasswordDelay
+        type: int
+        value: 1500
+        state: present
+    # 3) Auto LogOut (25m after screen saver)
+    - name: "Set Auto LogOut Delay to 30 minutes"
+      community.general.osx_defaults:
+        domain: NSGlobalDomain
+        key: com.apple.autologout.AutoLogOutDelay
+        type: int
+        value: 1800 # 30min => 25m after screen saver
+        state: present
+      become: true # set system-wide # TODO: check if this should use become or not
+    # 4) Power Management (25m after screen saver)
+    - name: "Set Display sleep to 30 minutes"
+      ansible.builtin.command: "pmset -a displaysleep 30"
+      changed_when: false
+      become: true
+    - name: "Set System sleep to 30 minutes"
+      ansible.builtin.command: "pmset -a sleep 30"
+      changed_when: false
+      become: true
 
 # -- HOT CORNERS -- #
 # Disable top-left
@@ -630,7 +643,7 @@
     type: int
     value: 0
   notify: restart_dock
-# Disable top-right  
+# Disable top-right
 - name: "Hot Corners | disable top-right"
   community.general.osx_defaults:
     domain: com.apple.dock

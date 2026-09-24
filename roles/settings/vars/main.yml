@@ -1,0 +1,25 @@
+# kbd_key & kbd_mapping for setting keyboard shortcuts
+kbd_key: "com.apple.keyboard.modifiermapping.12815-20550-0"
+kbd_mapping: |
+  <array>
+    <!-- LOpt -> LCmd -->
+    <dict>
+      <key>HIDKeyboardModifierMappingSrc</key><integer>30064771298</integer>
+      <key>HIDKeyboardModifierMappingDst</key><integer>30064771299</integer>
+    </dict>
+    <!-- LCmd -> LOpt -->
+    <dict>
+      <key>HIDKeyboardModifierMappingSrc</key><integer>30064771299</integer>
+      <key>HIDKeyboardModifierMappingDst</key><integer>30064771298</integer>
+    </dict>
+    <!-- ROpt -> RCmd -->
+    <dict>
+      <key>HIDKeyboardModifierMappingSrc</key><integer>30064771302</integer>
+      <key>HIDKeyboardModifierMappingDst</key><integer>30064771303</integer>
+    </dict>
+    <!-- RCmd -> ROpt -->
+    <dict>
+      <key>HIDKeyboardModifierMappingSrc</key><integer>30064771303</integer>
+      <key>HIDKeyboardModifierMappingDst</key><integer>30064771302</integer>
+    </dict>
+  </array>
