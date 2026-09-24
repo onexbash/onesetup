@@ -28,10 +28,20 @@ dotfiles:
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/ghostty",
       dest: "{{ XDG_CONFIG_HOME }}/ghostty",
     }
+  # kitty
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/kitty",
+      dest: "{{ XDG_CONFIG_HOME }}/kitty",
+    }
   # wezterm
   - {
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/wezterm",
       dest: "{{ XDG_CONFIG_HOME }}/wezterm",
+    }
+  # zellij
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/zellij",
+      dest: "{{ XDG_CONFIG_HOME }}/zellij",
     }
   # git
   - {
@@ -52,11 +62,6 @@ dotfiles:
   - {
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/powershell",
       dest: "{{ XDG_CONFIG_HOME }}/powershell",
-    }
-  # karabiner
-  - {
-      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/karabiner",
-      dest: "{{ XDG_CONFIG_HOME }}/karabiner",
     }
   # starship
   - {
