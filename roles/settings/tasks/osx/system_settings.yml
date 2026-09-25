@@ -412,14 +412,14 @@
     key: ApplePressAndHoldEnabled
     type: bool
     value: false
-# fn Key Behaviour
+# fn key behavior
 - name: "Keyboard | 🌐︎ key behaviour"
   community.general.osx_defaults:
     domain: com.apple.HIToolbox
     key: AppleFnUsageType
     type: int
-    value: 0 # 0: do nothing | 1: change input source | 2: show emojis & symbols | 3: start dication
-# Function keys behaviour
+    value: 0 # 0: do nothing | 1: change input source | 2: show emojis & symbols | 3: start dictation
+# Function keys behavior
 - name: "Keyboard | function keys behaviour (f1 - f12)"
   community.general.osx_defaults:
     domain: NSGlobalDomain
@@ -431,10 +431,10 @@
   community.general.osx_defaults:
     domain: NSGlobalDomain
     key: NSWindowShouldDragOnGesture
-    type: bool
-    value: true # TODO: previously this was string & "YES", check which one is correct
+    type: string
+    value: "YES" # CARE: this has to be a string with "YES/NO" not a Boolean!
 
-# Swap Cmd & Option on external USB keyboard (corrupted for some reason on my GMMK keyboard)
+# Swap CMD & Option on external USB keyboard (corrupted for some reason on my GMMK keyboard)
 - name: "Swap Cmd & Option on external USB keyboard"
   become: false
   ansible.builtin.shell: |
@@ -668,7 +668,7 @@
     value: 0
   notify: restart_dock
 
-# -- KEYBOARD REPEAT (dev QoL) -- #
+# -- KEYBOARD REPEAT -- #
 - name: "Keyboard | fast key repeat rate"
   community.general.osx_defaults:
     domain: NSGlobalDomain
