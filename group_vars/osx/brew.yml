@@ -6,6 +6,7 @@ brew_prefix: "{{ '/opt/homebrew' if ansible_facts['architecture'] == 'arm64' els
 brew_casks:
   - aerospace # Tiling Window Manager with workspaces
   - capso # MacOS Screenshot Tool
+  - claude-code # Claude-Code App & CLI Tool
   - shotcut # Video Editing
   - alt-tab # Alt-Tab replacement
   - appcleaner # App Uninstaller
@@ -41,7 +42,7 @@ brew_casks:
   - whatsapp
   - karabiner-elements # Keyboard Mapping Tool
 
-# Formulaes
+# Formulas
 brew_formulaes:
   # -- LANGUAGES -- #
   - ast-grep # structural code search tool
