@@ -34,6 +34,9 @@ brew_casks:
   - spotify
   - utm # VM Management
   - sublime-text # Text Editor
+  - intellij-idea-oss # IntelliJ Community Edition (replacement when nvim gets on my nerves)
+  - vscodium # VSCodium (replacement when nvim gets on my nerves)
+  - zed # Interesting IDE Project written in rust
   - canva
   - figma
   - obs # Streaming Software
@@ -65,7 +68,7 @@ brew_formulaes:
   - gnu-tar # tar (gnu version)
   - gnupg # gpg (gnu version)
   - grep # grep (gnu version)
-  - iproute2mac # linux ip commands for macos (iproute2)
+  - iproute2mac # Linux IP commands for MacOS (iproute2)
   # -- COMPILER, INTERPRETER, PARSER, LIBRARIES .. -- #
   - cmake
   - gcc # C compiler
@@ -77,10 +80,10 @@ brew_formulaes:
   # -- SHELL -- #
   - bash # bash (brew version)
   - zsh # zsh (brew version)
-  - powershell # microsoft powershell
-  - azure-cli # cli for azure
+  - powershell # Microsoft Powershell
+  - azure-cli # CLI for Azure
   # -- PACKAGE & VERSION MANAGER -- #
-  - luarocks # lua package manager
+  - luarocks # Lua package manager
   - poetry # python package manager
   - pnpm # node package manager
   - yarn # node package manager
@@ -90,7 +93,7 @@ brew_formulaes:
   - fnm # node version manager
   - clipboard # clipboard manager
   - exiftool # tool for exif metadata
-  - cloudflared # cloudflare cli
+  - cloudflared # cloudflare CLI
   - git-filter-repo # git tool for rewriting git commit history
   - infisical # secret manager
   - fontforge # font patcher / editor
@@ -99,38 +102,38 @@ brew_formulaes:
   - pinentry
   - git-delta # git pager
   - glow # markdown preview
-  - ollama # toolchain for llama AI
+  - ollama # Toolchain for llama AI
   - vim
   - zip # archiving tool
   - gh # Github CLI
   - defaultbrowser # utility to set default browser
-  - catimg # ascii image preview
-  - sketchybar # custom macos menubar
+  - catimg # ASCII Image preview
+  - sketchybar # custom MacOS Menubar
   - bat # better cat
   - ripgrep # better grep
   - fastfetch # system info
   - zellij # terminal multiplexer (tmux alternative)
   # - telnet # UI for TELNET protocol
-  - netcat # network cli tool
+  - netcat # network CLI tool
   - zoxide # better cd
   - speedtest # Speedtest CLI (tap: `teamookla/speedtest`)
   - ffmpegthumbnailer # terminal video thumbnailer
-  - mas # macos app store CLI interface
-  - unar # unarchiving tool
-  # - poppler # pdf rendering library
+  - mas # MacOS app store CLI interface
+  - unar # Unarchiving tool
+  # - poppler # PDF rendering library
   - tree
   - tree-sitter-cli # Tree-Sitter CLI required for nvim-treesitter to work
   - wget
-  - svgo # svg optimizer
+  - svgo # SVG optimizer
   - starship
-  - pastel # color cli tool
-  - lazygit # git cli tool
+  - pastel # color CLI tool
+  - lazygit # git CLI tool
   - borders # window borders
   - eza # better ls
   - fd # better find
   - fzf # fuzzy finder
   - sk # fuzzy finder
-  - kubectl # kubernetes cli
+  - kubectl # Kubernetes CLI
   - atuin # shell history tool
   - podman
   - podman-compose
@@ -138,7 +141,7 @@ brew_formulaes:
 # Taps
 brew_taps:
   - FelixKratz/formulae # used by: SketchyBar, JankyBorders
-  - hashicorp/tap # used by: terraform and other hashicorp software
+  - hashicorp/tap # used by: Terraform and other Hashicorp software
   - nikitabobko/tap # used by: aerospace
   - sdkman/tap # used by: sdkman
   - teamookla/speedtest # used by: speedtest-cli
