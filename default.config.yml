@@ -1,6 +1,6 @@
 # Default config.yml consumed by onesetup.
 # Expected Location: $XDG_CONFIG_HOME/onesetup/config.yml or $HOME/.config/onesetup/config.yml
-# Can't use environment variables here but ~/ can be used & reffers to $HOME/
+# Can't use environment variables here but ~/ can be used & refers to $HOME/
 ---
 remote:
   provider: "github" # Default: github
