@@ -78,3 +78,4 @@
     - { role: fonts, tags: ["fonts"] }
     - { role: apps, tags: ["apps"] }
     - { role: settings, tags: ["settings"] }
+    - { role: autostart, tags: ["autostart"] }

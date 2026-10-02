@@ -1,0 +1,10 @@
+# Defined Apps for Autostart
+autostart_apps:
+  - Kitty
+  - Firefox Developer Edition
+  - AppFlowy
+  - Spotify
+  - KeePassXC
+  - Proton Pass
+  - Microsoft Teams
+  - Microsoft Outlook

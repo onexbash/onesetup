@@ -1,0 +1,35 @@
+---
+# Ensure Target Directories exist
+- name: "Ensure Target Directories exist"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ ONESETUP_SYSTEM_BIN_DIR }}"
+    - "{{ HOME }}/Library/LaunchAgents"
+
+# Install Autostart Script
+- name: "Install xautostart script"
+  ansible.builtin.template:
+    src: autostart.sh.j2
+    dest: "{{ ONESETUP_SYSTEM_BIN_DIR }}/xautostart"
+    mode: "0755"
+
+# Rollout LaunchAgent plist file
+- name: "Install LaunchAgent"
+  ansible.builtin.copy:
+    dest: "{{ HOME }}/Library/LaunchAgents/com.onexbash.xautostart.plist"
+    mode: "0644"
+    content: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key><string>com.onexbash.xautostart</string>
+        <key>ProgramArguments</key>
+        <array><string>{{ HOME }}/.local/bin/xautostart</string></array>
+        <key>RunAtLoad</key><true/>
+      </dict>
+      </plist>
+  notify: load_autostart
