@@ -1,4 +1,6 @@
 ---
+# MacOS System Settings (see: https://macos-defaults.com/)
+
 # -- -- -- -- -- -- -- -- #
 # --      GENERAL      -- #
 # -- -- -- -- -- -- -- -- #
@@ -173,7 +175,38 @@
     domain: NSGlobalDomain
     key: com.apple.mouse.scaling
     type: float
-    value: 1.5 # values: https://macos-defaults.com/mouse/scaling.html#set-to-1-default-value
+    value: 1.5
+# Pointer Size
+- name: "Set pointer size"
+  community.general.osx_defaults:
+    domain: com.apple.universalaccess
+    key: mouseDriverCursorSize
+    type: float
+    value: 1.5 # 1.0 = default, 4.0 = max
+
+# Pointer Fill Color (RGBA, values 0.0-1.0)
+- name: "Set pointer fill color"
+  ansible.builtin.command: >
+    defaults write com.apple.universalaccess cursorFill -dict
+    red -float 0.80 green -float 0.65 blue -float 0.97 alpha -float 1
+  changed_when: false
+
+# Pointer Outline Color (RGBA, values 0.0-1.0)
+- name: "Set pointer outline color"
+  ansible.builtin.command: >
+    defaults write com.apple.universalaccess cursorOutline -dict
+    red -float 0.12 green -float 0.12 blue -float 0.18 alpha -float 1
+  changed_when: false
+
+# Mark Pointer as customized (so System Settings shows the custom colors)
+- name: "Mark pointer as customized"
+  community.general.osx_defaults:
+    domain: com.apple.universalaccess
+    key: cursorIsCustomized
+    type: bool
+    value: true
+  become: false
+  notify: logout_user
 
 # -- -- -- -- -- -- -- -- #
 # --      TERMINAL     -- #
