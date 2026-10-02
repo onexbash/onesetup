@@ -11,14 +11,26 @@ function main() {
   tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
   set_modes || echo -e "${I_WARN}Failed to set Script Modes."
   init_brew || echo -e "${I_WARN}Failed to initialize Homebrew"
-  { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
-  export_dynamic_vars || { echo -e "${I_ERR}Failed to export Dynamic Environment Variables!"; exit 1; }
-  { prerequisites && echo -e "${I_OK}Prerequesites satisfied"; } || { echo -e "${I_ERR}Failed to ensure that prerequesites are satisfied"; exit 1; }
-  { install && echo -e "${I_OK}Installation completed"; } || { echo -e "${I_ERR}Installation failed"; exit 1; }
+  { read_config && echo -e "${I_OK}Config File read"; } || {
+    echo -e "${I_ERR}Failed to read Config File"
+    exit 1
+  }
+  export_dynamic_vars || {
+    echo -e "${I_ERR}Failed to export Dynamic Environment Variables!"
+    exit 1
+  }
+  { prerequisites && echo -e "${I_OK}Prerequesites satisfied"; } || {
+    echo -e "${I_ERR}Failed to ensure that prerequesites are satisfied"
+    exit 1
+  }
+  { install && echo -e "${I_OK}Installation completed"; } || {
+    echo -e "${I_ERR}Installation failed"
+    exit 1
+  }
 }
 
 # [1] Curl & Source Utility Script from Remote Repository
-function load_utils(){
+function load_utils() {
   local username="$1"
   local repo_name="$2"
 
@@ -34,7 +46,10 @@ function load_utils(){
   trap 'rm -f "$TMP_SCRIPT"' EXIT
 
   curl -fsSL "https://raw.githubusercontent.com/${username}/${repo_name}/main/scripts/util.sh" -o "$TMP_SCRIPT"
-  source "$TMP_SCRIPT" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script: $TMP_SCRIPT"; exit 1; }  
+  source "$TMP_SCRIPT" && echo -e "${I_OK}Utility Script sourced" || {
+    echo -e "${I_ERR}Failed to source Utility Script: $TMP_SCRIPT"
+    exit 1
+  }
 }
 
 # [2] Ensure prerequisites are satisfied
@@ -42,28 +57,64 @@ function prerequisites() {
   # git
   if ! command -v "git" &>/dev/null; then
     case "$ONESETUP_SYSTEM_OS" in
-    linux) { sudo dnf install -y git && echo -e "${I_OK}Installation succeeded: git" ;} || { echo -e "${I_ERR}Installation failed: git"; return 1; } ;;
-    osx) { brew install git && echo -e "${I_OK}Installation succeeded: git" ;} || { echo -e "${I_ERR}Installation failed: git"; return 1; } ;;
-    windows) echo -e "${I_ERR}Windows not supported yet"; return 1 ;;
-    unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
+    linux) { sudo dnf install -y git && echo -e "${I_OK}Installation succeeded: git"; } || {
+      echo -e "${I_ERR}Installation failed: git"
+      return 1
+    } ;;
+    osx) { brew install git && echo -e "${I_OK}Installation succeeded: git"; } || {
+      echo -e "${I_ERR}Installation failed: git"
+      return 1
+    } ;;
+    windows)
+      echo -e "${I_ERR}Windows not supported yet"
+      return 1
+      ;;
+    unsupported)
+      echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"
+      return 1
+      ;;
     esac
   fi
   # gum
   if ! command -v "gum" &>/dev/null; then
     case "$ONESETUP_SYSTEM_OS" in
-    linux) { sudo dnf install -y "gum" && echo -e "${I_OK}Installation succeeded: gum" ;} || { echo -e "${I_ERR}Failed to install gum!"; return 1; } ;;
-    osx) { brew install "gum" && echo -e "${I_OK}Installation succeeded: gum" ;} || { echo -e "${I_ERR}Failed to install gum!"; return 1; } ;;
-    windows) echo -e "${I_WARN}Windows not supported yet"; return 1 ;;
-    unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
+    linux) { sudo dnf install -y "gum" && echo -e "${I_OK}Installation succeeded: gum"; } || {
+      echo -e "${I_ERR}Failed to install gum!"
+      return 1
+    } ;;
+    osx) { brew install "gum" && echo -e "${I_OK}Installation succeeded: gum"; } || {
+      echo -e "${I_ERR}Failed to install gum!"
+      return 1
+    } ;;
+    windows)
+      echo -e "${I_WARN}Windows not supported yet"
+      return 1
+      ;;
+    unsupported)
+      echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"
+      return 1
+      ;;
     esac
   fi
   # ansible
   if ! command -v "ansible" &>/dev/null; then
     case "$ONESETUP_SYSTEM_OS" in
-    linux) { sudo dnf install -y ansible && echo -e "${I_OK}Installation succeeded: ansible" ;} || { echo -e "${I_ERR}Installation failed: ansible"; return 1; } ;;
-    osx) { brew install "ansible" && echo -e "${I_OK}Installation succeeded: ansible" ;} || { echo -e "${I_ERR}Installation failed: ansible"; return 1; } ;;
-    windows) echo -e "${I_ERR}Windows not supported yet"; return 1 ;;
-    unsupported) echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"; return 1 ;;
+    linux) { sudo dnf install -y ansible && echo -e "${I_OK}Installation succeeded: ansible"; } || {
+      echo -e "${I_ERR}Installation failed: ansible"
+      return 1
+    } ;;
+    osx) { brew install "ansible" && echo -e "${I_OK}Installation succeeded: ansible"; } || {
+      echo -e "${I_ERR}Installation failed: ansible"
+      return 1
+    } ;;
+    windows)
+      echo -e "${I_ERR}Windows not supported yet"
+      return 1
+      ;;
+    unsupported)
+      echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"
+      return 1
+      ;;
     esac
   fi
 }
@@ -85,8 +136,8 @@ function install() {
   # Step 1: Remove installation directory if invalid/corrupted
   if [[ -d "$install_dir" ]]; then
     if ! git -C "$install_dir" rev-parse --git-dir >/dev/null 2>&1; then
-      rm -rf "$install_dir" && \
-      echo -e "${I_INFO}There was a broken installation at $install_dir. Deletion complete."
+      rm -rf "$install_dir" &&
+        echo -e "${I_INFO}There was a broken installation at $install_dir. Deletion complete."
     fi
   fi
 
@@ -145,8 +196,8 @@ function install() {
   fi
 
   # Step 6: Install Ansible Modules from Ansible Galaxy
-  ansible-galaxy collection install --collections-path "${storage_dir}/collections" --requirements-file "${install_dir}/requirements.yml" --no-cache --upgrade
-  
+  ansible-galaxy collection install --requirements-file "${install_dir}/requirements.yml" --no-cache --upgrade
+
 }
 # Call Main Function with args
 main "$@"
