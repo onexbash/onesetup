@@ -102,7 +102,7 @@
     domain: com.apple.dock
     key: tilesize
     type: float
-    value: 50
+    value: 30
   notify: restart_dock
 # Dock Recent Apps
 - name: "Dock | show recents"
@@ -474,13 +474,25 @@
     key: AppleSpacesSwitchOnActivate
     type: bool
     value: true
-# Seperate Spaces per display
-- name: "Mission Control | seperate spaces per display"
+  notify: restart_dock
+# Disable Displays have separate Spaces (to prevent bugs with aerospace)
+- name: "Mission Control | separate spaces per display"
   community.general.osx_defaults:
     domain: com.apple.spaces
     key: spans-display
     type: bool
+    value: true
+  notify: restart_dock
+# Disable Edge Tiling (opens mission control when dragged to the top)
+- name: "Disable edge tiling"
+  community.general.osx_defaults:
+    domain: com.apple.WindowManager
+    key: "{{ item }}"
+    type: bool
     value: false
+  loop:
+    - EnableTilingByEdgeDrag
+    - EnableTopTilingByEdgeDrag
   notify: restart_dock
 
 # -- -- -- -- -- -- -- -- -- #
