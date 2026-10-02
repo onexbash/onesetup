@@ -1,0 +1,55 @@
+---
+# -- FINDER CONFIGURATION -- #
+- name: "Finder: Configure Preferences"
+  community.general.osx_defaults:
+    domain: "com.apple.finder"
+    key: "{{ item.key }}"
+    type: "{{ item.type }}"
+    value: "{{ item.value }}"
+  loop:
+    # Show Quit Option
+    - { key: QuitMenuItem, type: bool, value: true }
+    # Empty bin after 30days
+    - { key: FXRemoveOldTrashItems, type: bool, value: true }
+    # Show Path Bar
+    - { key: ShowPathbar, type: bool, value: true }
+    - { key: ShowStatusBar, type: bool, value: true }
+    # Show Hidden Files
+    - { key: AppleShowAllFiles, type: bool, value: true }
+    # Show the full POSIX path in the Window Title
+    - { key: _FXShowPosixPathInTitle, type: bool, value: true }
+    # Folder Sorting
+    - { key: _FXSortFoldersFirst, type: bool, value: true }
+    # Show a warning when changing File Extensions
+    - { key: FXEnableExtensionChangeWarning, type: bool, value: false }
+    # View Style
+    - { key: FXPreferredViewStyle, type: string, value: Nlsv } # list: Nlsv | column: clmv | gallery: glyv | icon: icnv
+    # Search Scope
+    - { key: FXDefaultSearchScope, type: string, value: SCcf } # SCcf = current folder | SCsp = previous scope | SCev = entire volume
+    # Where to open new windows
+    - { key: NewWindowTarget, type: string, value: PfHm } # PfHm=home
+  # Trigger handlers
+  notify:
+    - restart_cache
+    - restart_finder
+
+# -- GLOBAL FINDER PREFERENCES -- #
+- name: "Finder: Configure global preferences"
+  community.general.osx_defaults:
+    domain: "NSGlobalDomain"
+    key: "{{ item.key }}"
+    type: "{{ item.type }}"
+    value: "{{ item.value }}"
+  loop:
+    # Save files to iCloud by default
+    - { key: NSDocumentSaveNewDocumentsToCloud, type: bool, value: false }
+    # Titlebar Hover Delay
+    - { key: NSToolbarTitleViewRolloverDelay, type: float, value: 0 }
+    # Sidebar Icon Size
+    - { key: NSTableViewDefaultSizeMode, type: int, value: 2 }
+    # Show Extensions
+    - { key: AppleShowAllExtensions, type: bool, value: true }
+  notify: # trigger handlers
+    - restart_cache
+    - restart_finder
+    - logout_user

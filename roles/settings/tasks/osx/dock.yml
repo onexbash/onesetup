@@ -36,3 +36,87 @@
 - name: "Restart Dock to apply changes"
   ansible.builtin.command: "killall Dock"
   changed_when: true
+
+# -- -- -- -- -- -- -- -- -- -- #
+# --      DOCK SETTINGS      -- #
+# -- -- -- -- -- -- -- -- -- -- #
+# Dock Position
+- name: "Dock | position"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: orientation
+    type: string
+    value: bottom
+  notify: restart_dock
+# Dock Size
+- name: "Dock | size"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: tilesize
+    type: float
+    value: 30
+  notify: restart_dock
+# Dock Recent Apps
+- name: "Dock | show recents"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: show-recents
+    type: bool
+    value: false
+  notify: restart_dock
+# Dock Autohide
+- name: "Dock | autohide"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: show-autohide
+    type: bool
+    value: true
+  notify: restart_dock
+# Dock Autohide Animation
+- name: "Dock | hide animation"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: mineffect
+    type: string
+    value: suck
+  notify: restart_dock
+# Dock Autohide Animation Duration
+- name: "Dock | autohide animation duration"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: autohide-time-modifier
+    type: float
+    value: 0.7
+  notify: restart_dock
+# Dock Autohide Animation Delay
+- name: "Dock | autohide delay"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: autohide-delay
+    type: float
+    value: 0
+  notify: restart_dock
+# Dock Pinned Apps
+- name: "Dock | show pinned apps"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: static-only
+    type: bool
+    value: false
+  notify: restart_dock
+# Dock Show Spaces
+- name: "Dock | show spaces when scrolling up on a dock item"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: scroll-to-open
+    type: bool
+    value: true
+  notify: restart_dock
+# Dock Spring Loading
+- name: "Dock | enable spring loading"
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: enable-spring-load-actions-on-all-items
+    type: bool
+    value: true
+  notify: restart_dock

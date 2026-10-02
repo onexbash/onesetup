@@ -13,3 +13,16 @@
 - name: "Restart SystemUIServer"
   ansible.builtin.command: killall SystemUIServer
   listen: restart_systemui_server
+
+# Handler: Refresh preferences cache
+- name: "Restart preferences cache (cfprefsd)"
+  ansible.builtin.command: killall cfprefsd
+  listen: restart_cache
+
+# Handler: Log out current user (applies NSGlobalDomain changes)
+- name: "Log out user to apply NSGlobalDomain Changes"
+  ansible.builtin.shell: >
+    sleep 5 && osascript -e 'tell application "System Events" to log out'
+  async: 10
+  poll: 0
+  listen: logout_user
