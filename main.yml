@@ -33,6 +33,7 @@
 
     # Include Pre-Tasks
     - include_tasks: pre_tasks/all/env.yml # Environment-Variable Discovery & Validation (+ Normalization)
+    - include_tasks: pre_tasks/all/system.yml # Set System Properties (e.g: HostName)
     - include_tasks: pre_tasks/all/shell.yml # Set Default Shell & Gather Shell Paths
 
     # Pre-Task: Include OS-Specific Variables

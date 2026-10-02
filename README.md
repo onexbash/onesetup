@@ -152,6 +152,7 @@ remote:
   dotfiles_repo: [String] # Name of a seperate Git Repository that stores all your dotfiles
 system:
   os: [osx|linux|windows] # Operating System (Auto-Detected but can be overridden here)
+  hostname: [String] # Name of your Machine
   username: [String] # Name of a User on your system that has sudo privileges but is not the root user
   root_user: [String] # Name of the Root user on your system
   user_group: [String] # Group of the system user
