@@ -1,10 +1,10 @@
-# Defined Apps for Autostart
+---
+autostart_domain: com.onesetup.autostart
+
 autostart_apps:
-  - Kitty
-  - Firefox Developer Edition
-  - AppFlowy
-  - Spotify
-  - KeePassXC
-  - Proton Pass
-  - Microsoft Teams
-  - Microsoft Outlook
+  - { name: Kitty }
+  - { name: Firefox Developer Edition }
+  - { name: Spotify }
+  - { name: KeePassXC }
+  - { name: Microsoft Teams }
+  - { name: Microsoft Outlook }

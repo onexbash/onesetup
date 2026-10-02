@@ -1,35 +1,19 @@
 ---
-# Ensure Target Directories exist
-- name: "Ensure Target Directories exist"
+# Ensure LaunchAgents Directory exists
+- name: "Ensure LaunchAgents Directory exists"
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ HOME }}/Library/LaunchAgents"
     state: directory
     mode: "0755"
-  loop:
-    - "{{ ONESETUP_SYSTEM_BIN_DIR }}"
-    - "{{ HOME }}/Library/LaunchAgents"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
 
-# Install Autostart Script
-- name: "Install xautostart script"
+# Rollout LaunchAgent for every app in {{ autostart_apps }}
+- name: "Rollout LaunchAgent files"
   ansible.builtin.template:
-    src: autostart.sh.j2
-    dest: "{{ ONESETUP_SYSTEM_BIN_DIR }}/xautostart"
-    mode: "0755"
-
-# Rollout LaunchAgent plist file
-- name: "Install LaunchAgent"
-  ansible.builtin.copy:
-    dest: "{{ HOME }}/Library/LaunchAgents/com.onexbash.xautostart.plist"
+    src: autostart.plist.j2
+    dest: "{{ HOME }}/Library/LaunchAgents/{{ autostart_domain }}.{{ item.name | lower | regex_replace('[^a-z0-9]+', '-') }}.plist"
     mode: "0644"
-    content: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-      <plist version="1.0">
-      <dict>
-        <key>Label</key><string>com.onexbash.xautostart</string>
-        <key>ProgramArguments</key>
-        <array><string>{{ HOME }}/.local/bin/xautostart</string></array>
-        <key>RunAtLoad</key><true/>
-      </dict>
-      </plist>
-  notify: load_autostart
+  loop: "{{ autostart_apps }}"
+  loop_control:
+    label: "{{ item.name }}"

@@ -102,3 +102,12 @@
     owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
     group: "{{ ONESETUP_SYSTEM_ADMIN_GROUP }}"
   become: true
+
+# Ensure Directory: User Library
+- name: "Ensure User Library dir exists"
+  ansible.builtin.file:
+    path: "{{ HOME }}/Library"
+    state: directory
+    mode: "0700"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
