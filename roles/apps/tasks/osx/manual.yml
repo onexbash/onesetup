@@ -1,0 +1,88 @@
+---
+# --                            -- #
+# --    MANUAL INSTALLATIONS    -- #
+# --                            -- #
+
+# --          LITE-XL           -- #
+# Define Variables
+- name: "Lite XL | Define Variables as Ansible Facts"
+  ansible.builtin.set_fact:
+    litexl_url: "https://github.com/lite-xl/lite-xl/releases/download/v2.1.8/lite-xl-v2.1.8-addons-macos-{{ 'arm64' if ONESETUP_SYSTEM_ARCH == 'arm64' else 'x86_64' }}.dmg"
+    litexl_dmg: "{{ TMPDIR }}/onesetup/litexl.dmg"
+    litexl_mountpoint: "{{ TMPDIR }}/onesetup/litexl_mount"
+    litexl_app_path: "/Applications/Lite XL.app"
+
+# Check if already installed
+- name: "Lite XL | Check if already installed"
+  ansible.builtin.stat:
+    path: "{{ litexl_app_path }}"
+  register: litexl_app
+
+# Block: Download & Installation of Lite XL
+- name: "Lite XL | Install Lite XL"
+  when: not litexl_app.stat.exists
+  block:
+    # Ensure Download Directory
+    - name: "Lite XL | Ensure download directory exists"
+      ansible.builtin.file:
+        path: "{{ TMPDIR }}/onesetup"
+        state: directory
+        mode: "0755"
+    # Download Installer
+    - name: "Lite XL | Download DMG installer"
+      ansible.builtin.get_url:
+        url: "{{ litexl_url }}"
+        dest: "{{ litexl_dmg }}"
+        mode: "0644"
+    # Detach possible leftover stale mount
+    - name: "Lite XL | Detach stale mount (if any)"
+      ansible.builtin.command:
+        argv: [hdiutil, detach, "{{ litexl_mountpoint }}", -force]
+      register: litexl_stale_detach
+      changed_when: litexl_stale_detach.rc == 0
+      failed_when: false
+    # Mount DMG
+    - name: "Lite XL | Mount DMG"
+      ansible.builtin.command:
+        argv:
+          - hdiutil
+          - attach
+          - "{{ litexl_dmg }}"
+          - -nobrowse
+          - -readonly
+          - -noautoopen
+          - -mountpoint
+          - "{{ litexl_mountpoint }}"
+      register: litexl_mount
+      changed_when: true
+    # Locate App Bundle in DMG
+    - name: "Lite XL | Locate app bundle in DMG"
+      ansible.builtin.find:
+        paths: "{{ litexl_mountpoint }}"
+        patterns: "*.app"
+        file_type: directory
+      register: litexl_bundle
+    # Fail if no App Bundle was found
+    - name: "Lite XL | Fail if no app bundle was found"
+      ansible.builtin.assert:
+        that: litexl_bundle.matched > 0
+        fail_msg: "No .app bundle found in {{ litexl_dmg }}"
+    # Copy .app file to /Applications
+    - name: "Lite XL | Copy app to /Applications"
+      ansible.builtin.command:
+        argv:
+          - ditto
+          - "{{ litexl_bundle.files[0].path }}"
+          - "{{ litexl_app_path }}"
+        creates: "{{ litexl_app_path }}"
+  # Unmount DMG after installation
+  always:
+    - name: "Lite XL | Unmount DMG"
+      ansible.builtin.command:
+        argv:
+          - hdiutil
+          - detach
+          - "{{ litexl_mountpoint }}"
+          - -force
+      when: litexl_mount is defined and litexl_mount is succeeded
+      changed_when: true
