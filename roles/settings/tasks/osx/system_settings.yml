@@ -306,20 +306,6 @@
     value: 300
   become: true
 
-# Swap CMD & Option on external USB keyboard (corrupted for some reason on my GMMK keyboard)
-- name: "Swap Cmd & Option on external USB keyboard"
-  become: false
-  ansible.builtin.shell: |
-    before=$(defaults -currentHost read -g "$KEY" 2>/dev/null)
-    defaults -currentHost write -g "$KEY" "$MAPPING"
-    after=$(defaults -currentHost read -g "$KEY")
-    [ "$before" != "$after" ] && echo changed || true
-  environment:
-    KEY: "{{ kbd_key }}"
-    MAPPING: "{{ kbd_mapping }}"
-  register: kbd
-  changed_when: "'changed' in kbd.stdout"
-
 # -- -- -- -- -- -- -- -- #
 # --  MISSION CONTROL  -- #
 # -- -- -- -- -- -- -- -- #

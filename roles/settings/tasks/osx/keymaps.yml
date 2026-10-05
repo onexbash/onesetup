@@ -1,0 +1,21 @@
+---
+# Set Spotlight Shortcut to CMD+Shift+Space (prevent conflict with sol/raycast)
+- name: "Keymaps | Set Spotlight shortcut to Cmd+Shift+Space"
+  ansible.builtin.command: >
+    defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 64
+    "<dict><key>enabled</key><true/><key>value</key><dict><key>parameters</key>
+    <array><integer>32</integer><integer>49</integer><integer>1179648</integer></array>
+    <key>type</key><string>standard</string></dict></dict>"
+
+# Swap CMD & Option on external USB keyboard (corrupted for some reason on my GMMK keyboard)
+- name: "Swap Cmd & Option on external USB keyboard"
+  ansible.builtin.shell: |
+    before=$(defaults -currentHost read -g "$KEY" 2>/dev/null)
+    defaults -currentHost write -g "$KEY" "$MAPPING"
+    after=$(defaults -currentHost read -g "$KEY")
+    [ "$before" != "$after" ] && echo changed || true
+  environment:
+    KEY: "{{ kbd_key }}"
+    MAPPING: "{{ kbd_mapping }}"
+  register: kbd
+  changed_when: "'changed' in kbd.stdout"
