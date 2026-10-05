@@ -290,6 +290,7 @@
     value: "YES" # CARE: this has to be a string with "YES/NO" not a Boolean!
 # Automatic Keyboard Brightness
 - name: "Keyboard | Disable automatic brightness"
+  become: true
   community.general.osx_defaults:
     host: null
     domain: /Library/Preferences/com.apple.iokit.AmbientLightSensor

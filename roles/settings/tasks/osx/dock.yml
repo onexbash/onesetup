@@ -54,7 +54,7 @@
     domain: com.apple.dock
     key: tilesize
     type: float
-    value: 30
+    value: 40
   notify: restart_dock
 # Dock Recent Apps
 - name: "Dock | show recents"
