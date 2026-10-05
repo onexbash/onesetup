@@ -88,6 +88,11 @@ dotfiles:
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/gh",
       dest: "{{ XDG_CONFIG_HOME }}/gh",
     }
+  # onesetup
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/onesetup",
+      dest: "{{ XDG_CONFIG_HOME }}/onesetup",
+    }
   # zed
   - {
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/zed",
