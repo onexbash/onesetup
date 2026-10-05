@@ -52,4 +52,4 @@
   notify: # trigger handlers
     - restart_cache
     - restart_finder
-    - logout_user
+    - semi_logout

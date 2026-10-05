@@ -28,7 +28,7 @@
     value:
       - en
       - de
-# Dication Prompt
+# Dictation Prompt
 - name: "Disable dictation prompt"
   community.general.osx_defaults:
     domain: com.apple.HIToolbox
@@ -62,25 +62,25 @@
     type: bool
     value: true
 
-# -- -- -- -- -- -- -- -- #
-# --   USER INTERFACE  -- #
-# -- -- -- -- -- -- -- -- #
+# -- -- -- -- -- -- -- -- -- -- #
+# --   USER INTERFACE (UI)   -- #
+# -- -- -- -- -- -- -- -- -- -- #
 # Highlight Color
-- name: "Set highlight color"
+- name: "UI | Set highlight color"
   community.general.osx_defaults:
     key: AppleHighlightColor
     type: string
     value: "0.952900 0.545100 0.658800"
   notify: restart_systemui_server
 # Accent Color
-- name: "Set accent color"
+- name: "UI | Set accent color"
   community.general.osx_defaults:
     key: AppleAccentColor
     type: int
     value: 1
   notify: restart_systemui_server
 # Scrollbars
-- name: "Always show scrollbars"
+- name: "UI | Always show scrollbars"
   community.general.osx_defaults:
     domain: NSGlobalDomain
     key: AppleShowScrollBars
@@ -142,8 +142,8 @@
 # -- -- -- -- -- -- -- -- #
 # --      MENUBAR      -- #
 # -- -- -- -- -- -- -- -- #
-# Clock Seperator
-- name: "Menubar | blink clock separator"
+# Clock Separator
+- name: "Menubar | Blink clock separator"
   community.general.osx_defaults:
     domain: com.apple.menuextra.clock
     key: FlashDateSeparators
@@ -151,7 +151,7 @@
     value: false
   notify: restart_systemui_server
 # Clock Date Format
-- name: "Menubar | clock date format"
+- name: "Menubar | Clock date format"
   community.general.osx_defaults:
     domain: com.apple.menuextra.clock
     key: DateFormat
@@ -163,50 +163,56 @@
 # --       MOUSE       -- #
 # -- -- -- -- -- -- -- -- #
 # Mouse Acceleration
-- name: "Mouse | acceleration"
+- name: "Mouse | Acceleration"
   community.general.osx_defaults:
     domain: NSGlobalDomain
     key: com.apple.mouse.linear
     type: bool
     value: true
 # Mouse Speed
-- name: "Mouse | speed"
+- name: "Mouse | Speed"
   community.general.osx_defaults:
     domain: NSGlobalDomain
     key: com.apple.mouse.scaling
     type: float
     value: 1.5
+# Natural Scrolling
+- name: "Mouse | Disable natural scrolling"
+  community.general.osx_defaults:
+    domain: NSGlobalDomain
+    key: com.apple.swipescrolldirection
+    type: bool
+    value: false
+    state: present
+  notify: semi_logout
 # Pointer Size
-- name: "Set pointer size"
+- name: "Mouse | Set pointer size"
   community.general.osx_defaults:
     domain: com.apple.universalaccess
     key: mouseDriverCursorSize
     type: float
     value: 1.5 # 1.0 = default, 4.0 = max
-
 # Pointer Fill Color (RGBA, values 0.0-1.0)
-- name: "Set pointer fill color"
+- name: "Mouse | Set pointer fill color"
   ansible.builtin.command: >
     defaults write com.apple.universalaccess cursorFill -dict
     red -float 0.80 green -float 0.65 blue -float 0.97 alpha -float 1
   changed_when: false
-
 # Pointer Outline Color (RGBA, values 0.0-1.0)
-- name: "Set pointer outline color"
+- name: "Mouse | Set pointer outline color"
   ansible.builtin.command: >
     defaults write com.apple.universalaccess cursorOutline -dict
     red -float 0.12 green -float 0.12 blue -float 0.18 alpha -float 1
   changed_when: false
-
 # Mark Pointer as customized (so System Settings shows the custom colors)
-- name: "Mark pointer as customized"
+- name: "Mouse | Mark pointer as customized"
   community.general.osx_defaults:
     domain: com.apple.universalaccess
     key: cursorIsCustomized
     type: bool
     value: true
   become: false
-  notify: logout_user
+  notify: semi_logout
 
 # -- -- -- -- -- -- -- -- #
 # --      TERMINAL     -- #
@@ -254,34 +260,51 @@
 # -- -- -- -- -- -- -- -- #
 # --     KEYBOARD      -- #
 # -- -- -- -- -- -- -- -- #
-# Key Hold Behaviour
-- name: "Keyboard | key hold behaviour"
+# Key Hold Behavior
+- name: "Keyboard | Key Hold behavior"
   community.general.osx_defaults:
     domain: NSGlobalDomain
     key: ApplePressAndHoldEnabled
     type: bool
     value: false
 # fn key behavior
-- name: "Keyboard | 🌐︎ key behaviour"
+- name: "Keyboard | fn-key behaviour (🌐︎)"
   community.general.osx_defaults:
     domain: com.apple.HIToolbox
     key: AppleFnUsageType
     type: int
     value: 0 # 0: do nothing | 1: change input source | 2: show emojis & symbols | 3: start dictation
 # Function keys behavior
-- name: "Keyboard | function keys behaviour (f1 - f12)"
+- name: "Keyboard | Set function keys behaviour (f1 - f12)"
   community.general.osx_defaults:
     domain: NSGlobalDomain
     key: com.apple.keyboard.fnState
     type: bool
     value: true # true: use function keys as standard function keys | false: use function keys as media keys
 # Drag on Gesture
-- name: "Keyboard | drag on gesture"
+- name: "Keyboard | Enable drag on gesture"
   community.general.osx_defaults:
     domain: NSGlobalDomain
     key: NSWindowShouldDragOnGesture
     type: string
     value: "YES" # CARE: this has to be a string with "YES/NO" not a Boolean!
+# Automatic Keyboard Brightness
+- name: "Keyboard | Disable automatic brightness"
+  community.general.osx_defaults:
+    host: null
+    domain: /Library/Preferences/com.apple.iokit.AmbientLightSensor
+    key: Automatic Keyboard Enabled
+    type: bool
+    value: false
+
+# Keyboard Backlight Inactivity Delay
+- name: "Keyboard | Set Backlight Inactivity Delay to 5 minutes"
+  community.general.osx_defaults:
+    domain: /Library/Preferences/com.apple.iokit.AmbientLightSensor
+    key: Keyboard Dim Time
+    type: int
+    value: 300
+  become: true
 
 # Swap CMD & Option on external USB keyboard (corrupted for some reason on my GMMK keyboard)
 - name: "Swap Cmd & Option on external USB keyboard"
@@ -366,7 +389,7 @@
 # --   MISCELLANEOUS   -- #
 # -- -- -- -- -- -- -- -- #
 # Help Menu Position
-- name: "Help Menu | position"
+- name: "Help Menu | Position"
   community.general.osx_defaults:
     domain: com.apple.helpviewer
     key: DevMode
@@ -374,7 +397,7 @@
     value: false
 
 # Apple Music Notification
-- name: "Dont show notification when a new song starts"
+- name: "Apple Music | Dont show notification when a new song starts"
   community.general.osx_defaults:
     domain: com.apple.Music
     key: userWantsPlaybackNotifications
@@ -382,7 +405,7 @@
     value: false
 
 # Application Quarantine Message
-- name: "Disable application quarantine message"
+- name: "LaunchServices | Disable application quarantine message"
   community.general.osx_defaults:
     domain: com.apple.LaunchServices
     key: LSQuarantine
@@ -390,7 +413,7 @@
     value: false
 
 # Auto Save
-- name: "Enable auto save"
+- name: "Global | Enable auto save"
   community.general.osx_defaults:
     domain: NSGlobalDomain
     key: NSCloseAlwaysConfirmsChanges
@@ -398,7 +421,7 @@
     value: true
 
 # Time Machine
-- name: "Time machine | dont prompt to use time machine for new disks"
+- name: "Time machine | Dont prompt to use time machine for new disks"
   community.general.osx_defaults:
     domain: com.apple.TimeMachine
     key: DoNotOfferNewDisksForBackup
@@ -406,7 +429,7 @@
     value: true
 
 # Feedback Assistant
-- name: "Feedback assistant | autogather large files"
+- name: "Feedback assistant | Autogather large files"
   community.general.osx_defaults:
     domain: com.apple.appleseed.FeedbackAssistant
     key: Autogather
@@ -414,7 +437,7 @@
     value: true
 
 # Apple Crash Report
-- name: "Disable apple crash reports"
+- name: "Crashreporter | Disable apple crash reports"
   community.general.osx_defaults:
     domain: com.apple.CrashReporter
     key: DialogType
@@ -422,7 +445,7 @@
     value: none
 
 # Simulator
-- name: "simulator | screenshot location"
+- name: "Simulator | Screenshot location"
   community.general.osx_defaults:
     domain: com.apple.iphonesimulator
     key: ScreenShotSaveLocation
@@ -476,7 +499,7 @@
         type: int
         value: 1500
         state: present
-    # 3) Auto LogOut (25m after screen saver)
+    # 3) Auto Logout (25m after screen saver)
     - name: "Set Auto LogOut Delay to 30 minutes"
       community.general.osx_defaults:
         domain: NSGlobalDomain

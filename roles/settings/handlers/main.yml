@@ -19,10 +19,10 @@
   ansible.builtin.command: killall cfprefsd
   listen: restart_cache
 
-# Handler: Log out current user (applies NSGlobalDomain changes)
-- name: "Log out user to apply NSGlobalDomain Changes"
-  ansible.builtin.shell: >
-    sleep 5 && osascript -e 'tell application "System Events" to log out'
-  async: 10
-  poll: 0
-  listen: logout_user
+# Handler: Apply changes that require a logout without actually logging-out (works for some but not every change)
+- name: "Reload user preferences without logout"
+  ansible.builtin.command: >
+    /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+  become: false
+  changed_when: false
+  listen: semi_logout
