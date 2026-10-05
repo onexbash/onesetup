@@ -83,6 +83,11 @@ dotfiles:
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/sol",
       dest: "{{ XDG_CONFIG_HOME }}/sol",
     }
+  # github (gh)
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/gh",
+      dest: "{{ XDG_CONFIG_HOME }}/gh",
+    }
   # zed
   - {
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/zed",
