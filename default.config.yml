@@ -10,6 +10,7 @@ remote:
   dotfiles_repo: "dotfiles" # Default: dotfiles
 system:
   os: "" # Default: Auto-Detected by detect_os() function in ./scripts/util.sh
+  arch: "" # Default: Auto-Detected in ./scripts/util.sh
   hostname: "" # Default: Value from Commands ["scutil --get HostName", "scutil --get LocalHostName", "hostname -s"]
   username: "" # Default: Value from Environment Variable "$USER"
   root_user: "" # Default: Value from Command "id -nu 0"

@@ -149,9 +149,10 @@ remote:
   username: [String] # Username on your Remote Repository (e.g: Github Username)
   connection: [https|ssh] # Connection Type for Repository Operations
   project_repo: [String] # Repository Name
-  dotfiles_repo: [String] # Name of a seperate Git Repository that stores all your dotfiles
+  dotfiles_repo: [String] # Name of a separate Git Repository that stores all your dotfiles
 system:
   os: [osx|linux|windows] # Operating System (Auto-Detected but can be overridden here)
+  arch: [arm64|x86] # CPU Architecture (Auto-Detected but can be overridden here)
   hostname: [String] # Name of your Machine
   username: [String] # Name of a User on your system that has sudo privileges but is not the root user
   root_user: [String] # Name of the Root user on your system
@@ -159,7 +160,7 @@ system:
   admin_group: [String] # Group of the root user
   config_dir: [String] # Config Directory for your config.yml
   storage_dir: [String] # Storage Directory
-  dotfiles_dir: [String] # Dotfiles Directory used to clone your Dotfiles Repo into and symlink them to the mapped locations
+  dotfiles_dir: [String] # Dotfiles Directory used to clone your Dotfiles repo into and symlink them to the mapped locations
   bin_dir: [String] # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
   tmp_dir: [String] # Directory for Temporary Files
 project:
@@ -212,7 +213,7 @@ onesetup test --dev-dir # Tests the changes that it would make without applying 
 ## ⚙️ What It Does
 
 ### Software Installation
-- Installs Xcode Command Line Tools & accepts the license
+- Installs XCode Command Line Tools & accepts the license
 - Installs Rosetta 2 (for Apple Silicon compatibility)
 - Installs [Homebrew](https://brew.sh)
 - Installs casks & formulae defined in [`group_vars/osx/brew.yml`](./group_vars/osx/brew.yml) — languages, CLI tools, apps

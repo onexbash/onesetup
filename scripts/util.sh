@@ -159,9 +159,13 @@ function read_config() {
   local remote_project_repo="onesetup"
   local remote_dotfiles_repo="dotfiles"
   # [System]
-  # Operating System (Auto-Detect)
+  # Operating System
   local system_os
   system_os="$(detect_os)"
+  # CPU Architecture
+  local system_arch
+  [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]] && system_arch="arm64" || system_arch="x86"
+
   # Hostname, Username & Group of Default User & Admin/Root User (Auto-Detect)
   local system_hostname system_username system_root_user system_user_group system_admin_group
   case "$system_os" in
@@ -231,6 +235,7 @@ function read_config() {
     _get_config_value remote_project_repo '.remote.project_repo'
     _get_config_value remote_dotfiles_repo '.remote.dotfiles_repo'
     _get_config_value system_os '.system.os'
+    _get_config_value system_arch '.system.arch'
     _get_config_value system_hostname '.system.hostname'
     _get_config_value system_username '.system.username'
     _get_config_value system_root_user '.system.root_user'
@@ -252,6 +257,7 @@ function read_config() {
   export ONESETUP_REMOTE_PROJECT_REPO="${remote_project_repo}"
   export ONESETUP_REMOTE_DOTFILES_REPO="${remote_dotfiles_repo}"
   export ONESETUP_SYSTEM_OS="${system_os}"
+  export ONESETUP_SYSTEM_ARCH="${system_arch}"
   export ONESETUP_SYSTEM_HOSTNAME="${system_hostname}"
   export ONESETUP_SYSTEM_USERNAME="${system_username}"
   export ONESETUP_SYSTEM_ROOT_USER="${system_root_user}"
