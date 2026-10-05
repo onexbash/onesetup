@@ -10,6 +10,7 @@ brew_casks:
   - claude # Claude Desktop App
   - cameracontroller # Camera Preview Tool
   - shotcut # Video Editing
+  - sol # MacOS Spotlight Replacement (similar to raycast)
   - alt-tab # Alt-Tab replacement
   - appcleaner # App Uninstaller
   # - alacritty # Terminal Emulator (Cross Platform) # TODO: create local cask for installation because the official cask was disabled (cause the devs didnt want to use a paid apple developer account to sign it for gatekeeper)
@@ -32,7 +33,7 @@ brew_casks:
   - proton-pass # Proton Password Manager
   - proton-meet # Proton Video Conference
   - proton-mail-bridge # Proton Bridge to allow Mail traffic over 3rd party E-Mail Clients
-  - raycast # Smart Spotlight Replacement
+  #  - raycast # Smart Spotlight Replacement (replaced by 'sol')
   - spotify
   - utm # VM Management
   - sublime-text # Text Editor
@@ -85,7 +86,7 @@ brew_formulaes:
   - powershell # Microsoft Powershell
   - azure-cli # CLI for Azure
   # -- PACKAGE & VERSION MANAGER -- #
-  - luarocks # Lua package manager
+  - luarocks # lua package manager
   - poetry # python package manager
   - pnpm # node package manager
   - yarn # node package manager
