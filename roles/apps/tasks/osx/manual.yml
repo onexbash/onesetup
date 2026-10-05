@@ -8,8 +8,8 @@
 - name: "Lite XL | Define Variables as Ansible Facts"
   ansible.builtin.set_fact:
     litexl_url: "https://github.com/lite-xl/lite-xl/releases/download/v2.1.8/lite-xl-v2.1.8-addons-macos-{{ 'arm64' if ONESETUP_SYSTEM_ARCH == 'arm64' else 'x86_64' }}.dmg"
-    litexl_dmg: "{{ TMPDIR }}/onesetup/litexl.dmg"
-    litexl_mountpoint: "{{ TMPDIR }}/onesetup/litexl_mount"
+    litexl_dmg: "{{ ONESETUP_SYSTEM_TMP_DIR }}/onesetup/litexl.dmg"
+    litexl_mountpoint: "{{ ONESETUP_SYSTEM_TMP_DIR }}/onesetup/litexl_mount"
     litexl_app_path: "/Applications/Lite XL.app"
 
 # Check if already installed
@@ -25,7 +25,7 @@
     # Ensure Download Directory
     - name: "Lite XL | Ensure download directory exists"
       ansible.builtin.file:
-        path: "{{ TMPDIR }}/onesetup"
+        path: "{{ ONESETUP_SYSTEM_TMP_DIR }}/onesetup"
         state: directory
         mode: "0755"
     # Download Installer
