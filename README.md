@@ -216,7 +216,7 @@ onesetup test --dev-dir # Tests the changes that it would make without applying 
 - Installs Rosetta 2 (for Apple Silicon compatibility)
 - Installs [Homebrew](https://brew.sh)
 - Installs casks & formulae defined in [`group_vars/osx/brew.yml`](./group_vars/osx/brew.yml) — languages, CLI tools, apps
-- Installs App Store software via `mas` (e.g. Xcode) defined in the `apps` role
+- Installs App Store software via `mas` (e.g. XCode) defined in the `apps` role
 - Handles anything that can't be installed via Homebrew or the App Store through custom tasks
 
 ### Dotfiles
@@ -226,7 +226,7 @@ onesetup test --dev-dir # Tests the changes that it would make without applying 
 
 ### System Settings
 
-- Sets macOS Dock items based on [`group_vars/osx/dock.yml`](./group_vars/osx/dock.yml)
+- Sets MacOS Dock items based on [`group_vars/osx/dock.yml`](./group_vars/osx/dock.yml)
 - Applies additional system defaults & preferences defined in the [`settings`](./roles/settings) role
 
 ### SSH
@@ -239,7 +239,7 @@ onesetup test --dev-dir # Tests the changes that it would make without applying 
 ## 🗺️ Roadmap
 
 - [ ] Fedora Linux support
-- [ ] Intel-based macOS support
+- [ ] Intel-based MacOS support
 - [ ] Additional CLI parameters
 - [ ] Setup wizard to semi-automate secret encryption & storage
 - [ ] Auto-Installation of manual drivers (printer, ..)

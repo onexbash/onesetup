@@ -193,6 +193,7 @@ function read_config() {
   local system_tmp_dir="/tmp"
   # [Project]
   # Development Directory where the Ansible Playbook is executed (used instead of the installation directory when set)
+  local project_dev_dir=""
   local project_debug="0" # Debug-Level for Scripts & Ansible itself
   # -- / -- #
 
@@ -216,7 +217,7 @@ function read_config() {
       return 1
       ;;
     unsupported)
-      echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"
+      echo -e "${I_ERR}Unsupported Operating System: $ONESETUP_SYSTEM_OS"
       return 1
       ;;
     esac
@@ -262,6 +263,8 @@ function read_config() {
   export ONESETUP_SYSTEM_BIN_DIR="${system_bin_dir}"
   export ONESETUP_SYSTEM_TMP_DIR="${system_tmp_dir}"
   export ONESETUP_PROJECT_DEBUG="${project_debug}"
+  export ONESETUP_PROJECT_DEV_DIR="${project_dev_dir}"
+
 }
 
 # Function to export Dynamic Environment Variables that are constructed based on the Env-Vars in read_config()
