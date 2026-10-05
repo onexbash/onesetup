@@ -12,17 +12,32 @@ function main() {
   tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
   set_modes || echo -e "${I_WARN}Failed to set Script Modes."
   init_brew || echo -e "${I_WARN}Failed to initialize Homebrew"
-  { read_config && echo -e "${I_OK}Config File read"; } || { echo -e "${I_ERR}Failed to read Config File"; exit 1; }
-  export_dynamic_vars || { echo -e "${I_ERR}Failed to export Dynamic Environment Variables!"; exit 1; }
-  install_deps || { echo -e "${I_ERR}Failed to install dependencies"; exit 1; }
-  parse_args "$@" || { echo -e "${I_ERR}Failed to parse Command arguments"; exit 1; }
+  { read_config && echo -e "${I_OK}Config File read"; } || {
+    echo -e "${I_ERR}Failed to read Config File"
+    exit 1
+  }
+  export_dynamic_vars || {
+    echo -e "${I_ERR}Failed to export Dynamic Environment Variables!"
+    exit 1
+  }
+  install_deps || {
+    echo -e "${I_ERR}Failed to install dependencies"
+    exit 1
+  }
+  parse_args "$@" || {
+    echo -e "${I_ERR}Failed to parse Command arguments"
+    exit 1
+  }
 }
 
 # Source Utility Script
-function load_utils(){
-  resolve_target_dir # Call that $TARGET_DIR has a value  
+function load_utils() {
+  resolve_target_dir # Call that $TARGET_DIR has a value
   local util_script="${TARGET_DIR}/scripts/util.sh"
-  source "$util_script" && echo -e "${I_OK}Utility Script sourced" || { echo -e "${I_ERR}Failed to source Utility Script"; exit 1; }
+  source "$util_script" && echo -e "${I_OK}Utility Script sourced" || {
+    echo -e "${I_ERR}Failed to source Utility Script"
+    exit 1
+  }
 }
 
 # Dependency Installation
@@ -45,10 +60,16 @@ function install_deps() {
         echo -e "${I_INFO}Install Homebrew from: ${C_BLUE}https://brew.sh${C_RESET}" >&2
         exit 1
       fi
-      brew install "$pkg" || { echo -e "${I_ERR}Failed to install: $pkg" >&2; exit 1; }
+      brew install "$pkg" || {
+        echo -e "${I_ERR}Failed to install: $pkg" >&2
+        exit 1
+      }
       ;;
     linux)
-      install_linux_pkg "$pkg" || { echo -e "${I_ERR}Failed to install: $pkg" >&2; exit 1; }
+      install_linux_pkg "$pkg" || {
+        echo -e "${I_ERR}Failed to install: $pkg" >&2
+        exit 1
+      }
       ;;
     windows)
       echo -e "${I_ERR}Windows Support Coming soon.." >&2 && exit 1
@@ -87,8 +108,8 @@ function parse_args() {
   esac
 }
 
-ARG_ROLES=""
-ARG_SKIP_ROLES=""
+ARG_INCLUDE=""
+ARG_SKIP=""
 ARG_DEV_DIR=""
 ARG_DIFF="false"
 
@@ -107,14 +128,14 @@ function parse_playbook_args() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-    --roles)
+    --include)
       require_value "$1" "${2:-}"
-      ARG_ROLES="$2"
+      ARG_INCLUDE="$2"
       shift 2
       ;;
-    --skip-roles)
+    --skip)
       require_value "$1" "${2:-}"
-      ARG_SKIP_ROLES="$2"
+      ARG_SKIP="$2"
       shift 2
       ;;
     --dev-dir)
@@ -154,34 +175,33 @@ function resolve_target_dir() {
 # Validate & Execute the Ansible Playbook (called by run_playbook() & test_playbook())
 function exec_playbook() {
   resolve_target_dir # Call that $TARGET_DIR has a value
-  
-  local entrypoint="${TARGET_DIR}/main.yml" # Playbook Entrypoint (main.yml)
+
+  local entrypoint="${TARGET_DIR}/main.yml"    # Playbook Entrypoint (main.yml)
   local ansible_args=("--ask-vault-pass" "$@") # Playbook Arguments (+passed in exec_playbook call)
-  
+
   # Check if main.yml exists in target_dir
   if [[ ! -f "$entrypoint" || ! -r "$entrypoint" ]]; then
     echo -e "${I_ERR}No readable Playbook Entrypoint found at: ${C_CYAN}${entrypoint}${C_RESET}" >&2
     exit 1
   fi
-  
+
   # Export & Validate Ansible Env-Vars
   export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-${TARGET_DIR}/ansible.cfg}"
   export ANSIBLE_INVENTORY="${ANSIBLE_INVENTORY:-${TARGET_DIR}/inventory.ini}"
-  [[ -f "$ANSIBLE_CONFIG" ]]    || echo -e "${I_WARN}Ansible config not found: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}" >&2
-  [[ -f "$ANSIBLE_INVENTORY" ]] || echo -e "${I_WARN}Ansible inventory not found: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}" >&2 
+  [[ -f "$ANSIBLE_CONFIG" ]] || echo -e "${I_WARN}Ansible config not found: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}" >&2
+  [[ -f "$ANSIBLE_INVENTORY" ]] || echo -e "${I_WARN}Ansible inventory not found: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}" >&2
 
   # Display Messages
   echo -e "${I_OK}onesetup ==> Using Ansible Playbook from: ${C_CYAN}${TARGET_DIR}${C_RESET}"
   echo -e "${I_INFO}onesetup ==> Ansible Config file: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}"
   echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
-  
   # Add --tags or --skip-tags to ansible_args
-  if [[ -n "$ARG_ROLES" ]]; then
-    ansible_args+=("--tags" "${ARG_ROLES},untagged")
-  elif [[ -n "$ARG_SKIP_ROLES" ]]; then
-    ansible_args+=("--skip-tags" "$ARG_SKIP_ROLES")
+  if [[ -n "$ARG_INCLUDE" ]]; then
+    ansible_args+=("--tags" "${ARG_INCLUDE},untagged")
+  elif [[ -n "$ARG_SKIP" ]]; then
+    ansible_args+=("--skip-tags" "$ARG_SKIP")
   fi
-  
+
   # Run Playbook with Entrypoint & Args set before
   if ansible-playbook "$entrypoint" "${ansible_args[@]}"; then
     echo -e "${I_OK}onesetup ==> ansible playbook finished"
@@ -202,8 +222,8 @@ Usage: $(basename "$0") <command> [options]
 
 Sub-Commands:
   run                         Run Ansible Playbook
-    --roles <role1,role2>     Comma-separated list of roles/tags to run
-    --skip-roles <role1,...>  Comma-separated list of roles/tags to skip
+    --include <role1,role2>   Comma-separated list of roles/tags to run
+    --skip <role1,...>        Comma-separated list of roles/tags to skip
   test                        Test Playbook Changes without applying them
     --diff                    Show the Content diffs for modules like copy/lineinfile/..
   help, --help, -h            Display this help message

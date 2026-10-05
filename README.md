@@ -118,12 +118,9 @@ Applies defined system configurations using Ansible.
 | `onesetup --help` | Displays command usage and available flags. |
 
 **Available Options for `onesetup run`:**
-
-* `--directory <dev|prod>` (Default: `prod`)
-  * `dev`: Executes the playbook from your local **Git Repository Root**. This only works when the command is run from your onesetup git repository.
-  * `prod`: Executes the playbook from the **Installation Directory** (`$ONESETUP_DIR`).
-* `--roles <role1,role2>` — Runs only the specified comma-separated roles/tags.
-* `--skip-roles <role1,...>` — Skips the specified comma-separated roles/tags.
+* `--dev-dir <dev|prod>`        - Specify a directory to run the playbook in. *If set, it's used instead of the Installation Directory*
+* `--include <role1,role2>`     — roles/tags to include (comma-separated). *If set, only these roles/tags will run*
+* `--skip <role1,...>`          — roles/tags to skip (comma-separated). *If set, these roles/tags will be excluded from the playbook run*
 
 ---
 
