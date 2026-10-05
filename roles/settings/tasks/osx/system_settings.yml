@@ -192,17 +192,17 @@
     key: mouseDriverCursorSize
     type: float
     value: 1.5 # 1.0 = default, 4.0 = max
-# Pointer Fill Color (RGBA, values 0.0-1.0)
+# Pointer Fill Color
 - name: "Mouse | Set pointer fill color"
-  ansible.builtin.command: >
+  ansible.builtin.command: > # RGBA Values
     defaults write com.apple.universalaccess cursorFill -dict
-    red -float 0.80 green -float 0.65 blue -float 0.97 alpha -float 1
+    red -float 0.7961 green -float 0.6510 blue -float 0.9686 alpha -float 1
   changed_when: false
-# Pointer Outline Color (RGBA, values 0.0-1.0)
+# Pointer Outline Color
 - name: "Mouse | Set pointer outline color"
-  ansible.builtin.command: >
+  ansible.builtin.command: > # RGBA Values
     defaults write com.apple.universalaccess cursorOutline -dict
-    red -float 0.12 green -float 0.12 blue -float 0.18 alpha -float 1
+    red -float 0.0667 green -float 0.0667 blue -float 0.1059 alpha -float 1
   changed_when: false
 # Mark Pointer as customized (so System Settings shows the custom colors)
 - name: "Mouse | Mark pointer as customized"
