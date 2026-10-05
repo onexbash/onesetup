@@ -49,7 +49,7 @@ brew_casks:
   - karabiner-elements # Keyboard Mapping Tool
 
 # Formulas
-brew_formulaes:
+brew_formulas:
   # -- LANGUAGES -- #
   - ast-grep # structural code search tool
   - yazi # terminal file manager
