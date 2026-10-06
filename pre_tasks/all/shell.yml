@@ -1,34 +1,97 @@
 ---
-# Set Ansible Fact for Default Shell
-- name: "{{ prefix }} Set Ansible Fact for Default Shell"
-  ansible.builtin.set_fact:
-    default_shell: "{{ '/usr/bin/zsh' if ONESETUP_SYSTEM_OS == 'linux' else '/bin/zsh' }}"
+- name: "{{ prefix }} Global Shell Configuration"
+  # -- Tasks -- #
+  block:
+    # Remove path_helper invocation from /etc/zprofile & /etc/profile on MacOS
+    - name: "{{ prefix }} Remove path_helper invocation from /etc/zprofile & /etc/profile on MacOS"
+      ansible.builtin.replace:
+        path: "{{ item }}"
+        regexp: '(?m)^if \[ -x /usr/libexec/path_helper \]; then\n\teval `/usr/libexec/path_helper -s`\nfi\n?'
+        replace: ""
+      loop:
+        - /etc/profile
+        - /etc/zprofile
+      become: true
+      when: ONESETUP_SYSTEM_OS == "osx"
 
-# Set User's Default Shell
-- name: "{{ prefix }} Set User's Default Shell"
-  ansible.builtin.user:
-    name: "{{ ONESETUP_SYSTEM_USERNAME }}"
-    shell: "{{ default_shell }}"
-  become: true
+    # Ensure /etc/paths is empty (we only use /etc/paths.d/)
+    - name: "{{ prefix }} Ensure /etc/paths is empty"
+      ansible.builtin.copy:
+        dest: /etc/paths
+        content: ""
+        owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
+        group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
+        mode: "0644"
+        backup: true # Keeps a copy of Apple's original file
+      when: ONESETUP_SYSTEM_OS == "osx"
 
-# Resolve bash interpreter path
-- name: "{{ prefix }} Resolve bash interpreter path"
-  ansible.builtin.command:
-    cmd: command -v bash
-  register: bash_path_result
-  changed_when: false
-  become: false
+    # Write PATH Entries to /etc/paths.d/[file] | see: vars/main/shell.yml
+    - name: "{{ prefix }} Write PATH Entries to /etc/paths & /etc/paths.d/"
+      become: true
+      ansible.builtin.copy:
+        dest: >-
+          {{ '/etc/paths' if item.priority is not defined
+             else '/etc/paths.d/' ~ ('%02d' | format(item.priority | int)) ~ '-' ~ item.name }}
+        content: "{{ item.entries | join('\n') }}\n"
+        owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
+        group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
+        mode: "0644"
+      loop: "{{ system_paths }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: ONESETUP_SYSTEM_OS == "osx"
 
-# Resolve zsh interpreter path
-- name: "{{ prefix }} Resolve zsh interpreter path"
-  ansible.builtin.command:
-    cmd: command -v zsh
-  register: zsh_path_result
-  changed_when: false
-  become: false
+    # Ensure specified login shells exist in /etc/shells
+    - name: "{{ prefix }} Ensure specified login shells exist in /etc/shells"
+      ansible.builtin.lineinfile:
+        path: /etc/shells
+        line: "{{ item }}"
+        create: false
+      loop: "{{ valid_shells }}"
+      become: true
 
-# Set Ansible Facts for bash_path & zsh_path
-- name: "{{ prefix }} Store resolved interpreter paths as Ansible Facts"
-  ansible.builtin.set_fact:
-    bash_path: "{{ bash_path_result.stdout | trim }}"
-    zsh_path: "{{ zsh_path_result.stdout | trim }}"
+    # Ensure global environment variables are exported in /etc/zshenv & /etc/profile
+    - name: "{{ prefix }} Ensure global environment variables are exported in /etc/zshenv & /etc/profile"
+      ansible.builtin.blockinfile:
+        path: "{{ item.path }}"
+        marker: "# {mark} ONESETUP: GLOBAL ENV VARS (managed via Ansible)"
+        block: |
+          {% for var in global_env_vars %}
+          export {{ var.name }}="{{ var.value }}"
+          {% endfor %}
+        insertbefore: "{{ item.insertbefore | default(omit) }}"
+        create: true
+        owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
+        group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
+        mode: "0644"
+        backup: true
+        validate: "{{ item.validate }}"
+      loop: "{{ global_env_files }}"
+      loop_control:
+        label: "{{ item.path }}"
+      become: true
+
+    # Set User's Default Shell
+    - name: "{{ prefix }} Set User's Default Shell"
+      ansible.builtin.user:
+        name: "{{ ONESETUP_SYSTEM_USERNAME }}"
+        shell: "{{ default_shell }}"
+      become: true
+
+    # Resolve bash interpreter path
+    - name: "{{ prefix }} Resolve bash interpreter path"
+      ansible.builtin.shell: command -v bash
+      register: bash_path_result
+      changed_when: false
+
+    # Resolve zsh interpreter path
+    - name: "{{ prefix }} Resolve zsh interpreter path"
+      ansible.builtin.shell: command -v zsh
+      register: zsh_path_result
+      changed_when: false
+
+    # Set Ansible Facts for bash_path & zsh_path
+    - name: "{{ prefix }} Store resolved interpreter paths as Ansible Facts"
+      ansible.builtin.set_fact:
+        bash_path: "{{ bash_path_result.stdout | trim }}"
+        zsh_path: "{{ zsh_path_result.stdout | trim }}"

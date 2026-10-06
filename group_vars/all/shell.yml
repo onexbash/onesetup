@@ -1,0 +1,74 @@
+---
+# -- VARIABLES FOR SHELL PRE-TASK -- #
+
+# Default Shell
+default_shell: "{{ '/usr/bin/zsh' if ONESETUP_SYSTEM_OS == 'linux' else '/bin/zsh' }}"
+# Global Environment Variables (Defaults)
+global_env_vars:
+  - name: XDG_CONFIG_HOME
+    value: "${XDG_CONFIG_HOME:-$HOME/.config}"
+  - name: XDG_CACHE_HOME
+    value: "${XDG_CACHE_HOME:-$HOME/.cache}"
+  - name: XDG_DATA_HOME
+    value: "${XDG_DATA_HOME:-$HOME/.local/share}"
+  - name: XDG_STATE_HOME
+    value: "${XDG_STATE_HOME:-$HOME/.local/state}"
+  - name: ZDOTDIR
+    value: "${ZDOTDIR:-$HOME}"
+  - name: SHELL_CONFIG_DIR
+    value: "${XDG_CONFIG_HOME:-$HOME/.config}/shell"
+  - name: SHELL_SCRIPTS_DIR
+    value: "${XDG_CONFIG_HOME:-$HOME/.config}/scripts"
+  - name: SHELL_UTIL_FILE
+    value: "${SHELL_CONFIG_DIR}/util.sh"
+# Valid Login Shells (added to /etc/shells)
+valid_shells:
+  - /bin/bash
+  - /bin/csh
+  - /bin/dash
+  - /bin/ksh
+  - /bin/sh
+  - /bin/tcsh
+  - /bin/zsh
+  - /opt/homebrew/bin/bash
+  - /opt/homebrew/bin/zsh
+  - /opt/homebrew/bin/pwsh
+  - /opt/homebrew/opt/powershell/bin/pwsh
+# Global Shell Files (where env-vars should be exported)
+global_env_files:
+  - path: /etc/zshenv
+    validate: "zsh -n %s"
+  - path: /etc/profile
+    validate: "sh -n %s"
+    # Insert before /etc/bashrc is sourced, so user configs already see the vars
+    insertbefore: '^if \[ "\$\{BASH-no\}" != "no" \]'
+# Global System Paths (Added to $PATH)
+system_paths:
+  - name: system
+    priority: 10 # → /etc/paths.d/10-system
+    entries:
+      - /usr/local/bin
+      - /System/Cryptexes/App/usr/bin
+      - /usr/bin
+      - /bin
+      - /usr/sbin
+      - /sbin
+  - name: cryptex
+    priority: 10 # → /etc/paths.d/10-cryptex
+    entries:
+      - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin
+      - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin
+      - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin
+  - name: "pmk-global"
+    priority: 10 # → /etc/paths.d/10-pmk-global
+    entries:
+      - /pkg/env/global/bin
+  - name: homebrew
+    priority: 1 # → /etc/paths.d/01-homebrew
+    entries:
+      - /opt/homebrew/bin
+      - /opt/homebrew/sbin
+  - name: onexbash
+    priority: 2 # → /etc/paths.d/02-onexbash
+    entries:
+      - /opt/onexbash/bin

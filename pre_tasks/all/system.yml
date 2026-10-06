@@ -5,7 +5,6 @@
     that: ONESETUP_SYSTEM_OS in pretasks_by_os
     fail_msg: "Unsupported OS: '{{ ONESETUP_SYSTEM_OS | default('undefined') }}'"
     quiet: true
-  tags: [always]
 
 # Set HostName to value from env-var
 - name: "Set hostname to: {{ ONESETUP_SYSTEM_HOSTNAME }}"

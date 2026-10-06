@@ -34,6 +34,22 @@
       no_log: true
       tags: [always]
 
+    # Pre-Task: Include Environment Pre-Task (! RUNS FIRST !)
+    - name: "Include Environment Pre-Task"
+      tags: [always]
+      ansible.builtin.include_tasks:
+        file: "pre_tasks/all/env.yml"
+        apply:
+          tags: [always]
+      vars:
+        prefix: "PRE-TASK: {{ pretask }} |"
+
+    # Pre-Task: Add host to OS group (auto-loads group_vars/<OS>/)
+    - name: "Add host to OS group ({{ ONESETUP_SYSTEM_OS }})"
+      ansible.builtin.group_by:
+        key: "{{ ONESETUP_SYSTEM_OS }}"
+      tags: [always]
+
     # Include: OS-Independent Pre-Tasks
     - name: "Include OS-Independent Pre-Tasks"
       tags: [always]
@@ -44,18 +60,11 @@
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
-        - env
         - system
         - shell
       loop_control:
         loop_var: pretask
         label: "{{ pretask }}"
-
-    # Pre-Task: Add host to OS group (auto-loads group_vars/<OS>/)
-    - name: "Add host to OS group ({{ ONESETUP_SYSTEM_OS }})"
-      ansible.builtin.group_by:
-        key: "{{ ONESETUP_SYSTEM_OS }}"
-      tags: [always]
 
     # Include: MacOS Pre-Tasks
     - name: "Include Pre-Tasks (MacOS)"
@@ -68,7 +77,6 @@
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
         - filesystem
-        - shell
         - dependencies
         - clt
       loop_control:
