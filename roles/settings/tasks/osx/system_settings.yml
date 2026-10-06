@@ -14,12 +14,12 @@
     state: present
 # Automatic Software Updates
 - name: "Enable auto software updates"
+  become: true
   community.general.osx_defaults:
     domain: /Library/Preferences/com.apple.SoftwareUpdate
     key: AutomaticCheckEnabled
     type: int
     value: 1
-  become: true
 # Language
 - name: "Set language to english(primary) and german(secondary)"
   community.general.osx_defaults:
@@ -211,7 +211,6 @@
     key: cursorIsCustomized
     type: bool
     value: true
-  become: false
   notify: semi_logout
 
 # -- -- -- -- -- -- -- -- #
@@ -300,12 +299,12 @@
 
 # Keyboard Backlight Inactivity Delay
 - name: "Keyboard | Set Backlight Inactivity Delay to 5 minutes"
+  become: true
   community.general.osx_defaults:
     domain: /Library/Preferences/com.apple.iokit.AmbientLightSensor
     key: Keyboard Dim Time
     type: int
     value: 300
-  become: true
 
 # -- -- -- -- -- -- -- -- #
 # --  MISSION CONTROL  -- #
@@ -441,25 +440,25 @@
 
 # Disable Startup Sound
 - name: "Disable Startup Sound"
-  ansible.builtin.command: "nvram StartupMute=%01"
   become: true
+  ansible.builtin.command: "nvram StartupMute=%01"
   changed_when: true
 
 # Restart MacOS when it freezes
 - name: "Automatically Restart on System Freeze"
-  ansible.builtin.command: "systemsetup -setrestartfreeze on"
   become: true
+  ansible.builtin.command: "systemsetup -setrestartfreeze on"
   changed_when: true
 
 # NOTE: The settings below are not verified yet
 # -- SECURITY -- #
 - name: "Security | enable firewall"
+  become: true
   community.general.osx_defaults:
     domain: /Library/Preferences/com.apple.alf
     key: globalstate
     type: int
     value: 1
-  become: true
 # MacOS Inactivity Configuration
 - name: "Inactivity Configuration"
   block:
@@ -488,22 +487,22 @@
         state: present
     # 3) Auto Logout (25m after screen saver)
     - name: "Set Auto LogOut Delay to 30 minutes"
+      become: true # set system-wide # TODO: check if this should use become or not
       community.general.osx_defaults:
         domain: NSGlobalDomain
         key: com.apple.autologout.AutoLogOutDelay
         type: int
         value: 1800 # 30min => 25m after screen saver
         state: present
-      become: true # set system-wide # TODO: check if this should use become or not
     # 4) Power Management (25m after screen saver)
     - name: "Set Display sleep to 30 minutes"
+      become: true
       ansible.builtin.command: "pmset -a displaysleep 30"
       changed_when: false
-      become: true
     - name: "Set System sleep to 30 minutes"
+      become: true
       ansible.builtin.command: "pmset -a sleep 30"
       changed_when: false
-      become: true
 
 # -- HOT CORNERS -- #
 # Disable top-left

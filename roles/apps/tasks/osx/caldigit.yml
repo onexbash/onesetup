@@ -12,37 +12,37 @@
 
 # Create tmp dirs
 - name: "Create Caldigit tmpdir under {{ ONESETUP_SYSTEM_TMP_DIR }}"
+  become: true
   ansible.builtin.file:
     path: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}"
     state: directory
     mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
     group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
-  become: true
   loop: "{{ caldigit_downloads }}"
   loop_control:
     label: "{{ item.name }}"
 
 # Download Packages as .zip files
 - name: "Download Caldigit Packages"
+  become: true
   ansible.builtin.get_url:
     url: "{{ item.url }}"
     dest: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}/caldigit-{{ item.name }}.zip"
     mode: "0644"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
-  become: true
   loop: "{{ caldigit_downloads }}"
   loop_control:
     label: "{{ item.name }}"
 
 # Extract Packages
 - name: "Extract Caldigit Packages to tmpdir"
+  become: true
   ansible.builtin.unarchive:
     src: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}/caldigit-{{ item.name }}.zip"
     dest: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}"
     remote_src: true
-  become: true
   loop: "{{ caldigit_downloads }}"
   loop_control:
     label: "{{ item.name }}"
@@ -59,6 +59,7 @@
     label: "{{ item.name }}"
 
 - name: "Install Caldigit Packages"
+  become: true
   ansible.builtin.command:
     argv:
       - "installer"
@@ -66,7 +67,6 @@
       - "{{ item.files[0].path }}"
       - "-target"
       - "/"
-  become: true
   loop: "{{ caldigit_pkgs.results }}"
   loop_control:
     label: "{{ item.item.name }}"

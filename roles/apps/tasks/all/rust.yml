@@ -4,23 +4,21 @@
   ansible.builtin.stat:
     path: "{{ CARGO_HOME }}/bin/rustup"
   register: rustup_bin
-  become: false
 
-# Check for existing rustup toolchain
+# Check for existing rustup Toolchain
 - name: "Check if rustup toolchains exist"
   ansible.builtin.find:
     paths: "{{ RUSTUP_HOME }}/toolchains"
     file_type: any
   register: rustup_toolchains
-  become: false
   ignore_errors: true # path may not exist yet
 
 # Ensure gcc is installed on Linux Systems (dependency of rustup)
 - name: "Ensure gcc is installed for rustup to work"
+  become: true
   ansible.builtin.package:
     name: gcc
     state: present
-  become: true
   when: ONESETUP_SYSTEM_OS == 'linux'
 
 # Install Rustup if previous checks detected no rust installation via rustup
@@ -33,7 +31,6 @@
   environment:
     CARGO_HOME: "{{ CARGO_HOME }}"
     RUSTUP_HOME: "{{ RUSTUP_HOME }}"
-  become: false
   when:
     - not rustup_bin.stat.exists
     - (rustup_toolchains.matched | default(0)) == 0

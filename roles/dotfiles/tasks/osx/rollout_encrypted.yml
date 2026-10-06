@@ -1,13 +1,13 @@
 ---
 # Ensure ~/.ssh directory exists with correct permission
 - name: "Ensure SSH Directory exists ({{ HOME }}/.ssh)"
+  become: true
   ansible.builtin.file:
     path: "{{ HOME }}/.ssh"
     state: "directory"
     mode: "0700"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
-  become: true
 
 # Rollout SSH Config Files from 'group_vars/all/ssh.yml'
 - name: "Rollout SSH config files"

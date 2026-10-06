@@ -4,6 +4,7 @@
   block:
     # Remove path_helper invocation from /etc/zprofile & /etc/profile on MacOS
     - name: "{{ prefix }} Remove path_helper invocation from /etc/zprofile & /etc/profile on MacOS"
+      become: true
       ansible.builtin.replace:
         path: "{{ item }}"
         regexp: '(?m)^if \[ -x /usr/libexec/path_helper \]; then\n\teval `/usr/libexec/path_helper -s`\nfi\n?'
@@ -11,11 +12,11 @@
       loop:
         - /etc/profile
         - /etc/zprofile
-      become: true
       when: ONESETUP_SYSTEM_OS == "osx"
 
     # Ensure /etc/paths is empty (we only use /etc/paths.d/)
     - name: "{{ prefix }} Ensure /etc/paths is empty"
+      become: true
       ansible.builtin.copy:
         dest: /etc/paths
         content: ""
@@ -43,15 +44,16 @@
 
     # Ensure specified login shells exist in /etc/shells
     - name: "{{ prefix }} Ensure specified login shells exist in /etc/shells"
+      become: true
       ansible.builtin.lineinfile:
         path: /etc/shells
         line: "{{ item }}"
         create: false
       loop: "{{ valid_shells }}"
-      become: true
 
     # Ensure global environment variables are exported in /etc/zshenv & /etc/profile
     - name: "{{ prefix }} Ensure global environment variables are exported in /etc/zshenv & /etc/profile"
+      become: true
       ansible.builtin.blockinfile:
         path: "{{ item.path }}"
         marker: "# {mark} ONESETUP: GLOBAL ENV VARS (managed via Ansible)"
@@ -69,14 +71,13 @@
       loop: "{{ global_env_files }}"
       loop_control:
         label: "{{ item.path }}"
-      become: true
 
     # Set User's Default Shell
     - name: "{{ prefix }} Set User's Default Shell"
+      become: true
       ansible.builtin.user:
         name: "{{ ONESETUP_SYSTEM_USERNAME }}"
         shell: "{{ default_shell }}"
-      become: true
 
     # Resolve bash interpreter path
     - name: "{{ prefix }} Resolve bash interpreter path"

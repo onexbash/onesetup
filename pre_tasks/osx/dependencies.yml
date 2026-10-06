@@ -4,28 +4,24 @@
   community.general.homebrew:
     name: mas
     state: latest
-  become: false
 # Install rosetta2
 - name: "ensure rosetta2 is installed"
+  become: true
   shell:
     cmd: "softwareupdate --install-rosetta --agree-to-license"
-  become: true
   ignore_errors: true
 # Install bash
 - name: "ensure bash (brew version) is installed"
   community.general.homebrew:
     name: bash
     state: latest
-  become: false
 # Install zsh
 - name: "ensure zsh (brew version) is installed"
   community.general.homebrew:
     name: zsh
     state: latest
-  become: false
 # Install openssh
 - name: "ensure openssh (brew version) is installed"
   community.general.homebrew:
     name: openssh
     state: latest
-  become: false

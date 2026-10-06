@@ -23,6 +23,5 @@
 - name: "Reload user preferences without logout"
   ansible.builtin.command: >
     /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
-  become: false
   changed_when: false
   listen: semi_logout

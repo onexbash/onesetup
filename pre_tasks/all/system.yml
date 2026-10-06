@@ -1,8 +1,8 @@
 ---
 # Set HostName to value from env-var
 - name: "Set hostname to: {{ ONESETUP_SYSTEM_HOSTNAME }}"
-  ansible.builtin.command: "scutil --set {{ item }} {{ ONESETUP_SYSTEM_HOSTNAME }}"
   become: true
+  ansible.builtin.command: "scutil --set {{ item }} {{ ONESETUP_SYSTEM_HOSTNAME }}"
   loop:
     - HostName
     - LocalHostName

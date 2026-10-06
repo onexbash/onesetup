@@ -24,10 +24,10 @@
     clt_missing: "{{ clt_pkg.rc != 0 or clt_select.rc != 0 or not clt_dir.stat.exists }}"
 
 - name: "xcode-clt | install"
+  become: true
   when:
     - clt_missing | bool
     - not ansible_check_mode
-  become: true
   block:
     - name: "xcode-clt | create on-demand marker"
       ansible.builtin.file:

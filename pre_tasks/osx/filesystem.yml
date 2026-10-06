@@ -1,45 +1,46 @@
 # Ensure Directory: XDG_CONFIG_HOME
 - name: "Ensure Directory exists: {{ XDG_CONFIG_HOME }}"
+  become: true
   ansible.builtin.file:
     path: "{{ XDG_CONFIG_HOME }}"
     state: directory
     mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
-  become: true
 
 # Ensure Directory: XDG_DATA_HOME
 - name: "Ensure Directory exists: {{ XDG_DATA_HOME }}"
+  become: true
   ansible.builtin.file:
     path: "{{ XDG_DATA_HOME }}"
     state: directory
     mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
-  become: true
 
 # Ensure Directory: XDG_STATE_HOME
 - name: "Ensure Directory exists: {{ XDG_STATE_HOME }}"
+  become: true
   ansible.builtin.file:
     path: "{{ XDG_STATE_HOME }}"
     state: directory
     mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
-  become: true
 
 # Ensure Directory: XDG_CACHE_HOME
 - name: "Ensure Directory exists: {{ XDG_CACHE_HOME }}"
+  become: true
   ansible.builtin.file:
     path: "{{ XDG_CACHE_HOME }}"
     state: directory
     mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
-  become: true
 
 # Ensure Directory: CONFIG_DIR
 - name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_CONFIG_DIR }}"
+  become: true
   ansible.builtin.file:
     path: "{{ ONESETUP_SYSTEM_CONFIG_DIR }}"
     state: directory
@@ -47,10 +48,10 @@
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
     follow: true # follow symlink
-  become: true
 
 # Ensure Directory: TARGET_DIR (Installation or Development Directory)
 - name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_TARGET_DIR }}"
+  become: true
   ansible.builtin.file:
     path: "{{ ONESETUP_SYSTEM_TARGET_DIR }}"
     state: directory
@@ -58,10 +59,10 @@
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
     follow: true # follow symlink
-  become: true
 
 # Ensure Directory: STORAGE_DIR
 - name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_STORAGE_DIR }}"
+  become: true
   ansible.builtin.file:
     path: "{{ ONESETUP_SYSTEM_STORAGE_DIR }}"
     state: directory
@@ -69,10 +70,10 @@
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
     follow: true # follow symlink
-  become: true
 
 # Ensure Directory: DOTFILES_DIR
 - name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
+  become: true
   ansible.builtin.file:
     path: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
     state: directory
@@ -80,10 +81,10 @@
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
     follow: true # follow symlink
-  become: true
 
 # Ensure Directory: BIN_DIR
 - name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_BIN_DIR }}"
+  become: true
   ansible.builtin.file:
     path: "{{ ONESETUP_SYSTEM_BIN_DIR }}"
     state: directory
@@ -91,20 +92,20 @@
     owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
     group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
     follow: true # follow symlink
-  become: true
 
 # Ensure Directory: TMP_DIR
 - name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_TMP_DIR }}"
+  become: true
   ansible.builtin.file:
     path: "{{ ONESETUP_SYSTEM_TMP_DIR }}"
     state: directory
     mode: "1777"
     owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
     group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
-  become: true
 
 # Ensure Directory: User Library
 - name: "Ensure User Library dir exists"
+  become: true
   ansible.builtin.file:
     path: "{{ HOME }}/Library"
     state: directory

@@ -9,7 +9,6 @@
     remote: origin
     update: true
     recursive: true # whether submodules should be included/skipped
-  become: false
   register: dotfiles_clone
   failed_when: false # suppresses possible error message as this is handled down below
   # ignore_errors: true
@@ -31,7 +30,6 @@
     remote: origin
     update: true
     recursive: true # whether submodules should be included/skipped
-  become: false
   when:
     - dotfiles_clone is failed
     - dotfiles_overwrite_prompt.user_input | lower == 'y'
@@ -85,6 +83,7 @@
 
 # Cleanup: Dotfiles (dest)
 - name: "Cleanup: Dotfiles"
+  become: true
   ansible.builtin.file:
     path: "{{ item_dotfiles.dest }}"
     state: "absent"
@@ -93,7 +92,6 @@
   loop_control:
     loop_var: "item_dotfiles"
   ignore_errors: true
-  become: true
 
 # Symlink: Dotfiles
 - name: "Symlink: Dotfiles"

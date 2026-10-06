@@ -38,10 +38,10 @@
 
     # Cleanup Trust Store if incomplete
     - name: "Cleanup: Homebrew Trust Store"
+      become: true
       ansible.builtin.file:
         path: "{{ XDG_CONFIG_HOME }}/homebrew"
         state: absent
-      become: true
       when: not taps_fully_trusted
 
     # Trust Taps if incomplete trust-store
@@ -53,7 +53,6 @@
         loop_var: item_tap
       changed_when: true
       ignore_errors: true
-      become: false
       when: not taps_fully_trusted
 
     # -- FORMULAS -- #
@@ -79,7 +78,6 @@
         cmd: brew link --force libpq
       args:
         creates: "{{ brew_prefix }}/bin/psql"
-      become: false
 
     # -- CASKS -- #
     - name: "install casks"
