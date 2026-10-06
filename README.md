@@ -68,7 +68,7 @@ Invoke-WebRequest -Uri $url -OutFile PrepareTargetForAnsible.ps1
 - Run the installation script
 - Replace the username & repo_name variables with the actual values of your Remote Repository (e.g: github):
 ```bash
-username="<USERNAME>" repo_name="<REPOSITORY>" bash -c 'curl -fsSL "https://raw.githubusercontent.com/$username/$repo_name/main/scripts/install.sh" | bash'
+bash -c 'curl -fsSL "https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/install.sh" | bash'
 ```
 - Restart your terminal or reload the default shell
 
