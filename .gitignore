@@ -5,3 +5,5 @@ zhistory
 .zsh_history
 "
 lazy-lock.json
+
+callback_plugins/__pycache__/

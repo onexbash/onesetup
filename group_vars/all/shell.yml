@@ -5,6 +5,7 @@
 default_shell: "{{ '/usr/bin/zsh' if ONESETUP_SYSTEM_OS == 'linux' else '/bin/zsh' }}"
 # Global Environment Variables (Defaults)
 global_env_vars:
+  # XDG BASE DIRS
   - name: XDG_CONFIG_HOME
     value: "${XDG_CONFIG_HOME:-$HOME/.config}"
   - name: XDG_CACHE_HOME
@@ -13,8 +14,10 @@ global_env_vars:
     value: "${XDG_DATA_HOME:-$HOME/.local/share}"
   - name: XDG_STATE_HOME
     value: "${XDG_STATE_HOME:-$HOME/.local/state}"
+  # ZDOTDIR
   - name: ZDOTDIR
     value: "${ZDOTDIR:-$HOME}"
+  # SHELL DIRS
   - name: SHELL_CONFIG_DIR
     value: "${XDG_CONFIG_HOME:-$HOME/.config}/shell"
   - name: SHELL_SCRIPTS_DIR
