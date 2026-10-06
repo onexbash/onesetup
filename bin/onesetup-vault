@@ -12,55 +12,23 @@ ARG_TARGET=""  # --target <clipboard|ansible> ("" → prompt, or clipboard witho
 ARG_FILE=""    # --file [path]
 ARG_VARNAME="" # --file [path] [varname]
 ARG_DEV_DIR="" # --dev-dir <path>
-TARGET_DIR=""  # Project directory (set by resolve_target_dir)
-VARFILE=""     # Vars file for target 'ansible' (set in setup)
-GUM_COLOR="#cba6f7"
-
-# -- HELPERS -- #
-# Print an error & exit
-function die() {
-  echo -e "${I_ERR:-[ERROR] }$*" >&2
-  exit 1
-}
-
-# Print a warning
-function warn() {
-  echo -e "${I_WARN:-[WARN] }$*" >&2
-}
-
-# Ensure a flag has a value: require_value <flag> <value>
-function require_value() {
-  if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
-    die "Flag '$1' requires a value."
-  fi
-}
-
-# Styled single choice: choose <header> <option>... (prints the choice, or nothing if cancelled)
-function choose() {
-  local header="$1"
-  shift
-  gum choose "$@" \
-    --cursor.foreground "$GUM_COLOR" \
-    --header.foreground "$GUM_COLOR" \
-    --selected.foreground "$GUM_COLOR" \
-    --header "$header" \
-    --no-show-help \
-    --ordered || true
-}
 
 # -- MAIN -- #
 function main() {
-  # [1] Parse & validate all arguments
+  # [1] Load utilities
+  load_utils
+
+  # [2] Parse & validate all arguments
   parse_args "$@"
   if [[ "$SUBCMD" == "help" ]]; then
     print_help
     exit 0
   fi
 
-  # [2] Setup (utils, config, dependencies)
+  # [3] Setup (config, target dir, dependencies)
   setup
 
-  # [3] Ask for missing choices
+  # [4] Ask for missing choices
   if [[ -z "$SUBCMD" ]]; then
     SUBCMD="$(prompt_subcommand)"
     case "$SUBCMD" in
@@ -69,7 +37,7 @@ function main() {
       exit 0
       ;;
     "")
-      warn "Operation cancelled."
+      echo -e "${I_WARN}Operation cancelled."
       exit 0
       ;;
     esac
@@ -77,16 +45,27 @@ function main() {
   if [[ -z "$ACTION" ]]; then
     ACTION="$(prompt_action)"
     if [[ -z "$ACTION" ]]; then
-      warn "Operation cancelled."
+      echo -e "${I_WARN}Operation cancelled."
       exit 0
     fi
   fi
 
-  # [4] Run
+  # [5] Run
   case "$ACTION" in
   string) encrypt_string ;;
   file) encrypt_file ;;
   esac
+}
+
+# Source onesetup-util from the directory this executable lives in
+function load_utils() {
+  local this_dir
+  this_dir="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  # shellcheck source=/dev/null
+  source "${this_dir}/onesetup-util" || {
+    echo -e "[ERROR] Failed to load 'onesetup-util' from: ${this_dir}" >&2
+    exit 1
+  }
 }
 
 # --                     -- #
@@ -110,7 +89,7 @@ function parse_args() {
   "" | --*) ;; # no subcommand → interactive prompt (--dev-dir still allowed)
   *)
     print_help >&2
-    die "Unknown command: $1"
+    echo -e "${I_ERR}Unknown command: $1" && exit 1
     ;;
   esac
 
@@ -119,7 +98,7 @@ function parse_args() {
     case "$1" in
     --string | --file)
       if [[ -n "$ACTION" ]]; then
-        die "Cannot specify both '--string' and '--file'."
+        echo -e "${I_ERR}Cannot specify both '--string' and '--file'." && exit 1
       fi
       ACTION="${1#--}"
       shift
@@ -128,7 +107,7 @@ function parse_args() {
       require_value "$1" "${2:-}"
       case "$2" in
       clipboard | ansible) ARG_TARGET="$2" ;;
-      *) die "Invalid value for '--target': '$2' (allowed: clipboard, ansible)" ;;
+      *) echo -e "${I_ERR}Invalid value for '--target': '$2' (allowed: clipboard, ansible)" && exit 1 ;;
       esac
       shift 2
       ;;
@@ -142,7 +121,7 @@ function parse_args() {
       return 0
       ;;
     --*)
-      die "Unknown option: $1"
+      echo -e "${I_ERR}Unknown option: $1"
       ;;
     *)
       positional+=("$1")
@@ -153,18 +132,18 @@ function parse_args() {
 
   # Encrypt options require the 'encrypt' command
   if [[ -z "$SUBCMD" && (-n "$ACTION" || -n "$ARG_TARGET" || ${#positional[@]} -gt 0) ]]; then
-    die "Options '--string', '--file' & '--target' require the 'encrypt' command."
+    echo -e "${I_ERR}Options '--string', '--file' & '--target' require the 'encrypt' command."
   fi
 
   # Positional arguments: only '--file [path] [varname]' takes any
   case "$ACTION" in
   file)
-    [[ ${#positional[@]} -le 2 ]] || die "Too many arguments for '--file' (usage: --file [path] [varname])."
+    [[ ${#positional[@]} -le 2 ]] || echo -e "${I_ERR}Too many arguments for '--file' (usage: --file [path] [varname])." && exit 1
     ARG_FILE="${positional[0]:-}"
     ARG_VARNAME="${positional[1]:-}"
     ;;
   *)
-    [[ ${#positional[@]} -eq 0 ]] || die "Unexpected argument: ${positional[0]}"
+    [[ ${#positional[@]} -eq 0 ]] || echo -e "${I_ERR}Unexpected argument: ${positional[0]}" && exit 1
     ;;
   esac
 }
@@ -196,71 +175,11 @@ EOF
 
 # Prepare everything needed to encrypt
 function setup() {
-  resolve_target_dir
-  load_utils
-  tty_styles || warn "Failed to load TTY Styles."
-  set_modes || warn "Failed to set Script Modes."
-  init_brew || warn "Failed to initialize Homebrew."
-  read_config || die "Failed to read Config File."
-  export_dynamic_vars || die "Failed to export Dynamic Environment Variables."
-  resolve_target_dir # Re-resolve: the config may set ONESETUP_PROJECT_DEV_DIR / ONESETUP_SYSTEM_INSTALL_DIR
-  install_deps
+  init_brew || echo -e "${I_WARN}Failed to initialize Homebrew."
+  install_deps "ansible" "gum"
 
-  # Vars file for target 'ansible' (an existing ONESETUP_VARFILE_ENCRYPTED wins)
-  VARFILE="${ONESETUP_VARFILE_ENCRYPTED:-${TARGET_DIR}/group_vars/all/encrypted.yml}"
-}
-
-# Set TARGET_DIR: --dev-dir > ONESETUP_PROJECT_DEV_DIR > ONESETUP_SYSTEM_INSTALL_DIR > default
-function resolve_target_dir() {
-  local default_dir="$HOME/.local/share/onesetup"
-  local dir="${ARG_DEV_DIR:-${ONESETUP_PROJECT_DEV_DIR:-${ONESETUP_SYSTEM_INSTALL_DIR:-$default_dir}}}"
-
-  [[ -d "$dir" ]] || die "Target directory does not exist: ${C_CYAN:-}${dir}${C_RESET:-}"
-
-  TARGET_DIR="$(CDPATH='' cd -- "$dir" && pwd -P)"
-  export ONESETUP_SYSTEM_TARGET_DIR="$TARGET_DIR" # used by Ansible
-}
-
-# Source the Utility Script from TARGET_DIR
-function load_utils() {
-  local util_script="${TARGET_DIR}/scripts/util.sh"
-
-  [[ -r "$util_script" ]] || die "Utility Script not found: ${util_script}"
-  # shellcheck source=/dev/null
-  source "$util_script" || die "Failed to source Utility Script: ${util_script}"
-}
-
-# Install missing dependencies
-function install_deps() {
-  local os pkg
-  local pkgs=("ansible" "gum")
-
-  os="$(detect_os)"
-
-  for pkg in "${pkgs[@]}"; do
-    if command -v "$pkg" &>/dev/null; then
-      continue
-    fi
-
-    echo -e "${I_INFO}Dependency missing: ${C_RED}${pkg}${C_RESET}. Installing..." >&2
-
-    case "$os" in
-    osx)
-      command -v brew &>/dev/null ||
-        die "Homebrew is not installed. Install it from ${C_BLUE}https://brew.sh${C_RESET} & re-run this script."
-      brew install "$pkg" || die "Failed to install: ${pkg}"
-      ;;
-    linux)
-      install_linux_pkg "$pkg" || die "Failed to install: ${pkg}"
-      ;;
-    windows)
-      die "Windows support coming soon."
-      ;;
-    *)
-      die "Unsupported OS: ${os}"
-      ;;
-    esac
-  done
+  # Vars file for target 'ansible'
+  VARFILE="${X_TARGET_DIR}/group_vars/all/encrypted.yml}"
 }
 
 # --                 -- #
@@ -297,9 +216,9 @@ function prompt_output_target() {
 
 # Validate an Ansible variable name: validate_varname <varname>
 function validate_varname() {
-  [[ -n "$1" ]] || die "Variable name cannot be empty."
+  [[ -n "$1" ]] || echo -e "${I_ERR}Variable name cannot be empty." && exit 1
   if [[ ! "$1" =~ ^[a-zA-Z0-9_]+$ ]]; then
-    die "Invalid characters in variable name: '$1' (allowed: letters, numbers, underscores)"
+    echo -e "${I_ERR}Invalid characters in variable name: '$1' (allowed: letters, numbers, underscores)" && exit 1
   fi
 }
 
@@ -316,12 +235,12 @@ function resolve_output_target() {
   fi
 
   if [[ -z "$ARG_TARGET" ]]; then
-    warn "No target selected. Aborting."
+    echo -e "${I_WARN}No target selected. Aborting."
     exit 0
   fi
 
   if [[ "$ARG_TARGET" == "ansible" ]] && grep -qE "^${varname}:" "$VARFILE" 2>/dev/null; then
-    die "Variable [ ${C_PURPLE}${varname}${C_RESET} ] already exists in [ ${C_PURPLE}${VARFILE}${C_RESET} ]. Please choose a different name."
+    echo -e "${I_ERR}Variable [ ${C_PURPLE}${varname}${C_RESET} ] already exists in [ ${C_PURPLE}${VARFILE}${C_RESET} ]. Please choose a different name." && exit 1
   fi
 }
 
@@ -362,14 +281,14 @@ function encrypt_string() {
   printf '%b' "${I_ASK}Secret to Encrypt (hidden): "
   read -rs secret
   echo
-  [[ -n "$secret" ]] || die "Secret cannot be empty."
+  [[ -n "$secret" ]] || echo -e "${I_ERR}Secret cannot be empty." && exit 1
 
   printf '%b' "${I_ASK}Variable Name: "
   read -r varname
   validate_varname "$varname"
 
   resolve_output_target "$varname"
-  encrypted="$(printf '%s' "$secret" | vault_encrypt "$varname")" || die "Encryption failed."
+  encrypted="$(printf '%s' "$secret" | vault_encrypt "$varname")" || echo -e "${I_ERR}Encryption failed." && exit 1
   write_output "$encrypted" "$varname"
 }
 
@@ -388,11 +307,11 @@ function encrypt_file() {
         --height=100 || true
     )"
     if [[ -z "$filepath" ]]; then
-      warn "No file selected. Aborting."
+      echo -e "${I_WARN}No file selected. Aborting."
       exit 0
     fi
   fi
-  [[ -f "$filepath" && -r "$filepath" ]] || die "File not found or not readable: ${filepath}"
+  [[ -f "$filepath" && -r "$filepath" ]] || echo -e "${I_ERR}File not found or not readable: ${filepath}" && exit 1
 
   # Variable name: argument > prompt (prefilled from the file name) > file name
   if [[ -z "$varname" ]]; then
@@ -415,7 +334,7 @@ function encrypt_file() {
   validate_varname "$varname"
 
   resolve_output_target "$varname"
-  encrypted="$(vault_encrypt "$varname" <"$filepath")" || die "Encryption failed."
+  encrypted="$(vault_encrypt "$varname" <"$filepath")" || echo -e "${I_ERR}Encryption failed." && exit 1
   write_output "$encrypted" "$varname"
 }
 

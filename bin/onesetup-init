@@ -7,49 +7,23 @@
 # [0] Main Function
 function main() {
   # Function Calls
-  load_utils "$username" "$repo_name" # Called with variables defined in the Install-Command
-  tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
-  set_modes || echo -e "${I_WARN}Failed to set Script Modes."
-  init_brew || echo -e "${I_WARN}Failed to initialize Homebrew"
-  { read_config && echo -e "${I_OK}Config File read"; } || {
-    echo -e "${I_ERR}Failed to read Config File"
-    exit 1
-  }
-  export_dynamic_vars || {
-    echo -e "${I_ERR}Failed to export Dynamic Environment Variables!"
-    exit 1
-  }
-  { prerequisites && echo -e "${I_OK}Prerequesites satisfied"; } || {
-    echo -e "${I_ERR}Failed to ensure that prerequesites are satisfied"
-    exit 1
-  }
-  { install && echo -e "${I_OK}Installation completed"; } || {
-    echo -e "${I_ERR}Installation failed"
-    exit 1
-  }
+  load_utils || echo -e "[ERR]Failed to call load_utils()"
+  prerequisites || echo -e "[ERR]Failed to call prerequisites()"
+  install || echo -e "[ERR]Failed to call install()"
 }
 
-# [1] Curl & Source Utility Script from Remote Repository
+# [1] Load & Call Utility Functions from onesetup-util
 function load_utils() {
-  local username="$1"
-  local repo_name="$2"
-
-  if [[ -z "$username" || -z "$repo_name" ]]; then
-    echo -e "${I_ERR}Username or Repository Name missing. Please pass these directly in the Install-Command"
-    echo -e "${I_INFO}See: README.md"
-    exit 1
-  else
-    echo -e "${I_INFO}Github Repository github.com/"${username}/${repo_name}" will be used for Installation."
-  fi
-
-  TMP_SCRIPT=$(mktemp)
-  trap 'rm -f "$TMP_SCRIPT"' EXIT
-
-  curl -fsSL "https://raw.githubusercontent.com/${username}/${repo_name}/main/scripts/util.sh" -o "$TMP_SCRIPT"
-  source "$TMP_SCRIPT" && echo -e "${I_OK}Utility Script sourced" || {
-    echo -e "${I_ERR}Failed to source Utility Script: $TMP_SCRIPT"
+  # Source onesetup-util
+  local this_dir="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "$this_dir/onesetup-util" || {
+    echo -e "[ERR] Utility Shell File 'onesetup-util' not found at: $this_dir"
+    sleep 3
     exit 1
   }
+  # Call Utility Functions
+  # note: tty_styles() & set_modes() & apply_config() already called within onesetup-util itself.
+  init_brew || echo -e "[ERR]Failed to call init_brew()"
 }
 
 # [2] Ensure prerequisites are satisfied
@@ -127,11 +101,11 @@ function install() {
   local storage_dir="$ONESETUP_SYSTEM_STORAGE_DIR"
   local bin_dir="$ONESETUP_SYSTEM_BIN_DIR"
   local tmp_dir="$ONESETUP_SYSTEM_TMP_DIR"
-  local repo_uri="$ONESETUP_PROJECT_REPO_URI"
   local default_user="$ONESETUP_SYSTEM_USERNAME"
   local root_user="$ONESETUP_SYSTEM_ROOT_USER"
   local default_group="$ONESETUP_SYSTEM_USER_GROUP"
   local root_group="$ONESETUP_SYSTEM_ROOT_GROUP"
+  local repo_uri="$X_ONESETUP_URI"
 
   # Step 1: Remove installation directory if invalid/corrupted
   if [[ -d "$install_dir" ]]; then
@@ -197,7 +171,7 @@ function install() {
 
   # Step 6: Install Ansible Modules from Ansible Galaxy
   ansible-galaxy collection install --requirements-file "${install_dir}/requirements.yml" --no-cache --upgrade
-
 }
+
 # Call Main Function with args
 main "$@"

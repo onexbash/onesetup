@@ -8,6 +8,7 @@
 function main() {
   tty_styles || echo -e "${I_WARN:-[ERR] }Failed to Call tty_styles()"
   set_modes || echo -e "${I_WARN:-[ERR] }Failed to Call set_modes()"
+  apply_config || echo -e "${I_WARN:-[ERR] }Failed to Call apply_config()"
 }
 
 # [UTIL] Terminal Colors & Prompts
@@ -144,75 +145,64 @@ function init_brew() {
   fi
 }
 
-# [UTIL] Read User Config File 'onesetup.yml'
-function read_config() {
-  local config_file
-
-  # Function to override Default Values set in config.yml
-  _get_config_value() {
-    local -n _target="$1"
-    local _val
-    _val="$(yq "$2" "$config_file" 2>/dev/null)"
-    [[ -n "$_val" && "$_val" != "null" ]] && _target="${_val/#\~/$HOME}"
-  }
-
-  # -- Default Values -- #
-  # [Remote]
-  local remote_provider="github"
-  local remote_username="onexbash"
-  local remote_connection="https"
-  local remote_project_repo="onesetup"
-  local remote_dotfiles_repo="dotfiles"
-  # [System]
-  # Operating System
-  local system_os
-  system_os="$(detect_os)"
-  # CPU Architecture
-  local system_arch
-  [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]] && system_arch="arm64" || system_arch="x86"
-
-  # Hostname, Username & Group of Default User & Admin/Root User (Auto-Detect)
-  local system_hostname system_username system_root_user system_user_group system_root_group
-  case "$system_os" in
-  osx | linux)
-    system_hostname="$(scutil --get HostName 2>/dev/null || scutil --get LocalHostName 2>/dev/null || hostname -s)"
-    system_username="$USER"
-    system_root_user="$(id -nu 0)"
-    system_user_group="$(id -ng)"
-    system_root_group="$(id -ng 0)"
-    ;;
-  windows)
-    system_hostname="${COMPUTERNAME:-$(hostname 2>/dev/null | tr -d '\r')}"
-    system_username="${USERNAME:-$(whoami | sed 's/.*\\//')}"
-    system_root_user="$(powershell.exe -NoProfile -Command '(Get-LocalUser -ErrorAction SilentlyContinue | Where-Object { $_.SID -like "*-500" }).Name' | tr -d '\r')"
-    system_user_group="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-545" }).Name' | tr -d '\r')"
-    system_root_group="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-544" }).Name' | tr -d '\r')"
-    ;;
+# [UTIL] Build a Git Remote URI from Provider, Connection & Username
+_build_remote_uri() {
+  local repo="$1" host
+  case "$ONESETUP_REMOTE_PROVIDER" in
+  github) host="github.com" ;;
+  gitlab) host="gitlab.com" ;;
+  bitbucket) host="bitbucket.org" ;;
+  codeberg) host="codeberg.org" ;;
+  *.*) host="$ONESETUP_REMOTE_PROVIDER" ;; # Custom host, e.g. git.example.com
   *)
-    echo -e "${I_ERR}Unsupported Operating System: $system_os"
+    echo -e "${I_ERR}Unsupported remote provider: $ONESETUP_REMOTE_PROVIDER" >&2
     return 1
     ;;
   esac
+  case "$ONESETUP_REMOTE_CONNECTION" in
+  https) echo "https://${host}/${ONESETUP_REMOTE_USERNAME}/${repo}.git" ;;
+  ssh) echo "git@${host}:${ONESETUP_REMOTE_USERNAME}/${repo}.git" ;;
+  *)
+    echo -e "${I_ERR}Unsupported remote connection: $ONESETUP_REMOTE_CONNECTION" >&2
+    return 1
+    ;;
+  esac
+}
 
-  # Directory Locations of: Config-Dir, Install-Dir, Storage-Dir, Dotfiles-Dir, Bin-Dir, TMP-Dir
-  local system_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/onesetup"
-  local system_storage_dir="${XDG_STATE_HOME:-$HOME/.local/state}/onesetup"
-  local system_dotfiles_dir="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
-  local system_bin_dir="/usr/local/bin"
-  local system_tmp_dir="/tmp"
-  # [Project]
-  # Development Directory where the Ansible Playbook is executed (used instead of the installation directory when set)
-  local project_dev_dir="${ONESETUP_PROJECT_DEV_DIR:-}"
-  local project_debug="0" # Debug-Level for Scripts & Ansible itself
-  # -- / -- #
+# [UTIL] Function to apply the user's config by reading the config-file values & environment variables
+# NOTE: env-var > config-key > default
+function apply_config() {
+  local config_file detected_os remote_host remote_base
+  detected_os="$(detect_os)"
 
-  # Ensure Config Directory exists with right permissions
-  local config_file="${system_config_dir}/config.yml"
-  ensure_directory "$system_config_dir" "755" "${system_username}:${system_user_group}"
+  # Resolve & export a value from Env-Var or Config-Key
+  # Returns 1 if neither provided a value, so the caller can export the default lazily
+  _resolve_value() {
+    local _name="$1" _key="$2" _val
+    # 1. Environment variable already set (non-empty): keep & export it
+    if [[ -n "${!_name:-}" ]]; then
+      export "$_name"
+      return 0
+    fi
+    # 2. Config key
+    if [[ -n "$_key" && -f "$config_file" ]]; then
+      _val="$(yq "$_key" "$config_file" 2>/dev/null)"
+      if [[ -n "$_val" && "$_val" != "null" ]]; then
+        printf -v "$_name" '%s' "${_val/#\~/$HOME}"
+        export "$_name"
+        return 0
+      fi
+    fi
+    return 1
+  }
 
-  # Ensure yq is present to parse config file
+  # Config-Dir must be known before the config file can be read (Env-Var > Default)
+  export ONESETUP_SYSTEM_CONFIG_DIR="${ONESETUP_SYSTEM_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/onesetup}"
+  config_file="${ONESETUP_SYSTEM_CONFIG_DIR}/config.yml"
+
+  # Ensure yq is present to parse config file (based on the real host OS)
   if ! command -v "yq" &>/dev/null; then
-    case "$system_os" in
+    case "$detected_os" in
     linux) { sudo dnf install -y "yq" && echo -e "${I_OK}Installation succeeded: yq"; } || {
       echo -e "${I_ERR}Installation failed: yq"
       return 1
@@ -225,122 +215,84 @@ function read_config() {
       echo -e "${I_ERR}Windows not supported yet"
       return 1
       ;;
-    unsupported)
-      echo -e "${I_ERR}Unsupported Operating System: $ONESETUP_SYSTEM_OS"
+    *)
+      echo -e "${I_ERR}Unsupported Operating System: $detected_os"
       return 1
       ;;
     esac
   fi
 
-  # Overwrite Defaults with Config File Values
-  if [[ -f "$config_file" ]]; then
-    _get_config_value remote_provider '.remote.provider'
-    _get_config_value remote_username '.remote.username'
-    _get_config_value remote_connection '.remote.connection'
-    _get_config_value remote_project_repo '.remote.project_repo'
-    _get_config_value remote_dotfiles_repo '.remote.dotfiles_repo'
-    _get_config_value system_os '.system.os'
-    _get_config_value system_arch '.system.arch'
-    _get_config_value system_hostname '.system.hostname'
-    _get_config_value system_username '.system.username'
-    _get_config_value system_root_user '.system.root_user'
-    _get_config_value system_config_dir '.system.config_dir'
-    _get_config_value system_storage_dir '.system.storage_dir'
-    _get_config_value system_dotfiles_dir '.system.dotfiles_dir'
-    _get_config_value system_bin_dir '.system.bin_dir'
-    _get_config_value system_tmp_dir '.system.tmp_dir'
-    _get_config_value system_user_group '.system.user_group'
-    _get_config_value system_root_group '.system.root_group'
-    _get_config_value project_debug '.project.debug'
+  # -- [Remote] -- #
+  _resolve_value ONESETUP_REMOTE_PROVIDER '.remote.provider' || export ONESETUP_REMOTE_PROVIDER="github"
+  _resolve_value ONESETUP_REMOTE_USERNAME '.remote.username' || export ONESETUP_REMOTE_USERNAME="onexbash"
+  _resolve_value ONESETUP_REMOTE_CONNECTION '.remote.connection' || export ONESETUP_REMOTE_CONNECTION="https"
+  _resolve_value ONESETUP_REMOTE_PROJECT_REPO '.remote.project_repo' || export ONESETUP_REMOTE_PROJECT_REPO="onesetup"
+  _resolve_value ONESETUP_REMOTE_DOTFILES_REPO '.remote.dotfiles_repo' || export ONESETUP_REMOTE_DOTFILES_REPO="dotfiles"
+
+  # -- [System] OS & CPU Architecture -- #
+  _resolve_value ONESETUP_SYSTEM_OS '.system.os' || export ONESETUP_SYSTEM_OS="$detected_os"
+  if ! _resolve_value ONESETUP_SYSTEM_ARCH '.system.arch'; then
+    if [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" || "$(uname -m)" == "aarch64" ]]; then
+      export ONESETUP_SYSTEM_ARCH="arm64"
+    else
+      export ONESETUP_SYSTEM_ARCH="x86"
+    fi
   fi
-  unset -f _apply_override
 
-  # -- Export Values as Environment Variables consumed by Ansible -- #
-  export ONESETUP_REMOTE_PROVIDER="${remote_provider}"
-  export ONESETUP_REMOTE_USERNAME="${remote_username}"
-  export ONESETUP_REMOTE_CONNECTION="${remote_connection}"
-  export ONESETUP_REMOTE_PROJECT_REPO="${remote_project_repo}"
-  export ONESETUP_REMOTE_DOTFILES_REPO="${remote_dotfiles_repo}"
-  export ONESETUP_SYSTEM_OS="${system_os}"
-  export ONESETUP_SYSTEM_ARCH="${system_arch}"
-  export ONESETUP_SYSTEM_HOSTNAME="${system_hostname}"
-  export ONESETUP_SYSTEM_USERNAME="${system_username}"
-  export ONESETUP_SYSTEM_ROOT_USER="${system_root_user}"
-  export ONESETUP_SYSTEM_USER_GROUP="${system_user_group}"
-  export ONESETUP_SYSTEM_ROOT_GROUP="${system_root_group}"
-  export ONESETUP_SYSTEM_CONFIG_DIR="${system_config_dir}"
-  export ONESETUP_SYSTEM_STORAGE_DIR="${system_storage_dir}"
-  export ONESETUP_SYSTEM_DOTFILES_DIR="${system_dotfiles_dir}"
-  export ONESETUP_SYSTEM_BIN_DIR="${system_bin_dir}"
-  export ONESETUP_SYSTEM_TMP_DIR="${system_tmp_dir}"
-  export ONESETUP_PROJECT_DEBUG="${project_debug}"
-  export ONESETUP_PROJECT_DEV_DIR="${project_dev_dir}"
-
-}
-
-# Function to export Dynamic Environment Variables that are constructed based on the Env-Vars in read_config()
-function export_dynamic_vars() {
-
-  local project_uri dotfiles_uri
-  local git_host="" project_uri_raw="" dotfiles_uri_raw=""
-
-  case "${ONESETUP_REMOTE_PROVIDER}" in
-  github)
-    git_host="github.com"
-    project_uri_raw="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/main"
-    dotfiles_uri_raw="https://raw.githubusercontent.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/main"
+  # -- [System] Hostname, Username & Group of Default User & Admin/Root User -- #
+  case "$ONESETUP_SYSTEM_OS" in
+  osx | linux)
+    _resolve_value ONESETUP_SYSTEM_HOSTNAME '.system.hostname' ||
+      export ONESETUP_SYSTEM_HOSTNAME="$(scutil --get HostName 2>/dev/null || scutil --get LocalHostName 2>/dev/null || hostname -s)"
+    _resolve_value ONESETUP_SYSTEM_USERNAME '.system.username' || export ONESETUP_SYSTEM_USERNAME="$USER"
+    _resolve_value ONESETUP_SYSTEM_ROOT_USER '.system.root_user' || export ONESETUP_SYSTEM_ROOT_USER="$(id -nu 0)"
+    _resolve_value ONESETUP_SYSTEM_USER_GROUP '.system.user_group' || export ONESETUP_SYSTEM_USER_GROUP="$(id -ng)"
+    _resolve_value ONESETUP_SYSTEM_ROOT_GROUP '.system.root_group' || export ONESETUP_SYSTEM_ROOT_GROUP="$(id -ng 0)"
     ;;
-  gitlab)
-    git_host="gitlab.com"
-    project_uri_raw="https://gitlab.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/-/raw/main"
-    dotfiles_uri_raw="https://gitlab.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/-/raw/main"
-    ;;
-  bitbucket)
-    git_host="bitbucket.org"
-    project_uri_raw="https://bitbucket.org/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/raw/main"
-    dotfiles_uri_raw="https://bitbucket.org/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/raw/main"
-    ;;
-  azure_devops)
-    # NOTE: org/project/repo hierarchy — ONESETUP_REMOTE_USERNAME is treated as
-    # the ORG, and project is assumed to match the repo name (simple-setup convention).
-    # Raw content is a REST call (?path=&api-version=), NOT path-appendable like the
-    # other three providers — see caveat above before relying on ONESETUP_*_REPO_RAW here.
-    project_uri_raw="https://dev.azure.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/_apis/git/repositories/${ONESETUP_REMOTE_PROJECT_REPO}/items?api-version=7.0&versionDescriptor.version=main&path="
-    dotfiles_uri_raw="https://dev.azure.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/_apis/git/repositories/${ONESETUP_REMOTE_DOTFILES_REPO}/items?api-version=7.0&versionDescriptor.version=main&path="
+  windows)
+    _resolve_value ONESETUP_SYSTEM_HOSTNAME '.system.hostname' ||
+      export ONESETUP_SYSTEM_HOSTNAME="${COMPUTERNAME:-$(hostname 2>/dev/null | tr -d '\r')}"
+    _resolve_value ONESETUP_SYSTEM_USERNAME '.system.username' ||
+      export ONESETUP_SYSTEM_USERNAME="${USERNAME:-$(whoami | sed 's/.*\\//')}"
+    _resolve_value ONESETUP_SYSTEM_ROOT_USER '.system.root_user' ||
+      export ONESETUP_SYSTEM_ROOT_USER="$(powershell.exe -NoProfile -Command '(Get-LocalUser -ErrorAction SilentlyContinue | Where-Object { $_.SID -like "*-500" }).Name' | tr -d '\r')"
+    _resolve_value ONESETUP_SYSTEM_USER_GROUP '.system.user_group' ||
+      export ONESETUP_SYSTEM_USER_GROUP="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-545" }).Name' | tr -d '\r')"
+    _resolve_value ONESETUP_SYSTEM_ROOT_GROUP '.system.root_group' ||
+      export ONESETUP_SYSTEM_ROOT_GROUP="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-544" }).Name' | tr -d '\r')"
     ;;
   *)
-    echo -e "${I_ERR}Unsupported Remote Provider: ${ONESETUP_REMOTE_PROVIDER}"
+    echo -e "${I_ERR}Unsupported Operating System: $ONESETUP_SYSTEM_OS"
     return 1
     ;;
   esac
 
-  case "${ONESETUP_REMOTE_CONNECTION}" in
-  ssh)
-    if [[ "${ONESETUP_REMOTE_PROVIDER}" == "azure_devops" ]]; then
-      project_uri="git@ssh.dev.azure.com:v3/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/${ONESETUP_REMOTE_PROJECT_REPO}"
-      dotfiles_uri="git@ssh.dev.azure.com:v3/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/${ONESETUP_REMOTE_DOTFILES_REPO}"
-    else
-      project_uri="git@${git_host}:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
-      dotfiles_uri="git@${git_host}:${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git"
-    fi
-    ;;
-  https | *)
-    if [[ "${ONESETUP_REMOTE_PROVIDER}" == "azure_devops" ]]; then
-      project_uri="https://dev.azure.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}/_git/${ONESETUP_REMOTE_PROJECT_REPO}"
-      dotfiles_uri="https://dev.azure.com/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}/_git/${ONESETUP_REMOTE_DOTFILES_REPO}"
-    else
-      project_uri="https://${git_host}/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}.git"
-      dotfiles_uri="https://${git_host}/${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_DOTFILES_REPO}.git"
-    fi
-    ;;
-  esac
+  # -- [System] Directory Locations -- #
+  _resolve_value ONESETUP_SYSTEM_INSTALL_DIR '.system.install_dir' || export ONESETUP_SYSTEM_INSTALL_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
+  _resolve_value ONESETUP_SYSTEM_STORAGE_DIR '.system.storage_dir' || export ONESETUP_SYSTEM_STORAGE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/onesetup"
+  _resolve_value ONESETUP_SYSTEM_DOTFILES_DIR '.system.dotfiles_dir' || export ONESETUP_SYSTEM_DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
+  _resolve_value ONESETUP_SYSTEM_BIN_DIR '.system.bin_dir' || export ONESETUP_SYSTEM_BIN_DIR="/usr/local/bin"
+  _resolve_value ONESETUP_SYSTEM_TMP_DIR '.system.tmp_dir' || export ONESETUP_SYSTEM_TMP_DIR="/tmp"
 
-  export ONESETUP_PROJECT_REPO_URI="${project_uri}"
-  export ONESETUP_DOTFILES_REPO_URI="${dotfiles_uri}"
-  export ONESETUP_PROJECT_REPO_RAW="${project_uri_raw}"
-  export ONESETUP_DOTFILES_REPO_RAW="${dotfiles_uri_raw}"
+  # -- [Project] -- #
+  # Development Directory where the Ansible Playbook is executed (used instead of the installation directory when set)
+  _resolve_value ONESETUP_PROJECT_DEV_DIR '.project.dev_dir' || export ONESETUP_PROJECT_DEV_DIR=""
+  _resolve_value ONESETUP_PROJECT_DEBUG '.project.debug' || export ONESETUP_PROJECT_DEBUG="0"
 
-  export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
+  unset -f _resolve_value
+
+  # Ensure Config Directory exists with right permissions
+  ensure_directory "$ONESETUP_SYSTEM_CONFIG_DIR" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}"
+
+  # -- Dynamic Environment Variables (constructed from the values above) -- #
+  export X_TARGET_DIR="${ONESETUP_PROJECT_DEV_DIR:-$ONESETUP_SYSTEM_INSTALL_DIR}"
+  export X_ONESETUP_URI="$(_build_remote_uri "$ONESETUP_REMOTE_PROJECT_REPO")" || return 1
+  export X_DOTFILES_URI="$(_build_remote_uri "$ONESETUP_REMOTE_DOTFILES_REPO")" || return 1
+
+  # -- Ansible Variables -- #
+  export ANSIBLE_CONFIG="$X_TARGET_DIR/ansible.cfg"
+  export ANSIBLE_INVENTORY="$X_TARGET_DIR/inventory.ini"
+  # export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
 }
 
 # Call Main Function with Args
