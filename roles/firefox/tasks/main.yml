@@ -1,0 +1,84 @@
+---
+- name: "{{ role_name | capitalize }} | Configure profile {{ firefox_profile_name }}"
+  block:
+    - name: "Set OS-specific paths"
+      ansible.builtin.set_fact:
+        firefox_profiles_dir: "{{ firefox_profiles_dirs[ansible_facts['system']] }}"
+        firefox_binary: "{{ firefox_binaries[ansible_facts['system']] }}"
+
+    - name: "{{ role_name | capitalize }} | Search for profile directory"
+      ansible.builtin.find:
+        paths: "{{ firefox_profiles_dir }}"
+        patterns: "*.{{ firefox_profile_name }}"
+        file_type: directory
+      register: firefox_profile_search
+
+    - name: "{{ role_name | capitalize }} | Remember found profiles"
+      ansible.builtin.set_fact:
+        firefox_profile_matches: "{{ firefox_profile_search.files }}"
+
+    - name: "Create profile if it does not exist yet"
+      ansible.builtin.command:
+        argv:
+          - "{{ firefox_binary }}"
+          - "-CreateProfile"
+          - "{{ firefox_profile_name }}"
+      when:
+        - firefox_profile_matches | length == 0
+        - firefox_create_profile | bool
+      register: firefox_profile_created
+      changed_when: true
+
+    - name: "{{ role_name | capitalize }} | Search again after creating the profile"
+      ansible.builtin.find:
+        paths: "{{ firefox_profiles_dir }}"
+        patterns: "*.{{ firefox_profile_name }}"
+        file_type: directory
+      register: firefox_profile_search_after
+      when: firefox_profile_created is changed
+
+    - name: "Update found profiles"
+      ansible.builtin.set_fact:
+        firefox_profile_matches: "{{ firefox_profile_search_after.files }}"
+      when: firefox_profile_created is changed
+
+    - name: "{{ role_name | capitalize }} | Make sure exactly one profile matches"
+      ansible.builtin.assert:
+        that: firefox_profile_matches | length == 1
+        fail_msg: >-
+          Expected exactly one profile matching '*.{{ firefox_profile_name }}'
+          in '{{ firefox_profiles_dir }}', found {{ firefox_profile_matches | length }}.
+        quiet: true
+
+    - name: "{{ role_name | capitalize }} | Set profile path"
+      ansible.builtin.set_fact:
+        firefox_profile_path: "{{ firefox_profile_matches[0].path }}"
+
+    - name: "{{ role_name | capitalize }} | Ensure chrome directory exists"
+      ansible.builtin.file:
+        path: "{{ firefox_profile_path }}/chrome"
+        state: directory
+        mode: "0755"
+
+    - name: "{{ role_name | capitalize }} | Copy userChrome.css and userContent.css"
+      ansible.builtin.copy:
+        src: "{{ firefox_files_src }}/chrome/{{ item }}"
+        dest: "{{ firefox_profile_path }}/chrome/{{ item }}"
+        mode: "0644"
+      loop:
+        - userChrome.css
+        - userContent.css
+
+    - name: "{{ role_name | capitalize }} | Copy bookmarks.html"
+      ansible.builtin.copy:
+        src: "{{ firefox_files_src }}/bookmarks.html"
+        dest: "{{ firefox_profile_path }}/bookmarks.html"
+        mode: "0644"
+
+    # user.js is rendered as a template so it can contain Ansible variables
+    # (e.g. The absolute path to bookmarks.html).
+    - name: "{{ role_name | capitalize }} | Render user.js"
+      ansible.builtin.template:
+        src: "{{ firefox_files_src }}/user.js"
+        dest: "{{ firefox_profile_path }}/user.js"
+        mode: "0644"
