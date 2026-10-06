@@ -102,3 +102,8 @@ dotfiles:
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/zed",
       dest: "{{ XDG_CONFIG_HOME }}/zed",
     }
+  # litexl
+  - {
+      src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/litexl",
+      dest: "{{ XDG_CONFIG_HOME }}/lite-xl",
+    }
