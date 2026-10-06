@@ -167,21 +167,21 @@ function read_config() {
   [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]] && system_arch="arm64" || system_arch="x86"
 
   # Hostname, Username & Group of Default User & Admin/Root User (Auto-Detect)
-  local system_hostname system_username system_root_user system_user_group system_admin_group
+  local system_hostname system_username system_root_user system_user_group system_root_group
   case "$system_os" in
   osx | linux)
     system_hostname="$(scutil --get HostName 2>/dev/null || scutil --get LocalHostName 2>/dev/null || hostname -s)"
     system_username="$USER"
     system_root_user="$(id -nu 0)"
     system_user_group="$(id -ng)"
-    system_admin_group="$(id -ng 0)"
+    system_root_group="$(id -ng 0)"
     ;;
   windows)
     system_hostname="${COMPUTERNAME:-$(hostname 2>/dev/null | tr -d '\r')}"
     system_username="${USERNAME:-$(whoami | sed 's/.*\\//')}"
     system_root_user="$(powershell.exe -NoProfile -Command '(Get-LocalUser -ErrorAction SilentlyContinue | Where-Object { $_.SID -like "*-500" }).Name' | tr -d '\r')"
     system_user_group="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-545" }).Name' | tr -d '\r')"
-    system_admin_group="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-544" }).Name' | tr -d '\r')"
+    system_root_group="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-544" }).Name' | tr -d '\r')"
     ;;
   *)
     echo -e "${I_ERR}Unsupported Operating System: $system_os"
@@ -245,7 +245,7 @@ function read_config() {
     _get_config_value system_bin_dir '.system.bin_dir'
     _get_config_value system_tmp_dir '.system.tmp_dir'
     _get_config_value system_user_group '.system.user_group'
-    _get_config_value system_admin_group '.system.admin_group'
+    _get_config_value system_root_group '.system.root_group'
     _get_config_value project_debug '.project.debug'
   fi
   unset -f _apply_override
@@ -262,7 +262,7 @@ function read_config() {
   export ONESETUP_SYSTEM_USERNAME="${system_username}"
   export ONESETUP_SYSTEM_ROOT_USER="${system_root_user}"
   export ONESETUP_SYSTEM_USER_GROUP="${system_user_group}"
-  export ONESETUP_SYSTEM_ADMIN_GROUP="${system_admin_group}"
+  export ONESETUP_SYSTEM_ROOT_GROUP="${system_root_group}"
   export ONESETUP_SYSTEM_CONFIG_DIR="${system_config_dir}"
   export ONESETUP_SYSTEM_STORAGE_DIR="${system_storage_dir}"
   export ONESETUP_SYSTEM_DOTFILES_DIR="${system_dotfiles_dir}"

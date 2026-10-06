@@ -89,7 +89,7 @@
     state: directory
     mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
-    group: "{{ ONESETUP_SYSTEM_ADMIN_GROUP }}"
+    group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
     follow: true # follow symlink
   become: true
 
@@ -100,7 +100,7 @@
     state: directory
     mode: "1777"
     owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
-    group: "{{ ONESETUP_SYSTEM_ADMIN_GROUP }}"
+    group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
   become: true
 
 # Ensure Directory: User Library

@@ -154,7 +154,7 @@ system:
   username: [String] # Name of a User on your system that has sudo privileges but is not the root user
   root_user: [String] # Name of the Root user on your system
   user_group: [String] # Group of the system user
-  admin_group: [String] # Group of the root user
+  root_group: [String] # Group of the root user
   config_dir: [String] # Config Directory for your config.yml
   storage_dir: [String] # Storage Directory
   dotfiles_dir: [String] # Dotfiles Directory used to clone your Dotfiles repo into and symlink them to the mapped locations

@@ -131,7 +131,7 @@ function install() {
   local default_user="$ONESETUP_SYSTEM_USERNAME"
   local root_user="$ONESETUP_SYSTEM_ROOT_USER"
   local default_group="$ONESETUP_SYSTEM_USER_GROUP"
-  local root_group="$ONESETUP_SYSTEM_ADMIN_GROUP"
+  local root_group="$ONESETUP_SYSTEM_ROOT_GROUP"
 
   # Step 1: Remove installation directory if invalid/corrupted
   if [[ -d "$install_dir" ]]; then

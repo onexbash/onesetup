@@ -15,7 +15,7 @@ system:
   username: "" # Default: Value from Environment Variable "$USER"
   root_user: "" # Default: Value from Command "id -nu 0"
   user_group: "" # Default: Value from Command "id -ng"
-  admin_group: "" # Default: Value from Command "id -ng 0"
+  root_group: "" # Default: Value from Command "id -ng 0"
   config_dir: "" # Default: $XDG_CONFIG_HOME/onesetup or $HOME/.config/onesetup
   storage_dir: "" # Default: $XDG_STATE_HOME/onesetup or $HOME/.local/state/onesetup
   dotfiles_dir: "" # Default: $XDG_DATA_HOME/dotfiles or $HOME/.local/share/dotfiles
