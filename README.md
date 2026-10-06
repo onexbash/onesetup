@@ -65,12 +65,19 @@ Invoke-WebRequest -Uri $url -OutFile PrepareTargetForAnsible.ps1
 ```
 
 ### 2) Installation
-- Run the installation script
-- Replace the username & repo_name variables with the actual values of your Remote Repository (e.g: github):
+Run the Installation Script below to install the onesetup commands on your System.
 ```bash
 bash -c 'curl -fsSL "https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/install.sh" | bash'
 ```
-- Restart your terminal or reload the default shell
+*Verify using `which onesetup` & `which onesetup-init`*
+
+### 2.1) Initialization
+Run the `onesetup-init` Command to initialize onesetup. This is the actual installation that places the Ansible Playbook directory to the Installation Directory etc.
+```bash
+onesetup-init
+# OR (if not in $PATH)
+/usr/local/bin/onesetup-init
+```
 
 ### 3) Ansible Vault Encryption
 To encrypt your Secrets (e.g: SSH Keys) you can use the `onesetup-vault` command. 
