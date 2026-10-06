@@ -5,127 +5,75 @@
 # --                         -- #
 # Rolled out by 'install.sh' | Registers Command 'onesetup'
 
-# Main Function
+# -- GLOBALS -- #
+SUBCMD=""        # run | test | help | "" (empty → interactive prompt)
+ARG_INCLUDE=""   # --include <tags>
+ARG_SKIP=""      # --skip <tags>
+ARG_DEV_DIR=""   # --dev-dir <path>
+ARG_DIFF="false" # --diff (test only)
+TARGET_DIR=""    # Project directory (set by resolve_target_dir)
+
+# -- HELPERS -- #
+# Print an error & exit
+function die() {
+  echo -e "${I_ERR:-[ERROR] }$*" >&2
+  exit 1
+}
+
+# Print a warning
+function warn() {
+  echo -e "${I_WARN:-[WARN] }$*" >&2
+}
+
+# -- MAIN -- #
 function main() {
-  # Function Calls
-  load_utils
-  tty_styles || echo -e "${I_WARN}Failed to load TTY Styles."
-  set_modes || echo -e "${I_WARN}Failed to set Script Modes."
-  init_brew || echo -e "${I_WARN}Failed to initialize Homebrew"
-  { read_config && echo -e "${I_OK}Config File read"; } || {
-    echo -e "${I_ERR}Failed to read Config File"
-    exit 1
-  }
-  export_dynamic_vars || {
-    echo -e "${I_ERR}Failed to export Dynamic Environment Variables!"
-    exit 1
-  }
-  install_deps || {
-    echo -e "${I_ERR}Failed to install dependencies"
-    exit 1
-  }
-  parse_args "$@" || {
-    echo -e "${I_ERR}Failed to parse Command arguments"
-    exit 1
-  }
-}
-
-# Source Utility Script
-function load_utils() {
-  resolve_target_dir # Call that $TARGET_DIR has a value
-  local util_script="${TARGET_DIR}/scripts/util.sh"
-  source "$util_script" && echo -e "${I_OK}Utility Script sourced" || {
-    echo -e "${I_ERR}Failed to source Utility Script"
-    exit 1
-  }
-}
-
-# Dependency Installation
-function install_deps() {
-  local os pkg_list
-  os="$(detect_os)"
-  pkg_list=("gum" "ansible")
-
-  for pkg in "${pkg_list[@]}"; do
-    if command -v "$pkg" &>/dev/null; then
-      continue
-    fi
-
-    echo -e "${I_INFO}Dependency missing: ${C_RED}$pkg${C_RESET}. Installing..." >&2
-
-    case "$os" in
-    osx)
-      if ! command -v "brew" &>/dev/null; then
-        echo -e "${I_ERR}Homebrew is not installed on your system. Please install & re-run this script." >&2
-        echo -e "${I_INFO}Install Homebrew from: ${C_BLUE}https://brew.sh${C_RESET}" >&2
-        exit 1
-      fi
-      brew install "$pkg" || {
-        echo -e "${I_ERR}Failed to install: $pkg" >&2
-        exit 1
-      }
-      ;;
-    linux)
-      install_linux_pkg "$pkg" || {
-        echo -e "${I_ERR}Failed to install: $pkg" >&2
-        exit 1
-      }
-      ;;
-    windows)
-      echo -e "${I_ERR}Windows Support Coming soon.." >&2 && exit 1
-      ;;
-    *)
-      echo -e "${I_ERR}Unsupported OS." >&2 && exit 1
-      ;;
-    esac
-  done
-}
-
-# Command Arguments Parser
-function parse_args() {
-  if [[ $# -eq 0 ]]; then
-    prompt_subcommand
-    return 0
+  # [1] Parse & validate all arguments
+  parse_args "$@"
+  if [[ "$SUBCMD" == "help" ]]; then
+    print_help
+    exit 0
   fi
 
+  # [2] Setup (utils, config, dependencies)
+  setup
+
+  # [3] Ask for the subcommand if none was given
+  if [[ -z "$SUBCMD" ]]; then
+    SUBCMD="$(prompt_subcommand)"
+    if [[ -z "$SUBCMD" ]]; then
+      warn "Operation cancelled."
+      exit 0
+    fi
+  fi
+
+  # [4] Run
+  run_playbook
+}
+
+# --                     -- #
+# --     ARG PARSING     -- #
+# --                     -- #
+
+# Parse Command Arguments & Subcommand (sets SUBCMD & ARG_*, no side effects)
+function parse_args() {
+  # Optional subcommand as first argument
   case "${1:-}" in
-  run)
+  run | test)
+    SUBCMD="$1"
     shift
-    run_playbook "$@"
-    ;;
-  test)
-    shift
-    test_playbook "$@"
     ;;
   help | --help | -h)
-    print_help
+    SUBCMD="help"
+    return 0
     ;;
+  "" | --*) ;; # no subcommand → interactive prompt (options still allowed)
   *)
-    echo -e "${I_ERR}Unknown command: $1" >&2
-    print_help
-    exit 1
+    print_help >&2
+    die "Unknown command: $1"
     ;;
   esac
-}
 
-ARG_INCLUDE=""
-ARG_SKIP=""
-ARG_DEV_DIR=""
-ARG_DIFF="false"
-
-# Ensure a flag has a value: require_value <flag> <value>
-function require_value() {
-  if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
-    echo -e "${I_ERR}Flag '$1' requires a value." >&2
-    exit 1
-  fi
-}
-
-# Parse Playbook arguments [used by run_playbook() & test_playbook()]
-function parse_playbook_args() {
-  local subcmd="$1"
-  shift
-
+  # Options
   while [[ $# -gt 0 ]]; do
     case "$1" in
     --include)
@@ -144,112 +92,137 @@ function parse_playbook_args() {
       shift 2
       ;;
     --diff)
-      if [[ "$subcmd" != "test" ]]; then
-        echo -e "${I_ERR}Flag '--diff' is only valid for 'test'." >&2
-        exit 1
+      if [[ "$SUBCMD" == "run" ]]; then
+        die "Flag '--diff' is only valid for 'test'."
       fi
-      ARG_DIFF=true
+      ARG_DIFF="true"
       shift
       ;;
+    -h | --help)
+      SUBCMD="help"
+      return 0
+      ;;
     *)
-      echo -e "${I_ERR}Unknown option for '${subcmd}': $1" >&2
-      exit 1
+      # shellcheck disable=SC2016 # false positive: expands inside the double quotes
+      die "Unknown option${SUBCMD:+ for '${SUBCMD}'}: $1"
+      ;;
+    esac
+  done
+
+  if [[ -n "$ARG_INCLUDE" && -n "$ARG_SKIP" ]]; then
+    die "Use either '--include' or '--skip', not both."
+  fi
+}
+
+# Ensure a flag has a value: require_value <flag> <value>
+function require_value() {
+  if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
+    die "Flag '$1' requires a value."
+  fi
+}
+
+# Print Command Usage Help
+function print_help() {
+  cat <<EOF
+Usage: $(basename "$0") [command] [options]
+
+Commands:
+  run                         Run the Ansible playbook
+  test                        Test the playbook without applying changes (--check)
+  help, --help, -h            Display this help message
+  (none)                      Choose a command interactively
+
+Options:
+  --include <tag1,tag2>       Only run these roles/tags
+  --skip <tag1,tag2>          Skip these roles/tags
+  --dev-dir <path>            Use a local project directory instead of the installed one
+  --diff                      Show content diffs (only with 'test')
+EOF
+}
+
+# --               -- #
+# --     SETUP     -- #
+# --               -- #
+
+# Prepare everything needed to run the playbook
+function setup() {
+  resolve_target_dir
+  load_utils
+  tty_styles || warn "Failed to load TTY Styles."
+  set_modes || warn "Failed to set Script Modes."
+  init_brew || warn "Failed to initialize Homebrew."
+  read_config || die "Failed to read Config File."
+  export_dynamic_vars || die "Failed to export Dynamic Environment Variables."
+  resolve_target_dir # Re-resolve: the config may set ONESETUP_PROJECT_DEV_DIR / ONESETUP_SYSTEM_INSTALL_DIR
+  install_deps
+}
+
+# Set TARGET_DIR: --dev-dir > ONESETUP_PROJECT_DEV_DIR > ONESETUP_SYSTEM_INSTALL_DIR > default
+function resolve_target_dir() {
+  local default_dir="$HOME/.local/share/onesetup"
+  local dir="${ARG_DEV_DIR:-${ONESETUP_PROJECT_DEV_DIR:-${ONESETUP_SYSTEM_INSTALL_DIR:-$default_dir}}}"
+
+  [[ -d "$dir" ]] || die "Target directory does not exist: ${C_CYAN:-}${dir}${C_RESET:-}"
+
+  TARGET_DIR="$(CDPATH='' cd -- "$dir" && pwd -P)"
+  export ONESETUP_SYSTEM_TARGET_DIR="$TARGET_DIR" # used by Ansible
+}
+
+# Source the Utility Script from TARGET_DIR
+function load_utils() {
+  local util_script="${TARGET_DIR}/scripts/util.sh"
+
+  [[ -r "$util_script" ]] || die "Utility Script not found: ${util_script}"
+  # shellcheck source=/dev/null
+  source "$util_script" || die "Failed to source Utility Script: ${util_script}"
+}
+
+# Install missing dependencies
+function install_deps() {
+  local os pkg
+  local pkgs=("ansible")
+
+  # gum is only needed for the interactive prompt
+  if [[ -z "$SUBCMD" ]]; then
+    pkgs+=("gum")
+  fi
+
+  os="$(detect_os)"
+
+  for pkg in "${pkgs[@]}"; do
+    if command -v "$pkg" &>/dev/null; then
+      continue
+    fi
+
+    echo -e "${I_INFO}Dependency missing: ${C_RED}${pkg}${C_RESET}. Installing..." >&2
+
+    case "$os" in
+    osx)
+      command -v brew &>/dev/null ||
+        die "Homebrew is not installed. Install it from ${C_BLUE}https://brew.sh${C_RESET} & re-run this script."
+      brew install "$pkg" || die "Failed to install: ${pkg}"
+      ;;
+    linux)
+      install_linux_pkg "$pkg" || die "Failed to install: ${pkg}"
+      ;;
+    windows)
+      die "Windows support coming soon."
+      ;;
+    *)
+      die "Unsupported OS: ${os}"
       ;;
     esac
   done
 }
 
-# Function to set $TARGET_DIR value based on dev_dir or install_dir (fallback to default)
-function resolve_target_dir() {
-  local default_dir="$HOME/.local/share/onesetup"
-  local dir="${ARG_DEV_DIR:-${ONESETUP_PROJECT_DEV_DIR:-${ONESETUP_SYSTEM_INSTALL_DIR:-$default_dir}}}"
+# --             -- #
+# --     RUN     -- #
+# --             -- #
 
-  if [[ ! -d "$dir" ]]; then
-    echo -e "${I_ERR}Target directory does not exist: ${C_CYAN}${dir}${C_RESET}" >&2
-    exit 1
-  fi
-  TARGET_DIR="$(CDPATH='' cd -- "$dir" && pwd -P)"
-  export ONESETUP_SYSTEM_TARGET_DIR="$TARGET_DIR" # just for ansible
-}
-
-# Validate & Execute the Ansible Playbook (called by run_playbook() & test_playbook())
-function exec_playbook() {
-  resolve_target_dir # Call that $TARGET_DIR has a value
-
-  local entrypoint="${TARGET_DIR}/main.yml"    # Playbook Entrypoint (main.yml)
-  local ansible_args=("--ask-vault-pass" "$@") # Playbook Arguments (+passed in exec_playbook call)
-
-  # Check if main.yml exists in target_dir
-  if [[ ! -f "$entrypoint" || ! -r "$entrypoint" ]]; then
-    echo -e "${I_ERR}No readable Playbook Entrypoint found at: ${C_CYAN}${entrypoint}${C_RESET}" >&2
-    exit 1
-  fi
-
-  # Export & Validate Ansible Env-Vars
-  export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-${TARGET_DIR}/ansible.cfg}"
-  export ANSIBLE_INVENTORY="${ANSIBLE_INVENTORY:-${TARGET_DIR}/inventory.ini}"
-  [[ -f "$ANSIBLE_CONFIG" ]] || echo -e "${I_WARN}Ansible config not found: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}" >&2
-  [[ -f "$ANSIBLE_INVENTORY" ]] || echo -e "${I_WARN}Ansible inventory not found: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}" >&2
-
-  # Display Messages
-  echo -e "${I_OK}onesetup ==> Using Ansible Playbook from: ${C_CYAN}${TARGET_DIR}${C_RESET}"
-  echo -e "${I_INFO}onesetup ==> Ansible Config file: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}"
-  echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
-  # Add --tags or --skip-tags to ansible_args
-  if [[ -n "$ARG_INCLUDE" ]]; then
-    ansible_args+=("--tags" "${ARG_INCLUDE},untagged")
-  elif [[ -n "$ARG_SKIP" ]]; then
-    ansible_args+=("--skip-tags" "$ARG_SKIP")
-  fi
-
-  # Run Playbook with Entrypoint & Args set before
-  if ansible-playbook "$entrypoint" "${ansible_args[@]}"; then
-    echo -e "${I_OK}onesetup ==> ansible playbook finished"
-  else
-    echo -e "${I_ERR}onesetup ==> ansible playbook failed" >&2
-    exit 1
-  fi
-}
-
-# --                              -- #
-# --     SUBCOMMAND FUNCTIONS     -- #
-# --                              -- #
-
-# Subcommand: 'help': Print Command Usage Help
-function print_help() {
-  cat <<EOF
-Usage: $(basename "$0") <command> [options]
-
-Sub-Commands:
-  run                         Run Ansible Playbook
-    --include <role1,role2>   Comma-separated list of roles/tags to run
-    --skip <role1,...>        Comma-separated list of roles/tags to skip
-  test                        Test Playbook Changes without applying them
-    --diff                    Show the Content diffs for modules like copy/lineinfile/..
-  help, --help, -h            Display this help message
-EOF
-}
-
-# Subcommand 'run': Run Ansible Playbook
-function run_playbook() {
-  parse_playbook_args run "$@"
-  exec_playbook
-}
-
-# Subcommand: 'test': Test Playbook Changes without applying them
-function test_playbook() {
-  parse_playbook_args test "$@"
-  local args=("--check")
-  if [[ "$ARG_DIFF" == true ]]; then
-    args+=("--diff")
-  fi
-  exec_playbook "${args[@]}"
-}
-
-# Prompt for Subcommand when run without arguments
+# Ask for the subcommand (prints "run", "test" or nothing if canceled)
 function prompt_subcommand() {
   local choice
-  choice=$(
+  choice="$(
     gum choose "Run Playbook" "Test Playbook" \
       --cursor.foreground "#cba6f7" \
       --header.foreground "#cba6f7" \
@@ -257,13 +230,50 @@ function prompt_subcommand() {
       --header "Choose:" \
       --no-show-help \
       --ordered || true
-  )
+  )"
 
   case "$choice" in
-  "Run Playbook") run_playbook ;;
-  "Test Playbook") test_playbook ;;
-  *) echo -e "${I_WARN}Operation cancelled." ;;
+  "Run Playbook") echo "run" ;;
+  "Test Playbook") echo "test" ;;
   esac
+}
+
+# Build the ansible-playbook arguments from SUBCMD & ARG_* and run the playbook
+function run_playbook() {
+  local playbook="${TARGET_DIR}/main.yml"
+  local args=("--ask-vault-pass")
+
+  [[ -f "$playbook" && -r "$playbook" ]] ||
+    die "No readable Playbook Entrypoint found at: ${C_CYAN}${playbook}${C_RESET}"
+
+  # Ansible config & inventory (values already set in the environment win)
+  export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-${TARGET_DIR}/ansible.cfg}"
+  export ANSIBLE_INVENTORY="${ANSIBLE_INVENTORY:-${TARGET_DIR}/inventory.ini}"
+  [[ -f "$ANSIBLE_CONFIG" ]] || warn "Ansible config not found: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}"
+  [[ -f "$ANSIBLE_INVENTORY" ]] || warn "Ansible inventory not found: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
+
+  # 'test' → dry run (+ optional diffs)
+  if [[ "$SUBCMD" == "test" ]]; then
+    args+=("--check")
+    if [[ "$ARG_DIFF" == "true" ]]; then
+      args+=("--diff")
+    fi
+  fi
+
+  # Tag filters
+  if [[ -n "$ARG_INCLUDE" ]]; then
+    args+=("--tags" "${ARG_INCLUDE},untagged")
+  elif [[ -n "$ARG_SKIP" ]]; then
+    args+=("--skip-tags" "$ARG_SKIP")
+  fi
+
+  echo -e "${I_OK}onesetup ==> Using Ansible Playbook from: ${C_CYAN}${TARGET_DIR}${C_RESET}"
+  echo -e "${I_INFO}onesetup ==> Ansible Config file: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}"
+  echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
+  echo -e "${I_INFO}onesetup ==> Mode: ${C_CYAN}${SUBCMD}${C_RESET}"
+
+  ansible-playbook "$playbook" "${args[@]}" || die "onesetup ==> ansible playbook failed"
+  echo -e "${I_OK}onesetup ==> ansible playbook finished"
 }
 
 # Call Main Function with args
