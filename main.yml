@@ -2,7 +2,6 @@
 # -- -- -- -- -- -- -- -- #
 # --   MAIN PLAYBOOK   -- #
 - name: onesetup
-  tags: [always]
   hosts: localhost
 
   # -- VARIABLES -- #
@@ -32,15 +31,11 @@
         ansible_become_password: "{{ SUDO_PASSWORD }}"
         cacheable: false
       no_log: true
-      tags: [always]
 
     # Pre-Task: Include Environment Pre-Task (! RUNS FIRST !)
     - name: "Include Environment Pre-Task"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/all/env.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
 
@@ -48,15 +43,11 @@
     - name: "Add host to OS group ({{ ONESETUP_SYSTEM_OS }})"
       ansible.builtin.group_by:
         key: "{{ ONESETUP_SYSTEM_OS }}"
-      tags: [always]
 
     # Include: OS-Independent Pre-Tasks
     - name: "Include OS-Independent Pre-Tasks"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/all/{{ pretask }}.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
@@ -68,11 +59,8 @@
 
     # Include: MacOS Pre-Tasks
     - name: "Include Pre-Tasks (MacOS)"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/osx/{{ pretask }}.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
@@ -86,11 +74,8 @@
 
     # Include: Linux Pre-Tasks
     - name: "Include Pre-Tasks (linux)"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/linux/{{ pretask }}.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
@@ -102,11 +87,8 @@
 
     # Include: Windows Pre-Tasks
     - name: "Include Pre-Tasks (windows)"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/windows/{{ pretask }}.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
