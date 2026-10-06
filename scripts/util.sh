@@ -197,7 +197,7 @@ function read_config() {
   local system_tmp_dir="/tmp"
   # [Project]
   # Development Directory where the Ansible Playbook is executed (used instead of the installation directory when set)
-  local project_dev_dir=""
+  local project_dev_dir="${ONESETUP_PROJECT_DEV_DIR:-}"
   local project_debug="0" # Debug-Level for Scripts & Ansible itself
   # -- / -- #
 
