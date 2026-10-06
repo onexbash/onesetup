@@ -89,12 +89,17 @@ function rollout_executables() {
   tmp_dir="$(mktemp -d)"
   trap "rm -rf '$tmp_dir'" EXIT
 
+  # Download Install Executables
   for file in "${executables[@]}"; do
     curl -fsSL "$repo_url/bin/$file" -o "$tmp_dir/$file" || {
       echo -e "${I_ERR}Failed to download $file" >&2
       return 1
     }
-    chmod +x "$tmp_dir/$file"
+    sudo install -m 755 -o "$root_user" -g "$root_group" "$tmp_dir/$file" "$bin_dir/$file" || {
+      echo -e "${I_ERR}Failed to install $file to $bin_dir" >&2
+      return 1
+    }
+    echo -e "${I_OK}Installed: $bin_dir/$file"
   done
 }
 
