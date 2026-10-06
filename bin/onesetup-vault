@@ -12,10 +12,11 @@ ARG_TARGET=""  # --target <clipboard|ansible> ("" → prompt, or clipboard witho
 ARG_FILE=""    # --file [path]
 ARG_VARNAME="" # --file [path] [varname]
 ARG_DEV_DIR="" # --dev-dir <path>
+VARFILE=""     # Vars file for target 'ansible' (set in setup)
 
 # -- MAIN -- #
 function main() {
-  # [1] Load utilities
+  # [1] Load utilities (onesetup-util applies styles, shell modes & config on load)
   load_utils
 
   # [2] Parse & validate all arguments
@@ -25,7 +26,7 @@ function main() {
     exit 0
   fi
 
-  # [3] Setup (config, target dir, dependencies)
+  # [3] Setup (dependencies, target dir)
   setup
 
   # [4] Ask for missing choices
@@ -127,6 +128,7 @@ function parse_args() {
       ;;
     --*)
       echo -e "${I_ERR}Unknown option: $1"
+      exit 1
       ;;
     *)
       positional+=("$1")
@@ -138,6 +140,7 @@ function parse_args() {
   # Encrypt options require the 'encrypt' command
   if [[ -z "$SUBCMD" && (-n "$ACTION" || -n "$ARG_TARGET" || ${#positional[@]} -gt 0) ]]; then
     echo -e "${I_ERR}Options '--string', '--file' & '--target' require the 'encrypt' command."
+    exit 1
   fi
 
   # Positional arguments: only '--file [path] [varname]' takes any
@@ -186,11 +189,11 @@ EOF
 
 # Prepare everything needed to encrypt
 function setup() {
-  init_brew || echo -e "${I_WARN}Failed to initialize Homebrew."
   install_deps "ansible" "gum"
+  use_dev_dir "$ARG_DEV_DIR"
 
-  # Vars file for target 'ansible'
-  VARFILE="${X_TARGET_DIR}/group_vars/all/encrypted.yml}"
+  # Vars file for target 'ansible' (depends on the final X_TARGET_DIR)
+  VARFILE="${X_TARGET_DIR}/group_vars/all/encrypted.yml"
 }
 
 # --                 -- #
@@ -292,10 +295,11 @@ function write_output() {
 
 # Action 'string': encrypt a prompted secret
 function encrypt_string() {
-  local secret varname encrypted
+  local secret="" varname="" encrypted
 
+  # 'read' returns 1 on EOF – '|| true' lets the empty-check below report it instead of 'set -e'
   printf '%b' "${I_ASK}Secret to Encrypt (hidden): "
-  read -rs secret
+  read -rs secret || true
   echo
   [[ -n "$secret" ]] || {
     echo -e "${I_ERR}Secret cannot be empty."
@@ -303,7 +307,7 @@ function encrypt_string() {
   }
 
   printf '%b' "${I_ASK}Variable Name: "
-  read -r varname
+  read -r varname || true
   validate_varname "$varname"
 
   resolve_output_target "$varname"

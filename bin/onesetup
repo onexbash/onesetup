@@ -14,7 +14,7 @@ ARG_DIFF="false" # --diff (test only)
 
 # -- MAIN -- #
 function main() {
-  # [1] Load utilities
+  # [1] Load utilities (onesetup-util applies styles, shell modes & config on load)
   load_utils
 
   # [2] Parse & validate all arguments
@@ -24,7 +24,7 @@ function main() {
     exit 0
   fi
 
-  # [3] Setup (config, target dir, dependencies)
+  # [3] Setup (dependencies, target dir)
   setup
 
   # [4] Ask for the subcommand if none was given
@@ -34,6 +34,7 @@ function main() {
       echo -e "${I_WARN}Operation cancelled."
       exit 0
     fi
+    validate_args
   fi
 
   # [5] Run
@@ -94,10 +95,6 @@ function parse_args() {
       shift 2
       ;;
     --diff)
-      if [[ "$SUBCMD" == "run" ]]; then
-        echo -e "${I_ERR}Flag '--diff' is only valid for 'test'."
-        exit 1
-      fi
       ARG_DIFF="true"
       shift
       ;;
@@ -113,6 +110,15 @@ function parse_args() {
     esac
   done
 
+  validate_args
+}
+
+# Validate option combinations (called again after the interactive prompt)
+function validate_args() {
+  if [[ "$SUBCMD" == "run" && "$ARG_DIFF" == "true" ]]; then
+    echo -e "${I_ERR}Flag '--diff' is only valid for 'test'."
+    exit 1
+  fi
   if [[ -n "$ARG_INCLUDE" && -n "$ARG_SKIP" ]]; then
     echo -e "${I_ERR}Use either '--include' or '--skip', not both."
     exit 1
@@ -144,14 +150,14 @@ EOF
 
 # Prepare everything needed to run the playbook
 function setup() {
-  init_brew || echo -e "${I_WARN}Failed to initialize Homebrew."
-
   # gum is only needed for the interactive prompt
   if [[ -z "$SUBCMD" ]]; then
     install_deps "ansible" "gum"
   else
     install_deps "ansible"
   fi
+
+  use_dev_dir "$ARG_DEV_DIR"
 }
 
 # --             -- #

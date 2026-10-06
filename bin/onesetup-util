@@ -3,13 +3,19 @@
 # --                              -- #
 # --     ONESETUP-UTIL BINARY     -- #
 # --                              -- #
+# Sourced by onesetup, onesetup-init & onesetup-vault (not meant to be executed directly)
 
 # Main Function (Calls Functions that should always be called)
 function main() {
   tty_styles || echo -e "${I_WARN:-[ERR] }Failed to Call tty_styles()"
   set_modes || echo -e "${I_WARN:-[ERR] }Failed to Call set_modes()"
+  init_brew || echo -e "${I_WARN:-[ERR] }Failed to Call init_brew()"
   apply_config || echo -e "${I_WARN:-[ERR] }Failed to Call apply_config()"
 }
+
+# --                    -- #
+# --     SHELL SETUP    -- #
+# --                    -- #
 
 # [UTIL] Terminal Colors & Prompts
 function tty_styles() {
@@ -24,6 +30,8 @@ function tty_styles() {
   export C_WHITE='\033[1;37m'
   export C_GRAY='\033[1;34m'
   export C_RESET='\033[0m'
+  # Accent color for gum prompts (ANSI 6 = cyan), overridable via env
+  export GUM_COLOR="${GUM_COLOR:-6}"
   # Info Prompts
   export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
   export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
@@ -32,7 +40,7 @@ function tty_styles() {
   export I_ERR="${C_BLACK}[${C_RED} ERROR ${C_BLACK}] ${C_RESET}"        # error
   export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
   export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
-  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # ask user for anything
+  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # loading
 }
 
 # [UTIL] Set Script Modes TODO: refactor this
@@ -45,6 +53,10 @@ function set_modes() {
   fi
 }
 
+# --                -- #
+# --     SYSTEM     -- #
+# --                -- #
+
 # [UTIL] Detect Operating System
 function detect_os() {
   local platform
@@ -55,6 +67,20 @@ function detect_os() {
   CYGWIN* | MINGW* | MSYS*) echo "windows" ;;
   *) echo "unsupported" ;;
   esac
+}
+
+# [UTIL] Initialize Homebrew on MacOS if installed but not available (missing PATH)
+function init_brew() {
+  local os
+  os="$(detect_os)"
+  if [[ "$os" == "osx" ]] && ! command -v brew >/dev/null 2>&1; then
+    if [[ -x "/opt/homebrew/bin/brew" ]]; then
+      eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)"
+    elif [[ -x "/usr/local/bin/brew" ]]; then
+      eval "$(/usr/local/bin/brew shellenv 2>/dev/null)"
+    fi
+  fi
+  return 0
 }
 
 # [UTIL] Linux PKG Installer
@@ -72,7 +98,44 @@ function install_linux_pkg() {
   fi
 }
 
+# [UTIL] Install a package with the platform's package manager: install_pkg <pkg> [os]
+# (os defaults to ONESETUP_SYSTEM_OS, or the detected OS before the config is applied)
+function install_pkg() {
+  local pkg="$1" os="${2:-${ONESETUP_SYSTEM_OS:-$(detect_os)}}"
+  case "$os" in
+  osx) brew install "$pkg" ;;
+  linux) install_linux_pkg "$pkg" ;;
+  windows) {
+    echo -e "${I_ERR}Windows not supported yet"
+    return 1
+  } ;;
+  *) {
+    echo -e "${I_ERR}Unsupported Operating System: ${os}"
+    return 1
+  } ;;
+  esac
+}
+
+# [UTIL] Install missing commands & exit on failure: install_deps <cmd...>
+function install_deps() {
+  local pkg
+  for pkg in "$@"; do
+    command -v "$pkg" &>/dev/null && continue
+    echo -e "${I_INFO}Installing missing dependency: ${C_CYAN}${pkg}${C_RESET}"
+    install_pkg "$pkg" || {
+      echo -e "${I_ERR}Installation failed: ${pkg}"
+      exit 1
+    }
+    echo -e "${I_OK}Installation succeeded: ${pkg}"
+  done
+}
+
+# --                     -- #
+# --     FILESYSTEM      -- #
+# --                     -- #
+
 # [UTIL] Check if a Directory is sudo-writable or protected with MacOS System Integrity Protection
+# Returns 0 = writable, 1 = not writable (SIP, read-only mount, ACL, ...), 2 = does not exist
 function is_writable() {
   local dir="$1"
   local test_file
@@ -86,39 +149,51 @@ function is_writable() {
 
   if sudo touch "$test_file" &>/dev/null; then
     sudo rm -f "$test_file" &>/dev/null
-    return 0 # writable
+    return 0
   else
-    return 1 # not writable (SIP, read-only mount, ACL, etc.)
+    return 1
   fi
 }
 
-# [UTIL] Ensure Directory presence with right permissions
+# [UTIL] Ensure Directory presence with right permissions & ownership
+# ensure_directory <dir> <perms> <user:group> [recursive=false]
 function ensure_directory() {
   local target_dir="$1" desired_perms="$2" desired_ownership="$3" recursive="${4:-false}"
-  local chown_flag=""
-  [[ "$recursive" == "true" ]] && chown_flag="-R"
+  local chown_args=()
+  local current_owner current_perms
+
+  if [[ "$recursive" == "true" ]]; then
+    chown_args=("-R")
+  fi
+
   # Create Directory & set permissions if not present yet
   if [[ ! -d "$target_dir" ]]; then
     sudo mkdir -p "$target_dir"
-    sudo chown $chown_flag "$desired_ownership" "$target_dir"
+    sudo chown "${chown_args[@]}" "$desired_ownership" "$target_dir"
     sudo chmod "$desired_perms" "$target_dir"
-  else
-    # Check Permissions on existing Directory
-    local current_owner current_perms
-    if [[ "$(detect_os)" == "osx" ]]; then
-      current_owner=$(/usr/bin/stat -f "%Su:%Sg" "$target_dir")
-      current_perms=$(/usr/bin/stat -f "%Lp" "$target_dir")
-    else
-      current_owner=$(stat -c "%U:%G" "$target_dir")
-      current_perms=$(stat -c "%a" "$target_dir")
-    fi
-    # Set Permissions on existing Directory
-    [[ "$current_owner" != "$desired_ownership" ]] && sudo chown $chown_flag "$desired_ownership" "$target_dir"
-    [[ "$current_perms" != "$desired_perms" ]] && sudo chmod "$desired_perms" "$target_dir"
+    return 0
   fi
+
+  # Read current ownership & permissions of the existing Directory
+  if [[ "$(detect_os)" == "osx" ]]; then
+    current_owner=$(/usr/bin/stat -f "%Su:%Sg" "$target_dir")
+    current_perms=$(/usr/bin/stat -f "%Lp" "$target_dir")
+  else
+    current_owner=$(stat -c "%U:%G" "$target_dir")
+    current_perms=$(stat -c "%a" "$target_dir")
+  fi
+
+  # Fix them only where they differ (if-blocks: an unchanged directory must still return 0)
+  if [[ "$current_owner" != "$desired_ownership" ]]; then
+    sudo chown "${chown_args[@]}" "$desired_ownership" "$target_dir"
+  fi
+  if [[ "$current_perms" != "$desired_perms" ]]; then
+    sudo chmod "$desired_perms" "$target_dir"
+  fi
+  return 0
 }
 
-# [UTIL] Copy to clipboard
+# [UTIL] Copy stdin to the clipboard (prints it if no clipboard tool is available)
 function copy_to_clipboard() {
   if command -v pbcopy &>/dev/null; then
     pbcopy
@@ -132,22 +207,60 @@ function copy_to_clipboard() {
   fi
 }
 
-# [UTIL] Initialize Homebrew on MacOS if installed but not available (missing PATH)
-function init_brew() {
-  local os="$(detect_os)"
-  if [[ "$os" == "osx" ]]; then
-    if ! command -v brew >/dev/null 2>&1; then
-      if [[ -x "/opt/homebrew/bin/brew" ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)"
-      elif [[ -x "/usr/local/bin/brew" ]]; then
-        eval "$(/usr/local/bin/brew shellenv 2>/dev/null)"
-      fi
-    fi
+# --                       -- #
+# --     CLI & PROMPTS     -- #
+# --                       -- #
+
+# [UTIL] Ensure a command-line option received a value: require_value <option> <value>
+function require_value() {
+  if [[ -z "$2" || "$2" == --* ]]; then
+    echo -e "${I_ERR}Option '$1' requires a value."
+    exit 1
   fi
 }
 
-# [UTIL] Build a Git Remote URI from Provider, Connection & Username
-_build_remote_uri() {
+# [UTIL] Single-choice prompt (prints the selection or nothing if cancelled): choose <header> <option...>
+function choose() {
+  local header="$1"
+  shift
+  gum choose \
+    --header "$header" \
+    --cursor.foreground "$GUM_COLOR" \
+    --header.foreground "$GUM_COLOR" \
+    --selected.foreground "$GUM_COLOR" \
+    "$@" || true
+}
+
+# --                    -- #
+# --     PROJECT DIR    -- #
+# --                    -- #
+
+# [UTIL] Point the target dir & the Ansible paths to a project directory: set_target_dir <path>
+function set_target_dir() {
+  export X_TARGET_DIR="$1"
+  export ANSIBLE_CONFIG="${X_TARGET_DIR}/ansible.cfg"
+  export ANSIBLE_INVENTORY="${X_TARGET_DIR}/inventory.ini"
+}
+
+# [UTIL] Use a local project directory instead of the installed one: use_dev_dir [path]
+# (no-op if path is empty, e.g. when '--dev-dir' was not given)
+function use_dev_dir() {
+  [[ -n "${1:-}" ]] || return 0
+  [[ -d "$1" ]] || {
+    echo -e "${I_ERR}Development directory not found: ${C_CYAN}$1${C_RESET}"
+    exit 1
+  }
+  ONESETUP_PROJECT_DEV_DIR="$(cd -P "$1" && pwd)"
+  export ONESETUP_PROJECT_DEV_DIR
+  set_target_dir "$ONESETUP_PROJECT_DEV_DIR"
+}
+
+# --                -- #
+# --     CONFIG     -- #
+# --                -- #
+
+# [UTIL] Build a Git Remote URI from Provider, Connection & Username: _build_remote_uri <repo>
+function _build_remote_uri() {
   local repo="$1" host
   case "$ONESETUP_REMOTE_PROVIDER" in
   github) host="github.com" ;;
@@ -173,7 +286,7 @@ _build_remote_uri() {
 # [UTIL] Apply the user configuration by reading the values from config.yml & environment variables
 # NOTE: env-var > config-key > default
 function apply_config() {
-  local config_file detected_os remote_host remote_base
+  local config_file detected_os uri
   detected_os="$(detect_os)"
 
   # Resolve & export a value from Env-Var or Config-Key
@@ -182,15 +295,15 @@ function apply_config() {
     local _name="$1" _key="$2" _val
     # 1. Environment variable already set (non-empty): keep & export it
     if [[ -n "${!_name:-}" ]]; then
-      export "$_name"
+      export "${_name?}"
       return 0
     fi
-    # 2. Config key
+    # 2. Config key ('-r' prints raw strings with both yq variants: mikefarah/yq & python-yq)
     if [[ -n "$_key" && -f "$config_file" ]]; then
-      _val="$(yq "$_key" "$config_file" 2>/dev/null)"
+      _val="$(yq -r "$_key" "$config_file" 2>/dev/null || true)"
       if [[ -n "$_val" && "$_val" != "null" ]]; then
         printf -v "$_name" '%s' "${_val/#\~/$HOME}"
-        export "$_name"
+        export "${_name?}"
         return 0
       fi
     fi
@@ -203,24 +316,11 @@ function apply_config() {
 
   # Ensure yq is present to parse config file (based on the real host OS)
   if ! command -v "yq" &>/dev/null; then
-    case "$detected_os" in
-    linux) { sudo dnf install -y "yq" && echo -e "${I_OK}Installation succeeded: yq"; } || {
+    install_pkg "yq" "$detected_os" || {
       echo -e "${I_ERR}Installation failed: yq"
       return 1
-    } ;;
-    osx) { brew install "yq" && echo -e "${I_OK}Installation succeeded: yq"; } || {
-      echo -e "${I_ERR}Installation failed: yq"
-      return 1
-    } ;;
-    windows)
-      echo -e "${I_ERR}Windows not supported yet"
-      return 1
-      ;;
-    *)
-      echo -e "${I_ERR}Unsupported Operating System: $detected_os"
-      return 1
-      ;;
-    esac
+    }
+    echo -e "${I_OK}Installation succeeded: yq"
   fi
 
   # -- [Remote] -- #
@@ -241,6 +341,7 @@ function apply_config() {
   fi
 
   # -- [System] Hostname, Username & Group of Default User & Admin/Root User -- #
+  # shellcheck disable=SC2155,SC2016 # best-effort defaults; $_ belongs to PowerShell, not bash
   case "$ONESETUP_SYSTEM_OS" in
   osx | linux)
     _resolve_value ONESETUP_SYSTEM_HOSTNAME '.system.hostname' ||
@@ -286,13 +387,14 @@ function apply_config() {
   ensure_directory "$ONESETUP_SYSTEM_CONFIG_DIR" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}"
 
   # -- Dynamic Environment Variables (constructed from the values above) -- #
-  export X_TARGET_DIR="${ONESETUP_PROJECT_DEV_DIR:-$ONESETUP_SYSTEM_INSTALL_DIR}"
-  export X_ONESETUP_URI="$(_build_remote_uri "$ONESETUP_REMOTE_PROJECT_REPO")" || return 1
-  export X_DOTFILES_URI="$(_build_remote_uri "$ONESETUP_REMOTE_DOTFILES_REPO")" || return 1
+  # (assign first, then export: 'export VAR="$(cmd)" || ...' would never see cmd's failure)
+  uri="$(_build_remote_uri "$ONESETUP_REMOTE_PROJECT_REPO")" || return 1
+  export X_ONESETUP_URI="$uri"
+  uri="$(_build_remote_uri "$ONESETUP_REMOTE_DOTFILES_REPO")" || return 1
+  export X_DOTFILES_URI="$uri"
 
-  # -- Ansible Variables -- #
-  export ANSIBLE_CONFIG="$X_TARGET_DIR/ansible.cfg"
-  export ANSIBLE_INVENTORY="$X_TARGET_DIR/inventory.ini"
+  # -- Target Dir & Ansible Variables -- #
+  set_target_dir "${ONESETUP_PROJECT_DEV_DIR:-$ONESETUP_SYSTEM_INSTALL_DIR}"
   # export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
 }
 
