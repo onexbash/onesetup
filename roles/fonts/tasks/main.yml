@@ -1,6 +1,6 @@
 ---
 # Include OS-Independent Tasks for all Operating Systems
-- name: "Include OS-Independent Tasks (all)"
+- name: "{{ role_name | capitalize }} | Include OS-Independent Tasks (all)"
   ansible.builtin.include_tasks:
     file: "{{ item_roletask }}"
     apply:
@@ -13,7 +13,7 @@
     role_tasks_dir: "{{ role_path }}/tasks/all"
 
 # Include OS-Specific Tasks
-- name: "Include OS-Specific Tasks ({{ ONESETUP_SYSTEM_OS }})"
+- name: "{{ role_name | capitalize }} | Include OS-Specific Tasks ({{ ONESETUP_SYSTEM_OS }})"
   ansible.builtin.include_tasks:
     file: "{{ item_roletask }}"
     apply:
