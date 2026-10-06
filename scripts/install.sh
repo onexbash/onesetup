@@ -273,5 +273,29 @@ function apply_config() {
   # export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
 }
 
+# [UTIL] Build a Git Remote URI from Provider, Connection & Username: _build_remote_uri <repo>
+function _build_remote_uri() {
+  local repo="$1" host
+  case "$ONESETUP_REMOTE_PROVIDER" in
+  github) host="github.com" ;;
+  gitlab) host="gitlab.com" ;;
+  bitbucket) host="bitbucket.org" ;;
+  codeberg) host="codeberg.org" ;;
+  *.*) host="$ONESETUP_REMOTE_PROVIDER" ;; # Custom host, e.g. git.example.com
+  *)
+    echo -e "${I_ERR}Unsupported remote provider: $ONESETUP_REMOTE_PROVIDER" >&2
+    return 1
+    ;;
+  esac
+  case "$ONESETUP_REMOTE_CONNECTION" in
+  https) echo "https://${host}/${ONESETUP_REMOTE_USERNAME}/${repo}.git" ;;
+  ssh) echo "git@${host}:${ONESETUP_REMOTE_USERNAME}/${repo}.git" ;;
+  *)
+    echo -e "${I_ERR}Unsupported remote connection: $ONESETUP_REMOTE_CONNECTION" >&2
+    return 1
+    ;;
+  esac
+}
+
 # Call Main Function with args
 main "$@"
