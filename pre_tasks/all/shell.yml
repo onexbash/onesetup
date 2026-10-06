@@ -1,26 +1,18 @@
 ---
-# # Install zsh (Linux)
-# - name: "Install zsh"
-#   ansible.builtin.package:
-#     name: zsh
-#     state: present # TODO: check if "latest" is supported on Arch/Fedora/Debian
-#   become: true
-# TODO: Move gcc installation for Linux to "apps" role
-
 # Set Ansible Fact for Default Shell
-- name: "Set Ansible Fact for Default Shell"
+- name: "{{ prefix }} Set Ansible Fact for Default Shell"
   ansible.builtin.set_fact:
     default_shell: "{{ '/usr/bin/zsh' if ONESETUP_SYSTEM_OS == 'linux' else '/bin/zsh' }}"
 
 # Set User's Default Shell
-- name: "Set User's Default Shell"
+- name: "{{ prefix }} Set User's Default Shell"
   ansible.builtin.user:
     name: "{{ ONESETUP_SYSTEM_USERNAME }}"
     shell: "{{ default_shell }}"
   become: true
 
 # Resolve bash interpreter path
-- name: "Resolve bash interpreter path"
+- name: "{{ prefix }} Resolve bash interpreter path"
   ansible.builtin.command:
     cmd: command -v bash
   register: bash_path_result
@@ -28,7 +20,7 @@
   become: false
 
 # Resolve zsh interpreter path
-- name: "Resolve zsh interpreter path"
+- name: "{{ prefix }} Resolve zsh interpreter path"
   ansible.builtin.command:
     cmd: command -v zsh
   register: zsh_path_result
@@ -36,7 +28,7 @@
   become: false
 
 # Set Ansible Facts for bash_path & zsh_path
-- name: "Store resolved interpreter paths as Ansible Facts"
+- name: "{{ prefix }} Store resolved interpreter paths as Ansible Facts"
   ansible.builtin.set_fact:
     bash_path: "{{ bash_path_result.stdout | trim }}"
     zsh_path: "{{ zsh_path_result.stdout | trim }}"

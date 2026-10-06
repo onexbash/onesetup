@@ -48,8 +48,9 @@
     - name: "Include Pre-Tasks (macos)"
       ansible.builtin.include_tasks: "pre_tasks/osx/{{ item }}.yml"
       loop:
-        - dependencies
         - filesystem
+        - shell
+        - dependencies
         - clt
       loop_control:
         label: "{{ item }}"

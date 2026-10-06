@@ -1,4 +1,12 @@
 ---
+# Guard: Fail early on unsupported OS
+- name: "Check that the detected OS is supported"
+  ansible.builtin.assert:
+    that: ONESETUP_SYSTEM_OS in pretasks_by_os
+    fail_msg: "Unsupported OS: '{{ ONESETUP_SYSTEM_OS | default('undefined') }}'"
+    quiet: true
+  tags: [always]
+
 # Set HostName to value from env-var
 - name: "Set hostname to: {{ ONESETUP_SYSTEM_HOSTNAME }}"
   ansible.builtin.command: "scutil --set {{ item }} {{ ONESETUP_SYSTEM_HOSTNAME }}"

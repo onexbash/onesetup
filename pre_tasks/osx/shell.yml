@@ -1,0 +1,141 @@
+---
+- name: "{{ prefix }} Global Shell Configuration"
+  # -- Variables -- #
+  vars:
+    # Global Environment Variables (Defaults)
+    global_env_vars:
+      - name: XDG_CONFIG_HOME
+        value: "${XDG_CONFIG_HOME:-$HOME/.config}"
+      - name: XDG_CACHE_HOME
+        value: "${XDG_CACHE_HOME:-$HOME/.cache}"
+      - name: XDG_DATA_HOME
+        value: "${XDG_DATA_HOME:-$HOME/.local/share}"
+      - name: XDG_STATE_HOME
+        value: "${XDG_STATE_HOME:-$HOME/.local/state}"
+      - name: ZDOTDIR
+        value: "${HOME:-{{ '/Users' if ansible_facts['os_family'] == 'Darwin' else '/home' }}/$USER}"
+      - name: SHELL_CONFIG_DIR
+        value: "${XDG_CONFIG_HOME:-$HOME/.config}/shell"
+      - name: SHELL_SCRIPTS_DIR
+        value: "${XDG_CONFIG_HOME:-$HOME/.config}/scripts"
+      - name: SHELL_UTIL_FILE
+        value: "${SHELL_CONFIG_DIR}/util.sh"
+    # Valid Login Shells (added to /etc/shells)
+    valid_shells:
+      - /bin/bash
+      - /bin/csh
+      - /bin/dash
+      - /bin/ksh
+      - /bin/sh
+      - /bin/tcsh
+      - /bin/zsh
+      - /opt/homebrew/bin/bash
+      - /opt/homebrew/bin/zsh
+      - /opt/homebrew/bin/pwsh
+      - /opt/homebrew/opt/powershell/bin/pwsh
+    # Global Shell Files (where env-vars should be exported)
+    global_env_files:
+      - path: /etc/zshenv
+        validate: "zsh -n %s"
+      - path: /etc/profile
+        validate: "sh -n %s"
+        # Insert before /etc/bashrc is sourced, so user configs already see the vars
+        insertbefore: '^if \[ "\$\{BASH-no\}" != "no" \]'
+    # Global System Paths (Added to $PATH)
+    system_paths:
+      - name: default # no priority → /etc/paths
+        entries:
+          - /usr/local/bin
+          - /System/Cryptexes/App/usr/bin
+          - /usr/bin
+          - /bin
+          - /usr/sbin
+          - /sbin
+      - name: system
+        priority: 10 # → /etc/paths.d/10-system
+        entries:
+          - /usr/local/bin
+          - /System/Cryptexes/App/usr/bin
+          - /usr/bin
+          - /bin
+          - /usr/sbin
+          - /sbin
+      - name: homebrew
+        priority: 01 # → /etc/paths.d/01-homebrew
+        entries:
+          - /opt/homebrew/bin
+          - /opt/homebrew/sbin
+      - name: onexbash
+        priority: 02 # → /etc/paths.d/02-onexbash
+        entries:
+          - /opt/onexbash/bin
+      - name: cryptex
+        priority: 10 # → /etc/paths.d/10-cryptex
+        entries:
+          - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin
+          - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin
+          - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin
+      - name: "pmk-global"
+        priority: 10 # → /etc/paths.d/10-pmk-global
+        entries:
+          - /pkg/env/global/bin
+  # -- Tasks -- #
+  block:
+    # Remove path_helper invocation from /etc/zprofile & /etc/profile on MacOS
+    - name: "{{ prefix }} Remove path_helper invocation from /etc/zprofile & /etc/profile on MacOS"
+      ansible.builtin.replace:
+        path: "{{ item }}"
+        regexp: '(?m)^if \[ -x /usr/libexec/path_helper \]; then\n\teval `/usr/libexec/path_helper -s`\nfi\n?'
+        replace: ""
+      loop:
+        - /etc/profile
+        - /etc/zprofile
+      become: true
+      when: ONESETUP_SYSTEM_OS == "osx"
+
+    # Write PATH Entries to /etc/paths & /etc/paths.d/[file] | see: vars/main/shell.yml
+    - name: "{{ prefix }} Write PATH Entries to /etc/paths & /etc/paths.d/"
+      become: true
+      ansible.builtin.copy:
+        dest: >-
+          {{ '/etc/paths' if item.priority is not defined
+             else '/etc/paths.d/' ~ ('%02d' | format(item.priority | int)) ~ '-' ~ item.name }}
+        content: "{{ item.entries | join('\n') }}\n"
+        owner: root
+        group: wheel
+        mode: "0644"
+      loop: "{{ system_paths }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: ONESETUP_SYSTEM_OS == "osx"
+
+    # Ensure specified login shells exist in /etc/shells
+    - name: "{{ prefix }} Ensure specified login shells exist in /etc/shells"
+      ansible.builtin.lineinfile:
+        path: /etc/shells
+        line: "{{ item }}"
+        create: false
+      loop: "{{ valid_shells }}"
+      become: true
+
+    # Ensure global environment variables are exported in /etc/zshenv & /etc/profile
+    - name: "{{ prefix }} Ensure global environment variables are exported in /etc/zshenv & /etc/profile"
+      ansible.builtin.blockinfile:
+        path: "{{ item.path }}"
+        marker: "# {mark} ONESETUP: GLOBAL ENV VARS (managed via Ansible)"
+        block: |
+          {% for var in global_env_vars %}
+          export {{ var.name }}="{{ var.value }}"
+          {% endfor %}
+        insertbefore: "{{ item.insertbefore | default(omit) }}"
+        create: true
+        owner: root
+        group: wheel
+        mode: "0644"
+        backup: true
+        validate: "{{ item.validate }}"
+      loop: "{{ global_env_files }}"
+      loop_control:
+        label: "{{ item.path }}"
+      become: true
+      when: ONESETUP_SYSTEM_OS == "osx"
