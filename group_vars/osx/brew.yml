@@ -22,6 +22,7 @@ brew_casks:
   - session # Onion routed messenger
   - tor-browser
   - firefox@developer-edition
+  - thaw # MacOS Menubar Manager
   - gimp # Image Editor
   #   - git-credential-manager # TODO: fails with err, check why
   - keepassxc # File Based Password Manager

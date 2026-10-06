@@ -2,9 +2,20 @@
 autostart_domain: com.onesetup.autostart
 
 autostart_apps:
-  - { name: Kitty }
-  - { name: Firefox Developer Edition }
-  - { name: Spotify }
-  - { name: KeePassXC }
-  - { name: Microsoft Teams }
-  - { name: Microsoft Outlook }
+  - { name: kitty, bundle_id: net.kovidgoyal.kitty }
+  - {
+      name: Firefox Developer Edition,
+      bundle_id: org.mozilla.firefoxdeveloperedition,
+    }
+  - { name: Spotify, bundle_id: com.spotify.client }
+  - { name: KeePassXC, bundle_id: org.keepassxc.keepassxc }
+  - { name: Microsoft Teams, bundle_id: com.microsoft.teams2 }
+  - { name: Microsoft Outlook, bundle_id: com.microsoft.Outlook }
+  - { name: AltTab, bundle_id: com.lwouis.alt-tab-macos }
+  - { name: Thaw, bundle_id: com.stonerl.Thaw }
+  - { name: Sol, bundle_id: com.ospfranco.sol }
+  - { name: AeroSpace, bundle_id: bobko.aerospace }
+  - {
+      name: CalDigit_Docking_Station_Utility,
+      bundle_id: "CalDigit.CalDigit-Docking-Station-Utility",
+    }

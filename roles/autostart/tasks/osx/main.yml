@@ -1,6 +1,6 @@
 ---
 # Ensure LaunchAgents Directory exists
-- name: "Ensure LaunchAgents Directory exists"
+- name: "{{ role_name | capitalize }} | Ensure LaunchAgents Directory exists"
   ansible.builtin.file:
     path: "{{ HOME }}/Library/LaunchAgents"
     state: directory
@@ -9,11 +9,32 @@
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
 
 # Rollout LaunchAgent for every app in {{ autostart_apps }}
-- name: "Rollout LaunchAgent files"
+- name: "{{ role_name | capitalize }} | Rollout LaunchAgent files"
   ansible.builtin.template:
     src: autostart.plist.j2
     dest: "{{ HOME }}/Library/LaunchAgents/{{ autostart_domain }}.{{ item.name | lower | regex_replace('[^a-z0-9]+', '-') }}.plist"
     mode: "0644"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
   loop: "{{ autostart_apps }}"
   loop_control:
     label: "{{ item.name }}"
+
+# Find all LaunchAgent files created by this role
+- name: "{{ role_name | capitalize }} | Find managed LaunchAgent files"
+  ansible.builtin.find:
+    paths: "{{ HOME }}/Library/LaunchAgents"
+    patterns: "{{ autostart_domain }}.*.plist"
+  register: autostart_found
+
+# Remove LaunchAgent files of apps that are no longer in {{ autostart_apps }}
+- name: "{{ role_name | capitalize }} | Remove obsolete LaunchAgent files"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  vars:
+    autostart_expected_files: "{{ autostart_apps | map(attribute='name') | map('lower') | map('regex_replace', '[^a-z0-9]+', '-') | map('regex_replace', '^', autostart_domain ~ '.') | map('regex_replace', '$', '.plist') | list }}"
+  when: (item.path | basename) not in autostart_expected_files
+  loop: "{{ autostart_found.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"

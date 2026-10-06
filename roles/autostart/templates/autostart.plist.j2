@@ -4,14 +4,28 @@
 <dict>
   <key>Label</key>
   <string>{{ autostart_domain }}.{{ item.name | lower | regex_replace('[^a-z0-9]+', '-') }}</string>
+{% if item.bundle_id | default('') %}
+  <key>AssociatedBundleIdentifiers</key>
+  <string>{{ item.bundle_id }}</string>
+{% endif %}
+  <key>LimitLoadToSessionType</key>
+  <string>Aqua</string>
   <key>ProgramArguments</key>
   <array>
     <string>/usr/bin/open</string>
 {% if item.hidden | default(false) %}
     <string>-j</string>
 {% endif %}
+{% if item.background | default(false) %}
+    <string>-g</string>
+{% endif %}
+{% if item.bundle_id | default('') %}
+    <string>-b</string>
+    <string>{{ item.bundle_id }}</string>
+{% else %}
     <string>-a</string>
     <string>{{ item.name }}</string>
+{% endif %}
   </array>
   <key>RunAtLoad</key>
   <true/>
