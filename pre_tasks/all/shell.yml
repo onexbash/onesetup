@@ -56,7 +56,7 @@
       become: true
       ansible.builtin.blockinfile:
         path: "{{ item.path }}"
-        marker: "# {mark} ONESETUP: GLOBAL ENV VARS (managed via Ansible)"
+        marker: "# -- {mark} GLOBAL ENV VARS (managed by onesetup) -- #"
         block: |
           {% for var in global_env_vars %}
           export {{ var.name }}="{{ var.value }}"
