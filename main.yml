@@ -2,6 +2,7 @@
 # -- -- -- -- -- -- -- -- #
 # --   MAIN PLAYBOOK   -- #
 - name: onesetup
+  tags: [always]
   hosts: localhost
 
   # -- VARIABLES -- #
@@ -9,13 +10,14 @@
     # Environment Variables: User Environment
     USER: "{{ ansible_facts['env']['USER'] }}"
     HOME: "{{ ansible_facts['env']['HOME'] }}"
-    XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.config') }}"
-    XDG_CACHE_HOME: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.cache') }}"
-    XDG_DATA_HOME: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.local/share') }}"
-    XDG_STATE_HOME: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.local/state') }}"
-    ZDOTDIR: "{{ ansible_facts['env']['ZDOTDIR'] }}"
-    CARGO_HOME: "{{ ansible_facts['env']['CARGO_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.cargo') }}"
-    RUSTUP_HOME: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(ansible_facts['env']['HOME'] ~ '/.rustup') }}"
+    XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(HOME ~ '/.config', true) }}"
+    XDG_CACHE_HOME: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(HOME ~ '/.cache', true) }}"
+    XDG_DATA_HOME: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(HOME ~ '/.local/share', true) }}"
+    XDG_STATE_HOME: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(HOME ~ '/.local/state', true) }}"
+    ZDOTDIR: "{{ ansible_facts['env']['ZDOTDIR'] | default(HOME, true) }}"
+    CARGO_HOME: "{{ ansible_facts['env']['CARGO_HOME'] | default(HOME ~ '/.cargo', true) }}"
+    RUSTUP_HOME: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(HOME ~ '/.rustup', true) }}"
+
   # Variable Prompts
   vars_prompt:
     - name: SUDO_PASSWORD
@@ -30,49 +32,82 @@
         ansible_become_password: "{{ SUDO_PASSWORD }}"
         cacheable: false
       no_log: true
+      tags: [always]
 
-    # Include Pre-Tasks
-    - include_tasks: pre_tasks/all/env.yml # Environment-Variable Discovery & Validation (+ Normalization)
-    - include_tasks: pre_tasks/all/system.yml # Set System Properties (e.g: HostName)
-    - include_tasks: pre_tasks/all/shell.yml # Set Default Shell & Gather Shell Paths
+    # Include: OS-Independent Pre-Tasks
+    - name: "Include OS-Independent Pre-Tasks"
+      tags: [always]
+      ansible.builtin.include_tasks:
+        file: "pre_tasks/all/{{ pretask }}.yml"
+        apply:
+          tags: [always]
+      vars:
+        prefix: "PRE-TASK: {{ pretask }} |"
+      loop:
+        - env
+        - system
+        - shell
+      loop_control:
+        loop_var: pretask
+        label: "{{ pretask }}"
 
-    # Pre-Task: Include OS-Specific Variables
-    - name: "group_vars | Include OS-specific variables ({{ ONESETUP_SYSTEM_OS }})"
-      ansible.builtin.include_vars:
-        dir: "{{ playbook_dir }}/group_vars/{{ ONESETUP_SYSTEM_OS }}" # The variables in group_vars/all/ are already auto-loaded by ansible
-        extensions:
-          - yml
-      ignore_errors: true # Skip if OS-specific folder doesn't exist
+    # Pre-Task: Add host to OS group (auto-loads group_vars/<OS>/)
+    - name: "Add host to OS group ({{ ONESETUP_SYSTEM_OS }})"
+      ansible.builtin.group_by:
+        key: "{{ ONESETUP_SYSTEM_OS }}"
+      tags: [always]
 
-    # Pre-Task: Include MacOS Pre-Tasks
-    - name: "Include Pre-Tasks (macos)"
-      ansible.builtin.include_tasks: "pre_tasks/osx/{{ item }}.yml"
+    # Include: MacOS Pre-Tasks
+    - name: "Include Pre-Tasks (MacOS)"
+      tags: [always]
+      ansible.builtin.include_tasks:
+        file: "pre_tasks/osx/{{ pretask }}.yml"
+        apply:
+          tags: [always]
+      vars:
+        prefix: "PRE-TASK: {{ pretask }} |"
       loop:
         - filesystem
         - shell
         - dependencies
         - clt
       loop_control:
-        label: "{{ item }}"
+        loop_var: pretask
+        label: "{{ pretask }}"
       when: ONESETUP_SYSTEM_OS == 'osx'
 
-    # Pre-Task: Include Linux Pre-Tasks
+    # Include: Linux Pre-Tasks
     - name: "Include Pre-Tasks (linux)"
-      ansible.builtin.include_tasks: "pre_tasks/linux/{{ item }}.yml"
+      tags: [always]
+      ansible.builtin.include_tasks:
+        file: "pre_tasks/linux/{{ pretask }}.yml"
+        apply:
+          tags: [always]
+      vars:
+        prefix: "PRE-TASK: {{ pretask }} |"
       loop:
         - distro
       loop_control:
-        label: "{{ item }}"
+        loop_var: pretask
+        label: "{{ pretask }}"
       when: ONESETUP_SYSTEM_OS == 'linux'
 
-    # Pre-Task: Include Windows Pre-Tasks
+    # Include: Windows Pre-Tasks
     - name: "Include Pre-Tasks (windows)"
-      ansible.builtin.include_tasks: "pre_tasks/windows/{{ item }}.yml"
+      tags: [always]
+      ansible.builtin.include_tasks:
+        file: "pre_tasks/windows/{{ pretask }}.yml"
+        apply:
+          tags: [always]
+      vars:
+        prefix: "PRE-TASK: {{ pretask }} |"
       loop:
         - main
       loop_control:
-        label: "{{ item }}"
+        loop_var: pretask
+        label: "{{ pretask }}"
       when: ONESETUP_SYSTEM_OS == 'windows'
+
   # -- ROLES -- #
   roles:
     - { role: dotfiles, tags: ["dotfiles"] }
@@ -80,3 +115,4 @@
     - { role: apps, tags: ["apps"] }
     - { role: settings, tags: ["settings"] }
     - { role: autostart, tags: ["autostart"] }
+    - { role: firefox, tags: ["firefox"] }
