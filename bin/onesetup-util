@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
-# --                        -- #
-# --     UTILITY SCRIPT     -- #
-# --                        -- #
-# Collection of Utility Functions called by other scripts
+# --                              -- #
+# --     ONESETUP-UTIL BINARY     -- #
+# --                              -- #
+
+# Main Function (Calls Functions that should always be called)
+function main() {
+  tty_styles || echo -e "${I_WARN:-[ERR] }Failed to Call tty_styles()"
+  set_modes || echo -e "${I_WARN:-[ERR] }Failed to Call set_modes()"
+}
 
 # [UTIL] Terminal Colors & Prompts
 function tty_styles() {
@@ -337,3 +342,6 @@ function export_dynamic_vars() {
 
   export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
 }
+
+# Call Main Function with Args
+main "$@"
