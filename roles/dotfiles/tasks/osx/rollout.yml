@@ -2,7 +2,7 @@
 # Clone Dotfiles Repository
 - name: "Clone Dotfiles Repository"
   ansible.builtin.git:
-    repo: "{{ ONESETUP_DOTFILES_REPO_URI }}"
+    repo: "{{ X_DOTFILES_URI }}"
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
     force: false # respect local changes to prevent dotfile loss
@@ -23,7 +23,7 @@
 # Clone Dotfiles Repository and force overwrite local changes (after user confirmation)
 - name: "Clone Dotfiles Repository (force overwrite)"
   ansible.builtin.git:
-    repo: "{{ ONESETUP_DOTFILES_REPO_URI }}"
+    repo: "{{ X_DOTFILES_URI }}"
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
     force: true # overwrite local changes as the user confirmed this

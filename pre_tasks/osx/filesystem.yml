@@ -49,11 +49,11 @@
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
     follow: true # follow symlink
 
-# Ensure Directory: TARGET_DIR (Installation or Development Directory)
-- name: "Ensure Directory exists: {{ ONESETUP_SYSTEM_TARGET_DIR }}"
+# Ensure Directory: X_TARGET_DIR (Installation or Development Directory)
+- name: "Ensure Directory exists: {{ X_TARGET_DIR }}"
   become: true
   ansible.builtin.file:
-    path: "{{ ONESETUP_SYSTEM_TARGET_DIR }}"
+    path: "{{ X_TARGET_DIR }}"
     state: directory
     mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"

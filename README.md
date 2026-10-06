@@ -156,12 +156,14 @@ system:
   user_group: [String] # Group of the system user
   root_group: [String] # Group of the root user
   config_dir: [String] # Config Directory for your config.yml
+  install_dir: [String] # Installation Directory
   storage_dir: [String] # Storage Directory
   dotfiles_dir: [String] # Dotfiles Directory used to clone your Dotfiles repo into and symlink them to the mapped locations
   bin_dir: [String] # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
   tmp_dir: [String] # Directory for Temporary Files
 project:
   debug: [0|1|2|3] # Debug Level for Console Outputs [0: Normal | 1: Info | 2: Verbose | 3: Debug]
+  dev_dir: [String] # Development Directory (if set, used as Target over Installation Directory)
 ```
 
 ---
@@ -174,26 +176,6 @@ export ONESETUP_SYSTEM_CONFIG_DIR # # Equals the Config-Key 'system.config_dir'
 # ... etc. etc.
 ```
 So instead of using the [config.yml](./default.config.yml) you can pass them to the `onesetup` and `onesetup-vault` command as well.
-
-Additionally there are Environment Variables exported that are dynamically constructed based on other Values and doesn't exist as Config-Keys in [config.yml](./default.config.yml).
-It's pretty much useless to use them tho ^^ Maybe for edge-cases where the Repository URI is not constructed right or something like that.
-These are:
-```bash
-export ONESETUP_PROJECT_REPO_URI # Constructed based on: remote.provider, remote.connection, remote.username & remote.project_repo
-export ONESETUP_DOTFILES_REPO_URI # Constructed based on: .., & remote.dotfiles_repo
-export ONESETUP_PROJECT_REPO_RAW # Constructed based on: .., & remote.project_repo
-export ONESETUP_DOTFILES_REPO_RAW # Constructed based on: .., & remote.dotfiles_repo
-```
-
-### Configuration: Installation Directory
-The Installation Directory can **not** be set via the Config-File [onesetup.yml](./default.config.yml):
-*This is a limitation because of a chicken-egg-problem:
-The read_config() function is defined inside of [util.sh](./scripts/util.sh) that all scripts & executables are sourcing.
-But to source it, they need to know where it's located. Therefore the Value needs to be available upfront.*
-No worries, you can still configure it by exporting the environment variable before running the installation script:
-```bash
-export ONESETUP_SYSTEM_INSTALL_DIR="<path to custom install dir>"
-```
 
 ## Development
 During development, you probably want to test or apply playbook changes without having to run the Installation Script everytime. 

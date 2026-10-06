@@ -1,0 +1,10 @@
+---
+firefox_profile_name: "onexbash"
+firefox_create_profile: true
+firefox_files_src: "{{ role_path }}/files"
+firefox_profiles_dirs:
+  Darwin: "{{ HOME }}/Library/Application Support/Firefox/Profiles"
+  Linux: "{{ HOME }}/.mozilla/firefox"
+firefox_binaries:
+  Darwin: /Applications/Firefox.app/Contents/MacOS/firefox
+  Linux: firefox
