@@ -67,7 +67,8 @@ function install_linux_pkg() {
   elif command -v pacman &>/dev/null; then
     sudo pacman -S --noconfirm "$pkg"
   else
-    echo -e "${I_ERR}Unsupported package manager." >&2 && return 1
+    echo -e "${I_ERR}Unsupported package manager." >&2
+    return 1
   fi
 }
 
@@ -169,7 +170,7 @@ _build_remote_uri() {
   esac
 }
 
-# [UTIL] Function to apply the user's config by reading the config-file values & environment variables
+# [UTIL] Apply the user configuration by reading the values from config.yml & environment variables
 # NOTE: env-var > config-key > default
 function apply_config() {
   local config_file detected_os remote_host remote_base

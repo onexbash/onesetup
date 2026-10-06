@@ -89,7 +89,8 @@ function parse_args() {
   "" | --*) ;; # no subcommand → interactive prompt (--dev-dir still allowed)
   *)
     print_help >&2
-    echo -e "${I_ERR}Unknown command: $1" && exit 1
+    echo -e "${I_ERR}Unknown command: $1"
+    exit 1
     ;;
   esac
 
@@ -98,7 +99,8 @@ function parse_args() {
     case "$1" in
     --string | --file)
       if [[ -n "$ACTION" ]]; then
-        echo -e "${I_ERR}Cannot specify both '--string' and '--file'." && exit 1
+        echo -e "${I_ERR}Cannot specify both '--string' and '--file'."
+        exit 1
       fi
       ACTION="${1#--}"
       shift
@@ -107,7 +109,10 @@ function parse_args() {
       require_value "$1" "${2:-}"
       case "$2" in
       clipboard | ansible) ARG_TARGET="$2" ;;
-      *) echo -e "${I_ERR}Invalid value for '--target': '$2' (allowed: clipboard, ansible)" && exit 1 ;;
+      *) {
+        echo -e "${I_ERR}Invalid value for '--target': '$2' (allowed: clipboard, ansible)"
+        exit 1
+      } ;;
       esac
       shift 2
       ;;
@@ -138,12 +143,18 @@ function parse_args() {
   # Positional arguments: only '--file [path] [varname]' takes any
   case "$ACTION" in
   file)
-    [[ ${#positional[@]} -le 2 ]] || echo -e "${I_ERR}Too many arguments for '--file' (usage: --file [path] [varname])." && exit 1
+    [[ ${#positional[@]} -le 2 ]] || {
+      echo -e "${I_ERR}Too many arguments for '--file' (usage: --file [path] [varname])."
+      exit 1
+    }
     ARG_FILE="${positional[0]:-}"
     ARG_VARNAME="${positional[1]:-}"
     ;;
   *)
-    [[ ${#positional[@]} -eq 0 ]] || echo -e "${I_ERR}Unexpected argument: ${positional[0]}" && exit 1
+    [[ ${#positional[@]} -eq 0 ]] || {
+      echo -e "${I_ERR}Unexpected argument: ${positional[0]}"
+      exit 1
+    }
     ;;
   esac
 }
@@ -216,9 +227,13 @@ function prompt_output_target() {
 
 # Validate an Ansible variable name: validate_varname <varname>
 function validate_varname() {
-  [[ -n "$1" ]] || echo -e "${I_ERR}Variable name cannot be empty." && exit 1
+  [[ -n "$1" ]] || {
+    echo -e "${I_ERR}Variable name cannot be empty."
+    exit 1
+  }
   if [[ ! "$1" =~ ^[a-zA-Z0-9_]+$ ]]; then
-    echo -e "${I_ERR}Invalid characters in variable name: '$1' (allowed: letters, numbers, underscores)" && exit 1
+    echo -e "${I_ERR}Invalid characters in variable name: '$1' (allowed: letters, numbers, underscores)"
+    exit 1
   fi
 }
 
@@ -240,7 +255,8 @@ function resolve_output_target() {
   fi
 
   if [[ "$ARG_TARGET" == "ansible" ]] && grep -qE "^${varname}:" "$VARFILE" 2>/dev/null; then
-    echo -e "${I_ERR}Variable [ ${C_PURPLE}${varname}${C_RESET} ] already exists in [ ${C_PURPLE}${VARFILE}${C_RESET} ]. Please choose a different name." && exit 1
+    echo -e "${I_ERR}Variable [ ${C_PURPLE}${varname}${C_RESET} ] already exists in [ ${C_PURPLE}${VARFILE}${C_RESET} ]. Please choose a different name."
+    exit 1
   fi
 }
 
@@ -281,14 +297,20 @@ function encrypt_string() {
   printf '%b' "${I_ASK}Secret to Encrypt (hidden): "
   read -rs secret
   echo
-  [[ -n "$secret" ]] || echo -e "${I_ERR}Secret cannot be empty." && exit 1
+  [[ -n "$secret" ]] || {
+    echo -e "${I_ERR}Secret cannot be empty."
+    exit 1
+  }
 
   printf '%b' "${I_ASK}Variable Name: "
   read -r varname
   validate_varname "$varname"
 
   resolve_output_target "$varname"
-  encrypted="$(printf '%s' "$secret" | vault_encrypt "$varname")" || echo -e "${I_ERR}Encryption failed." && exit 1
+  encrypted="$(printf '%s' "$secret" | vault_encrypt "$varname")" || {
+    echo -e "${I_ERR}Encryption failed."
+    exit 1
+  }
   write_output "$encrypted" "$varname"
 }
 
@@ -311,7 +333,10 @@ function encrypt_file() {
       exit 0
     fi
   fi
-  [[ -f "$filepath" && -r "$filepath" ]] || echo -e "${I_ERR}File not found or not readable: ${filepath}" && exit 1
+  [[ -f "$filepath" && -r "$filepath" ]] || {
+    echo -e "${I_ERR}File not found or not readable: ${filepath}"
+    exit 1
+  }
 
   # Variable name: argument > prompt (prefilled from the file name) > file name
   if [[ -z "$varname" ]]; then
@@ -334,7 +359,10 @@ function encrypt_file() {
   validate_varname "$varname"
 
   resolve_output_target "$varname"
-  encrypted="$(vault_encrypt "$varname" <"$filepath")" || echo -e "${I_ERR}Encryption failed." && exit 1
+  encrypted="$(vault_encrypt "$varname" <"$filepath")" || {
+    echo -e "${I_ERR}Encryption failed."
+    exit 1
+  }
   write_output "$encrypted" "$varname"
 }
 

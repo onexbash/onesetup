@@ -70,7 +70,8 @@ function parse_args() {
   "" | --*) ;; # no subcommand → interactive prompt (options still allowed)
   *)
     print_help >&2
-    echo -e "${I_ERR}Unknown command: $1" && exit 1
+    echo -e "${I_ERR}Unknown command: $1"
+    exit 1
     ;;
   esac
 
@@ -94,7 +95,8 @@ function parse_args() {
       ;;
     --diff)
       if [[ "$SUBCMD" == "run" ]]; then
-        echo -e "${I_ERR}Flag '--diff' is only valid for 'test'." && exit 1
+        echo -e "${I_ERR}Flag '--diff' is only valid for 'test'."
+        exit 1
       fi
       ARG_DIFF="true"
       shift
@@ -105,13 +107,15 @@ function parse_args() {
       ;;
     *)
       # shellcheck disable=SC2016 # false positive: expands inside the double quotes
-      echo -e "${I_ERR}Unknown option${SUBCMD:+ for '${SUBCMD}'}: $1" && exit 1
+      echo -e "${I_ERR}Unknown option${SUBCMD:+ for '${SUBCMD}'}: $1"
+      exit 1
       ;;
     esac
   done
 
   if [[ -n "$ARG_INCLUDE" && -n "$ARG_SKIP" ]]; then
-    echo -e "${I_ERR}Use either '--include' or '--skip', not both." && exit 1
+    echo -e "${I_ERR}Use either '--include' or '--skip', not both."
+    exit 1
   fi
 }
 
@@ -167,8 +171,10 @@ function run_playbook() {
   local playbook="${X_TARGET_DIR}/main.yml"
   local args=("--ask-vault-pass")
 
-  [[ -f "$playbook" && -r "$playbook" ]] ||
-    echo -e "${I_ERR}No readable Playbook Entrypoint found at: ${C_CYAN}${playbook}${C_RESET}" && exit 1
+  [[ -f "$playbook" && -r "$playbook" ]] || {
+    echo -e "${I_ERR}No readable Playbook Entrypoint found at: ${C_CYAN}${playbook}${C_RESET}"
+    exit 1
+  }
 
   # 'test' → dry run (+ optional diffs)
   if [[ "$SUBCMD" == "test" ]]; then
@@ -190,7 +196,10 @@ function run_playbook() {
   echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
   echo -e "${I_INFO}onesetup ==> Mode: ${C_CYAN}${SUBCMD}${C_RESET}"
 
-  ansible-playbook "$playbook" "${args[@]}" || echo -e "${I_ERR}onesetup ==> ansible playbook failed" && exit 1
+  ansible-playbook "$playbook" "${args[@]}" || {
+    echo -e "${I_ERR}onesetup ==> ansible playbook failed"
+    exit 1
+  }
   echo -e "${I_OK}onesetup ==> ansible playbook finished"
 }
 
