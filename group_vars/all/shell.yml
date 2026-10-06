@@ -48,7 +48,7 @@ global_env_files:
 # Global System Paths (Added to $PATH)
 system_paths:
   - name: system
-    priority: 10 # → /etc/paths.d/10-system
+    priority: 5 # → /etc/paths.d/05-system
     entries:
       - /usr/local/bin
       - /System/Cryptexes/App/usr/bin
