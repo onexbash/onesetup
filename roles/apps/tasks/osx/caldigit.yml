@@ -16,8 +16,8 @@
     path: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}"
     state: directory
     mode: "0755"
-    owner: "root"
-    group: "wheel"
+    owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
+    group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
   become: true
   loop: "{{ caldigit_downloads }}"
   loop_control:
@@ -29,8 +29,8 @@
     url: "{{ item.url }}"
     dest: "{{ ONESETUP_SYSTEM_TMP_DIR }}/caldigit-{{ item.name }}/caldigit-{{ item.name }}.zip"
     mode: "0644"
-    owner: "{{ USER }}"
-    group: "staff"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
   become: true
   loop: "{{ caldigit_downloads }}"
   loop_control:

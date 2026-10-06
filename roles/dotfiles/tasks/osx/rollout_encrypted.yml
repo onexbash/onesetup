@@ -5,8 +5,8 @@
     path: "{{ HOME }}/.ssh"
     state: "directory"
     mode: "0700"
-    owner: "{{ USER }}"
-    group: "staff"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
   become: true
 
 # Rollout SSH Config Files from 'group_vars/all/ssh.yml'
