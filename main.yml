@@ -115,4 +115,3 @@
     - { role: apps, tags: ["apps"] }
     - { role: settings, tags: ["settings"] }
     - { role: autostart, tags: ["autostart"] }
-    - { role: firefox, tags: ["firefox"] }
