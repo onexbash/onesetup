@@ -11,7 +11,7 @@ brew_casks:
   - cameracontroller # Camera Preview Tool
   - shotcut # Video Editing
   - sol # MacOS Spotlight Replacement (similar to raycast)
-  - alt-tab # Alt-Tab replacement
+  - dockdoor # Window Peaking & Alt-Tab
   - appcleaner # App Uninstaller
   # - alacritty # Terminal Emulator (Cross Platform) # TODO: create local cask for installation because the official cask was disabled (cause the devs didnt want to use a paid apple developer account to sign it for gatekeeper)
   - wezterm # Terminal Emulator (Cross Platform)
