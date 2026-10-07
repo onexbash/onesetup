@@ -2,6 +2,12 @@
 autostart_domain: com.onesetup.autostart
 
 autostart_apps:
+  # Utilities
+  - { name: AeroSpace, bundle_id: bobko.aerospace }
+  - { name: Thaw, bundle_id: com.stonerl.Thaw }
+  - { name: SuperCmd, bundle_id: com.supercmd.app }
+  - { name: DockDoor, bundle_id: com.ethanbills.DockDoor }
+  # GUI Apps
   - { name: kitty, bundle_id: net.kovidgoyal.kitty }
   - {
       name: Firefox Developer Edition,
@@ -11,12 +17,5 @@ autostart_apps:
   - { name: KeePassXC, bundle_id: org.keepassxc.keepassxc }
   - { name: Microsoft Teams, bundle_id: com.microsoft.teams2 }
   - { name: Microsoft Outlook, bundle_id: com.microsoft.Outlook }
-  - { name: AltTab, bundle_id: com.lwouis.alt-tab-macos }
-  - { name: Thaw, bundle_id: com.stonerl.Thaw }
-  - { name: SuperCmd, bundle_id: com.supercmd.app }
-  - { name: DockDoor, bundle_id: com.ethanbills.DockDoor }
-  - { name: AeroSpace, bundle_id: bobko.aerospace }
-  - {
-      name: CalDigit_Docking_Station_Utility,
-      bundle_id: "CalDigit.CalDigit-Docking-Station-Utility",
-    }
+  - { name: Todoist, bundle_id: com.todoist.mac.Todoist }
+  - { name: Obsidian, bundle_id: md.obsidian }
