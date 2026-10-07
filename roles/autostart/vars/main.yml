@@ -13,7 +13,8 @@ autostart_apps:
   - { name: Microsoft Outlook, bundle_id: com.microsoft.Outlook }
   - { name: AltTab, bundle_id: com.lwouis.alt-tab-macos }
   - { name: Thaw, bundle_id: com.stonerl.Thaw }
-  - { name: Sol, bundle_id: com.ospfranco.sol }
+  - { name: SuperCmd, bundle_id: com.supercmd.app }
+  - { name: DockDoor, bundle_id: com.ethanbills.DockDoor }
   - { name: AeroSpace, bundle_id: bobko.aerospace }
   - {
       name: CalDigit_Docking_Station_Utility,

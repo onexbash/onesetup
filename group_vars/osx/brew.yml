@@ -10,7 +10,6 @@ brew_casks:
   - claude # Claude Desktop App
   - cameracontroller # Camera Preview Tool
   - shotcut # Video Editing
-  - sol # MacOS Spotlight Replacement (similar to raycast)
   - dockdoor # Window Peaking & Alt-Tab
   - appcleaner # App Uninstaller
   # - alacritty # Terminal Emulator (Cross Platform) # TODO: create local cask for installation because the official cask was disabled (cause the devs didnt want to use a paid apple developer account to sign it for gatekeeper)
@@ -34,8 +33,9 @@ brew_casks:
   - proton-pass # Proton Password Manager
   - proton-meet # Proton Video Conference
   - proton-mail-bridge # Proton Bridge to allow Mail traffic over 3rd party E-Mail Clients
-  #  - raycast # Smart Spotlight Replacement (replaced by 'sol')
   - spotify
+  - youtube-to-mp3 # MediaHuman Youtube to MP3 Converter
+  - mediahuman-youtube-downloader # MediaHuman Youtube Video Downloader
   - utm # VM Management
   - sublime-text # Text Editor
   - intellij-idea-oss # IntelliJ Community Edition (replacement when nvim gets on my nerves)
@@ -48,6 +48,8 @@ brew_casks:
   - kekaexternalhelper # Helper Utility for keka
   - whatsapp
   - karabiner-elements # Keyboard Mapping Tool
+  - supercmd # Spotlight Replacement (free alternative to raycast)
+  - obsidian # Markdown Based Documentation Tool
 
 # Formulas
 brew_formulas:
@@ -126,6 +128,7 @@ brew_formulas:
   - unar # Unarchiving tool
   # - poppler # PDF rendering library
   - tree
+  - swift # Programming Language
   - tree-sitter-cli # Tree-Sitter CLI required for nvim-treesitter to work
   - wget
   - svgo # SVG optimizer
@@ -150,3 +153,4 @@ brew_taps:
   - sdkman/tap # used by: sdkman
   - teamookla/speedtest # used by: speedtest-cli
   - lzhgus/tap # used by: capso
+  - supercmdlabs/supercmd # used by: supercmd
