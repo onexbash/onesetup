@@ -59,6 +59,7 @@ brew_formulas:
   - proton-pass-cli
   - git-crypt # git repository file encryption
   - sqlite
+  - gping # ping with a graph
   - ansible # infrastructure as code
   - hashicorp/tap/terraform # infrastructure as code
   - lua

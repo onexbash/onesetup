@@ -7,6 +7,7 @@ autostart_apps:
   - { name: Thaw, bundle_id: com.stonerl.Thaw }
   - { name: SuperCmd, bundle_id: com.supercmd.app }
   - { name: DockDoor, bundle_id: com.ethanbills.DockDoor }
+  - { name: Capso, bundle_id: com.awesomemacapps.capso }
   # GUI Apps
   - { name: kitty, bundle_id: net.kovidgoyal.kitty }
   - {
@@ -15,7 +16,10 @@ autostart_apps:
     }
   - { name: Spotify, bundle_id: com.spotify.client }
   - { name: KeePassXC, bundle_id: org.keepassxc.keepassxc }
+  - { name: Proton Pass, bundle_id: me.proton.pass.electron }
+  - { name: Proton Mail, bundle_id: ch.protonmail.desktop }
   - { name: Microsoft Teams, bundle_id: com.microsoft.teams2 }
   - { name: Microsoft Outlook, bundle_id: com.microsoft.Outlook }
   - { name: Todoist, bundle_id: com.todoist.mac.Todoist }
   - { name: Obsidian, bundle_id: md.obsidian }
+  - { name: AppFlowy, bundle_id: com.appflowy.appflowy.flutter }
