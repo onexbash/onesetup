@@ -213,6 +213,42 @@
     value: true
   notify: semi_logout
 
+# -- -- -- -- -- -- -- -- -- #
+# --      APPEARANCE      -- #
+# -- -- -- -- -- -- -- -- -- #
+# Theme Color
+- name: "Appearance | Theme -> Color (accent)"
+  community.general.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleAccentColor
+    type: int
+    value: "{{ accent_color }}"
+    state: present
+
+- name: "Appearance | Theme -> Text highlight color"
+  community.general.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleHighlightColor
+    type: string
+    value: "{{ highlight_color }}"
+    state: present
+
+- name: "Appearance | Windows -> Tint window background with wallpaper color (disabled)"
+  community.general.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleReduceDesktopTinting
+    type: bool
+    value: true # true = tinting OFF
+    state: present
+
+- name: "Appearance | Windows -> Click in the scroll bar to 'Jump to the spot that's clicked'"
+  community.general.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleScrollerPagingBehavior
+    type: bool
+    value: true # false = "Jump to the next page"
+    state: present
+
 # -- -- -- -- -- -- -- -- #
 # --      TERMINAL     -- #
 # -- -- -- -- -- -- -- -- #
