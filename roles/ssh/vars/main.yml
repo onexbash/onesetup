@@ -1,0 +1,15 @@
+---
+# Known Hosts (~/.ssh/known_hosts)
+known_hosts:
+  # GitHub
+  - names: [github.com]
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA..."
+  # Azure DevOps
+  - names: [ssh.dev.azure.com]
+    key: "ssh-rsa AAAAB3NzaC1yc2EAAAA..."
+  # Macbook (personal)
+  - names: [onexmac-personal, onexmac-personal.local]
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA..."
+  # Macbook (cratos)
+  - names: [onexmac-cratos, onexmac-cratos.local]
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA..."

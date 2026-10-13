@@ -27,3 +27,26 @@
   loop: "{{ ssh_keys | dict2items }}"
   no_log: true # Prevents secret leaking
 
+# Configure authorized_keys
+- name: "Configure ~/.ssh/authorized_keys: Set which SSH-Keys are allowed to connect to this Machine"
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user_id }}"
+    key: "{{ lookup('file', 'files/ssh/id_' + inventory_hostname + '.pub') }}"
+    exclusive: true
+    state: present
+
+# Create known_hosts based on template
+- name: "Create ~/.ssh/known_hosts based on template"
+  ansible.builtin.template:
+    src: known_hosts.j2
+    dest: "~/.ssh/known_hosts"
+    mode: "0600"
+
+# Add Hosts to known_hosts
+- name: "Add defined Hosts to ~/.ssh/known_hosts"
+  ansible.builtin.known_hosts:
+    path: "~/.ssh/known_hosts"
+    name: "{{ item.1 }}"
+    key: "{{ item.1 }} {{ item.0.key }}"
+    state: present
+  loop: "{{ ssh_known_hosts | subelements('names') }}"
