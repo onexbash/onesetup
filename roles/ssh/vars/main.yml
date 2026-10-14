@@ -13,3 +13,12 @@ known_hosts:
   # Macbook (cratos)
   - names: [onexmac-cratos, onexmac-cratos.local]
     key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA..."
+
+# Authorized Keys (~/.ssh/authorized_keys)
+authorized_keys:
+  # Macbook (personal)
+  - hosts: [onexmac-personal]
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... id_onexmac-personal"
+  # Macbook (cratos)
+  - hosts: [onexmac-cratos]
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... id_onexmac-cratos"

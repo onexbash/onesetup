@@ -27,11 +27,27 @@
   loop: "{{ ssh_keys | dict2items }}"
   no_log: true # Prevents secret leaking
 
-# Configure authorized_keys
-- name: "Configure ~/.ssh/authorized_keys: Set which SSH-Keys are allowed to connect to this Machine"
+# Collect all keys that are allowed to connect to this host
+- name: "Collect authorized SSH keys for {{ inventory_hostname }}"
+  ansible.builtin.set_fact:
+    _authorized_keys: >-
+      {{ authorized_keys
+         | selectattr('hosts', 'contains', inventory_hostname)
+         | map(attribute='key')
+         | list }}
+
+# Prevent writing of an empty authorized_keys
+- name: "Ensure at least one authorized key is defined for {{ inventory_hostname }}"
+  ansible.builtin.assert:
+    that: _authorized_keys | length > 0
+    fail_msg: "No entry in authorized_keys for '{{ inventory_hostname }}' – refusing to empty authorized_keys."
+    quiet: true
+
+# Write allowed keys to authorized_keys and remove if keys exist that are not allowed
+- name: "Configure ~/.ssh/authorized_keys: Only allow defined SSH-Keys to connect"
   ansible.posix.authorized_key:
     user: "{{ ansible_user_id }}"
-    key: "{{ lookup('file', 'files/ssh/id_' + inventory_hostname + '.pub') }}"
+    key: "{{ _authorized_keys | join('\n') }}"
     exclusive: true
     state: present
 
