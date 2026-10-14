@@ -269,7 +269,7 @@ function apply_config() {
   # -- Ansible Variables -- #
   export ANSIBLE_CONFIG="$X_TARGET_DIR/ansible.cfg"
   export ANSIBLE_INVENTORY="$X_TARGET_DIR/inventory.ini"
-  # export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
+  export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
 }
 
 # [UTIL] Build a Git Remote URI from Provider, Connection & Username: _build_remote_uri <repo>
