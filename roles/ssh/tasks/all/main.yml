@@ -42,7 +42,7 @@
   loop: "{{ ssh_keys | dict2items }}"
   no_log: true # Prevents secret leaking
 
-# Collect all keys that are allowed to connect to this host
+# Collect authorized SSH Keys for this host
 - name: "Collect authorized SSH keys for {{ ansible_facts['hostname'] }}"
   ansible.builtin.set_fact:
     _authorized_keys: >-
@@ -58,16 +58,18 @@
     fail_msg: "No entry in authorized_keys for hostname '{{ ansible_facts['hostname'] }}' – refusing to empty authorized_keys."
     quiet: true
 
-# Write allowed keys to authorized_keys, remove all others (sets 0600 itself)
-- name: "Configure ~/.ssh/authorized_keys: Only allow defined SSH-Keys to connect"
+# Write authorized_keys from template (overwrites manual changes)
+- name: "Create ~/.ssh/authorized_keys based on template"
   become: true
-  ansible.posix.authorized_key:
-    user: "{{ ONESETUP_SYSTEM_USERNAME }}"
-    key: "{{ _authorized_keys | join('\n') }}"
-    exclusive: true
-    state: present
+  ansible.builtin.template:
+    src: authorized_keys.j2
+    dest: "{{ HOME }}/.ssh/authorized_keys"
+    mode: "0600"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+    validate: "/usr/bin/ssh-keygen -l -f %s" # fails on malformed keys before the file is replaced
 
-# Write known_hosts from template (manual changes are overwritten)
+# Write known_hosts from template (overwrites manual changes)
 - name: "Create ~/.ssh/known_hosts based on template"
   become: true
   ansible.builtin.template:
@@ -76,3 +78,4 @@
     mode: "0644"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+    validate: "/usr/bin/ssh-keygen -l -f %s" # fails on malformed keys before the file is replaced
