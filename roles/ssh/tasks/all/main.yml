@@ -43,19 +43,19 @@
   no_log: true # Prevents secret leaking
 
 # Collect all keys that are allowed to connect to this host
-- name: "Collect authorized SSH keys for {{ inventory_hostname }}"
+- name: "Collect authorized SSH keys for {{ ansible_facts['hostname'] }}"
   ansible.builtin.set_fact:
     _authorized_keys: >-
       {{ authorized_keys
-         | selectattr('hosts', 'contains', inventory_hostname)
+         | selectattr('hosts', 'contains', ansible_facts['hostname'] | lower)
          | map(attribute='key')
          | list }}
 
 # Prevent writing an empty authorized_keys (would lock you out)
-- name: "Ensure at least one authorized key is defined for {{ inventory_hostname }}"
+- name: "Ensure at least one authorized key is defined for {{ ansible_facts['hostname'] }}"
   ansible.builtin.assert:
     that: _authorized_keys | length > 0
-    fail_msg: "No entry in authorized_keys for '{{ inventory_hostname }}' – refusing to empty authorized_keys."
+    fail_msg: "No entry in authorized_keys for hostname '{{ ansible_facts['hostname'] }}' – refusing to empty authorized_keys."
     quiet: true
 
 # Write allowed keys to authorized_keys, remove all others (sets 0600 itself)
