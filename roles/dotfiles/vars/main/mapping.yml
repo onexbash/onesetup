@@ -107,3 +107,18 @@ dotfiles:
       src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/litexl",
       dest: "{{ XDG_CONFIG_HOME }}/lite-xl",
     }
+  # -- single files -- #
+  # claude
+  - {
+    src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/claude/settings.json",
+    dest: "{{ XDG_CONFIG_HOME }}/claude/settings.json",
+    }
+  - {
+    src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/claude/CLAUDE.md",
+    dest: "{{ XDG_CONFIG_HOME }}/claude/CLAUDE.md",
+    }
+  # azure
+  - {
+    src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/azure/config",
+    dest: "{{ XDG_CONFIG_HOME }}/azure/config",
+    }

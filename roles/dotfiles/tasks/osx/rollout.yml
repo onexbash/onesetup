@@ -49,6 +49,13 @@
     - dotfiles_clone is failed
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
+# Ensure parent directories of file-only dotfiles exist
+- name: "Ensure parent directories of file-only dotfiles exist"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: "directory"
+  loop: "{{ dotfiles | map(attribute='dest') | map('dirname') | unique }}"
+
 # Cleanup: Dotfiles (dest)
 - name: "Cleanup: Dotfiles"
   become: true
