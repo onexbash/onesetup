@@ -355,23 +355,31 @@ function encrypt_string() {
 
 # Action 'file': encrypt a file's content (exact content, incl. trailing newlines)
 function encrypt_file() {
-  local filepath="$ARG_FILE" varname="$ARG_VARNAME" default_name encrypted
+  local filepath="$ARG_FILE" varname="$ARG_VARNAME" default_name encrypted rows
 
   # Pick a file if no path was given
   if [[ -z "$filepath" ]]; then
+    # Fit the picker into the terminal (leave room for header & prompt)
+    rows="$(stty size </dev/tty 2>/dev/null | cut -d' ' -f1)"
+    rows="${rows:-24}"
+    ((rows > 8)) || rows=8
     filepath="$(
-      gum file "$PWD" \
-        --cursor.foreground "$GUM_COLOR" \
-        --header.foreground "$GUM_COLOR" \
-        --selected.foreground "$GUM_COLOR" \
-        --all \
-        --height=100 || true
+      find . -maxdepth 3 -type f -not -path '*/.git/*' 2>/dev/null |
+        sed 's|^\./||' | sort |
+        gum filter \
+          --header "Choose file to encrypt:" \
+          --header.foreground "$GUM_COLOR" \
+          --indicator.foreground "$GUM_COLOR" \
+          --match.foreground "$GUM_COLOR" \
+          --placeholder "Type to search..." \
+          --height "$((rows - 4))" || true
     )"
     if [[ -z "$filepath" ]]; then
       echo -e "${I_WARN}No file selected. Aborting."
       exit 0
     fi
   fi
+
   [[ -f "$filepath" && -r "$filepath" ]] || {
     echo -e "${I_ERR}File not found or not readable: ${filepath}"
     exit 1
