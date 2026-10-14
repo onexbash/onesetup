@@ -225,6 +225,7 @@
     value: "{{ accent_color }}"
     state: present
 
+# Highlight Color
 - name: "Appearance | Theme -> Text highlight color"
   community.general.osx_defaults:
     domain: NSGlobalDomain
@@ -233,6 +234,7 @@
     value: "{{ highlight_color }}"
     state: present
 
+# Whether to tint window background
 - name: "Appearance | Windows -> Tint window background with wallpaper color (disabled)"
   community.general.osx_defaults:
     domain: NSGlobalDomain
@@ -241,6 +243,7 @@
     value: true # true = tinting OFF
     state: present
 
+# Scroll Bar Clicking Behavior
 - name: "Appearance | Windows -> Click in the scroll bar to 'Jump to the spot that's clicked'"
   community.general.osx_defaults:
     domain: NSGlobalDomain

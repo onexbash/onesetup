@@ -1,3 +1,7 @@
+# Colors
+accent_color: 5 # Only accepts 1 - 6
+highlight_color: "0.705882 0.745098 0.996078 Other" # Catppuccin (Mocha): Lavender
+
 # kbd_key & kbd_mapping for setting keyboard shortcuts
 kbd_key: "com.apple.keyboard.modifiermapping.12815-20550-0" # Find Key with `defaults -currentHost read -g | grep modifiermapping`
 kbd_mapping: |
@@ -23,3 +27,5 @@ kbd_mapping: |
       <key>HIDKeyboardModifierMappingDst</key><integer>30064771302</integer>
     </dict>
   </array>
+
+
