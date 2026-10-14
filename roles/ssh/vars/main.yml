@@ -2,7 +2,7 @@
 # Known Hosts (~/.ssh/known_hosts)
 known_hosts:
   # GitHub
-  - names: [github.com]
+  - names: [github.com, "[ssh.github.com]:443"]
     key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA..."
   # Azure DevOps
   - names: [ssh.dev.azure.com]

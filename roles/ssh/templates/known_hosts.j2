@@ -1,5 +1,5 @@
 {# templates/known_hosts.j2 #}
 # Managed by Ansible – manual changes are overwritten
-{% for host in ssh_known_hosts %}
+{% for host in known_hosts %}
 {{ host.names | join(',') }} {{ host.key }}
 {% endfor %}

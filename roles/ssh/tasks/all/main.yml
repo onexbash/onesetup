@@ -1,6 +1,6 @@
 ---
-# Ensure ~/.ssh directory exists with correct permission
-- name: "Ensure SSH Directory exists ({{ HOME }}/.ssh)"
+# Ensure ~/.ssh directory exists with correct permissions
+- name: "Ensure existing & correct permissions: ~/.ssh"
   become: true
   ansible.builtin.file:
     path: "{{ HOME }}/.ssh"
@@ -9,21 +9,36 @@
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
 
-# Rollout SSH Config Files from 'group_vars/all/ssh.yml'
-- name: "Rollout SSH config files"
-  ansible.builtin.copy:
-    content: "{{ item.value }}\n"
-    dest: "{{ ansible_facts['env']['HOME'] }}/.ssh/{{ item.key }}"
-    mode: "0600"
-  loop: "{{ ssh_files | dict2items }}"
-  no_log: true # Prevents secret leaking
+# Ensure ~/.ssh/agent directory exists (agent sockets, OpenSSH >= 10.1)
+- name: "Ensure existing & correct permissions: ~/.ssh/agent"
+  become: true
+  ansible.builtin.file:
+    path: "{{ HOME }}/.ssh/agent"
+    state: "directory"
+    mode: "0700"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
 
-# Rollout SSH Keys from 'group_vars/all/ssh.yml'
-- name: "Rollout SSH Keys"
+# Rollout SSH Config File (vault-encrypted, see: group_vars/all/ssh.yml)
+- name: "Rollout SSH Config File"
+  become: true
   ansible.builtin.copy:
-    content: "{{ item.value }}\n"
+    content: "{{ ssh_config | trim }}\n"
+    dest: "{{ HOME }}/.ssh/config"
+    mode: "0600"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+  no_log: true # Prevents secret leaking (also in --diff output)
+
+# Decrypt & Rollout SSH Keys (see: group_vars/all/ssh.yml)
+- name: "Decrypt & Rollout SSH Keys"
+  become: true
+  ansible.builtin.copy:
+    content: "{{ item.value | trim }}\n" # exactly one trailing newline (required by OpenSSH)
     dest: "{{ HOME }}/.ssh/{{ item.key | regex_replace('_pub$', '.pub') }}"
     mode: "{{ '0644' if item.key.endswith('_pub') else '0600' }}"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
   loop: "{{ ssh_keys | dict2items }}"
   no_log: true # Prevents secret leaking
 
@@ -36,33 +51,28 @@
          | map(attribute='key')
          | list }}
 
-# Prevent writing of an empty authorized_keys
+# Prevent writing an empty authorized_keys (would lock you out)
 - name: "Ensure at least one authorized key is defined for {{ inventory_hostname }}"
   ansible.builtin.assert:
     that: _authorized_keys | length > 0
     fail_msg: "No entry in authorized_keys for '{{ inventory_hostname }}' – refusing to empty authorized_keys."
     quiet: true
 
-# Write allowed keys to authorized_keys and remove if keys exist that are not allowed
+# Write allowed keys to authorized_keys, remove all others (sets 0600 itself)
 - name: "Configure ~/.ssh/authorized_keys: Only allow defined SSH-Keys to connect"
+  become: true
   ansible.posix.authorized_key:
-    user: "{{ ansible_user_id }}"
+    user: "{{ ONESETUP_SYSTEM_USERNAME }}"
     key: "{{ _authorized_keys | join('\n') }}"
     exclusive: true
     state: present
 
-# Create known_hosts based on template
+# Write known_hosts from template (manual changes are overwritten)
 - name: "Create ~/.ssh/known_hosts based on template"
+  become: true
   ansible.builtin.template:
     src: known_hosts.j2
-    dest: "~/.ssh/known_hosts"
-    mode: "0600"
-
-# Add Hosts to known_hosts
-- name: "Add defined Hosts to ~/.ssh/known_hosts"
-  ansible.builtin.known_hosts:
-    path: "~/.ssh/known_hosts"
-    name: "{{ item.1 }}"
-    key: "{{ item.1 }} {{ item.0.key }}"
-    state: present
-  loop: "{{ ssh_known_hosts | subelements('names') }}"
+    dest: "{{ HOME }}/.ssh/known_hosts"
+    mode: "0644"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
