@@ -4,6 +4,7 @@ brew_prefix: "{{ '/opt/homebrew' if ansible_facts['architecture'] == 'arm64' els
 
 # Casks
 brew_casks:
+  - azure-cli # Azure CLI
   - aerospace # Tiling Window Manager with workspaces
   - capso # MacOS Screenshot Tool
   - claude-code # Claude-Code CLI
@@ -88,7 +89,6 @@ brew_formulas:
   - bash # bash (brew version)
   - zsh # zsh (brew version)
   - powershell # Microsoft Powershell
-  - azure-cli # CLI for Azure
   # -- PACKAGE & VERSION MANAGER -- #
   - luarocks # lua package manager
   - poetry # python package manager
@@ -145,6 +145,7 @@ brew_formulas:
   - atuin # shell history tool
   - podman
   - podman-compose
+  - tcl-tk
 
 # Taps
 brew_taps:
@@ -155,3 +156,4 @@ brew_taps:
   - teamookla/speedtest # used by: speedtest-cli
   - lzhgus/tap # used by: capso
   - supercmdlabs/supercmd # used by: supercmd
+  #  - asmvik/formulae # used by: yabai & skhd

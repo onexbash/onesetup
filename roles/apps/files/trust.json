@@ -3,12 +3,13 @@
     "hashicorp/tap/terraform"
   ],
   "trustedtaps": [
-    "asmvik/formulae",
-    "felixkratz/formulae",
     "fschlegelone/local",
     "local/neovim",
+    "FelixKratz/formulae",
+    "hashicorp/tap",
     "nikitabobko/tap",
     "sdkman/tap",
-    "teamookla/speedtest"
+    "teamookla/speedtest",
+    "lzhgus/tap"
   ]
 }
