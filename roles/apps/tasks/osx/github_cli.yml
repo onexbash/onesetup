@@ -1,0 +1,18 @@
+---
+# Auto-Install GitHub CLI Extensions. See: vars/main.yml
+- name: "Get list of installed gh extensions"
+  ansible.builtin.command: gh extension list
+  register: gh_extensions_list
+  changed_when: false
+  failed_when: false
+
+- name: "Install gh extensions if not already present"
+  ansible.builtin.command: "gh extension install {{ item }}"
+  loop: "{{ gh_extensions }}"
+  when: item not in gh_extensions_list.stdout
+
+- name: "Upgrade gh extensions to the latest version"
+  ansible.builtin.command: "gh extension upgrade {{ item.split('/')[-1] | regex_replace('^gh-', '') }}"
+  loop: "{{ gh_extensions }}"
+  register: gh_upgrade_result
+  changed_when: "'Upgraded' in gh_upgrade_result.stdout or 'up to date' not in gh_upgrade_result.stdout"
