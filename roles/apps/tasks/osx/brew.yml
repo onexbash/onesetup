@@ -22,7 +22,7 @@
     # Check current Trust Store state
     - name: "Check: Homebrew Trust Store file"
       ansible.builtin.stat:
-        path: "{{ XDG_CONFIG_HOME }}/homebrew/trust.json"
+        path: "{{ xdg_config_home }}/homebrew/trust.json"
       register: trust_file
 
     # Load Homebrew Trust Store contents
@@ -40,7 +40,7 @@
     - name: "Cleanup: Homebrew Trust Store"
       become: true
       ansible.builtin.file:
-        path: "{{ XDG_CONFIG_HOME }}/homebrew"
+        path: "{{ xdg_config_home }}/homebrew"
         state: absent
       when: not taps_fully_trusted
 

@@ -7,15 +7,15 @@
   # -- VARIABLES -- #
   vars:
     # Environment Variables: User Environment
-    USER: "{{ ansible_facts['env']['USER'] }}"
-    HOME: "{{ ansible_facts['env']['HOME'] }}"
-    XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(HOME ~ '/.config', true) }}"
-    XDG_CACHE_HOME: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(HOME ~ '/.cache', true) }}"
-    XDG_DATA_HOME: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(HOME ~ '/.local/share', true) }}"
-    XDG_STATE_HOME: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(HOME ~ '/.local/state', true) }}"
-    ZDOTDIR: "{{ ansible_facts['env']['ZDOTDIR'] | default(HOME, true) }}"
-    CARGO_HOME: "{{ ansible_facts['env']['CARGO_HOME'] | default(HOME ~ '/.cargo', true) }}"
-    RUSTUP_HOME: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(HOME ~ '/.rustup', true) }}"
+    user: "{{ ansible_facts['env']['USER'] }}"
+    home: "{{ ansible_facts['env']['HOME'] }}"
+    xdg_config_home: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(HOME ~ '/.config', true) }}"
+    xdg_cache_home: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(HOME ~ '/.cache', true) }}"
+    xdg_data_home: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(HOME ~ '/.local/share', true) }}"
+    xdg_state_home: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(HOME ~ '/.local/state', true) }}"
+    zdotdir: "{{ ansible_facts['env']['ZDOTDIR'] | default(HOME, true) }}"
+    cargo_home: "{{ ansible_facts['env']['CARGO_HOME'] | default(HOME ~ '/.cargo', true) }}"
+    rustup_home: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(HOME ~ '/.rustup', true) }}"
 
   # Variable Prompts
   vars_prompt:
@@ -27,7 +27,7 @@
   pre_tasks:
     # Pre-Task: Set Become Password as Ansible Fact
     - name: "Set become password gathered in user-prompt as Ansible Fact"
-      set_fact:
+      ansible.builtin.set_fact:
         ansible_become_password: "{{ SUDO_PASSWORD }}"
         cacheable: false
       no_log: true

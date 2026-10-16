@@ -3,7 +3,7 @@
 - name: "Ensure existing & correct permissions: ~/.ssh"
   become: true
   ansible.builtin.file:
-    path: "{{ HOME }}/.ssh"
+    path: "{{ home }}/.ssh"
     state: "directory"
     mode: "0700"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
@@ -13,7 +13,7 @@
 - name: "Ensure existing & correct permissions: ~/.ssh/agent"
   become: true
   ansible.builtin.file:
-    path: "{{ HOME }}/.ssh/agent"
+    path: "{{ home }}/.ssh/agent"
     state: "directory"
     mode: "0700"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
@@ -24,7 +24,7 @@
   become: true
   ansible.builtin.copy:
     content: "{{ ssh_config | trim }}\n"
-    dest: "{{ HOME }}/.ssh/config"
+    dest: "{{ home }}/.ssh/config"
     mode: "0600"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
@@ -35,7 +35,7 @@
   become: true
   ansible.builtin.copy:
     content: "{{ item.value | trim }}\n" # exactly one trailing newline (required by OpenSSH)
-    dest: "{{ HOME }}/.ssh/{{ item.key | regex_replace('_pub$', '.pub') }}"
+    dest: "{{ home }}/.ssh/{{ item.key | regex_replace('_pub$', '.pub') }}"
     mode: "{{ '0644' if item.key.endswith('_pub') else '0600' }}"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
@@ -63,7 +63,7 @@
   become: true
   ansible.builtin.template:
     src: authorized_keys.j2
-    dest: "{{ HOME }}/.ssh/authorized_keys"
+    dest: "{{ home }}/.ssh/authorized_keys"
     mode: "0600"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
@@ -74,7 +74,7 @@
   become: true
   ansible.builtin.template:
     src: known_hosts.j2
-    dest: "{{ HOME }}/.ssh/known_hosts"
+    dest: "{{ home }}/.ssh/known_hosts"
     mode: "0644"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"

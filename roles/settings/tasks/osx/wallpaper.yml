@@ -3,7 +3,7 @@
 - name: "wallpaper | copy to pictures directory"
   copy:
     src: "wallpaper.jpeg"
-    dest: "{{ HOME }}/Pictures/wallpaper.jpeg"
+    dest: "{{ home }}/Pictures/wallpaper.jpeg"
     mode: "0644"
     force: true
 - name: "wallpaper | apply"
@@ -13,7 +13,7 @@
       set desktopCount to count of desktops
       repeat with desktopNumber from 1 to desktopCount
         tell desktop desktopNumber
-          set picture to "{{ HOME }}/Pictures/wallpaper.jpeg"
+          set picture to "{{ home }}/Pictures/wallpaper.jpeg"
         end tell
       end repeat
     end tell
