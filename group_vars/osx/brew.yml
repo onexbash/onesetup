@@ -66,6 +66,7 @@ brew_formulas:
   - lua
   - imagemagick
   - libpq # PostgreSQL Client (without the full server & daemon that the 'postgres' formulae installs)
+  - utftex # Transform latex strings to unicode
   # -- VERSION MANAGERS -- #
   - asdf # Version Manager for everything (extensible via plugins)
   # -- LINUX UTILITIES -- #
