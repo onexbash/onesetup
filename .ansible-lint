@@ -2,6 +2,9 @@
 # Ignore Rules
 skip_list:
   - no-changed-when
+  - var-naming[no-role-prefix]
+  - name[template]
+  - yaml[commas]
 
 # Rules to report only warnings, not errors
 warn_list:
