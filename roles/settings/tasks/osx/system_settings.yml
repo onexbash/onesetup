@@ -446,50 +446,49 @@
     key: globalstate
     type: int
     value: 1
-# MacOS Inactivity Configuration
+
+# -- INACTIVITY -- #
 - name: "Inactivity Configuration"
   block:
-    # 1) Screen Saver (5m inactivity)
-    - name: "Set Screen Saver to start after 5 minutes inactivity"
+    # Screen Saver: 30 Minutes
+    - name: "Set Screen Saver to start after 30 minutes inactivity"
       community.general.osx_defaults:
         domain: com.apple.screensaver
+        host: currentHost
         key: idleTime
         type: int
-        value: 300
+        value: 1800
         state: present
-    # 2) Lock Screen (25m after screen saver)
-    - name: "Require password after Screen Saver"
+    # Require Password: 30 Minutes after Screen Saver (60 in total)
+    - name: "Require password 30 minutes after Screen Saver starts"
+      ansible.builtin.command:
+        argv:
+          - sysadminctl
+          - -screenLock
+          - "1800"
+          - -password
+          - "{{ ansible_become_password }}" # must be the target user's password
+      no_log: true
+      changed_when: true
+    # Auto Logout: Disabled
+    - name: "Disable Auto Logout"
+      become: true
       community.general.osx_defaults:
-        domain: com.apple.screensaver
-        key: askForPassword
-        type: int
-        value: 1
-        state: present
-    - name: "Set Sleep Mode Password Prompt Delay"
-      community.general.osx_defaults:
-        domain: com.apple.screensaver
-        key: askForPasswordDelay
-        type: int
-        value: 1500
-        state: present
-    # 3) Auto Logout (25m after screen saver)
-    - name: "Set Auto LogOut Delay to 30 minutes"
-      become: true # set system-wide # TODO: check if this should use become or not
-      community.general.osx_defaults:
-        domain: NSGlobalDomain
+        domain: /Library/Preferences/.GlobalPreferences
         key: com.apple.autologout.AutoLogOutDelay
         type: int
-        value: 1800 # 30min => 25m after screen saver
+        value: 0
         state: present
-    # 4) Power Management (25m after screen saver)
-    - name: "Set Display sleep to 30 minutes"
+    # [Power Adapter] | Display Sleep: 60 min System Sleep: Disabled
+    - name: "[Power Adapter] | Display Sleep: 60 min System Sleep: Disabled"
       become: true
-      ansible.builtin.command: "pmset -a displaysleep 30"
-      changed_when: false
-    - name: "Set System sleep to 30 minutes"
+      ansible.builtin.command: "pmset -c displaysleep 60 sleep 0"
+      changed_when: true
+    # [Battery] | Display Sleep: 10 min System Sleep: 20 min
+    - name: "[Battery] | Display Sleep: 10 min System Sleep: 20 min"
       become: true
-      ansible.builtin.command: "pmset -a sleep 30"
-      changed_when: false
+      ansible.builtin.command: "pmset -b displaysleep 10 sleep 20"
+      changed_when: true
 
 # -- HOT CORNERS -- #
 # Disable top-left
