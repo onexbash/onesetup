@@ -1,0 +1,9 @@
+---
+# Ignore Rules
+skip_list:
+  - no-changed-when
+
+# Rules to report only warnings, not errors
+warn_list:
+  - experimental
+  - no-changed-when
