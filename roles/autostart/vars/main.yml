@@ -18,5 +18,5 @@ autostart_apps:
   - { name: Microsoft Teams, bundle_id: com.microsoft.teams2 }
   - { name: Microsoft Outlook, bundle_id: com.microsoft.Outlook }
   - { name: Todoist, bundle_id: com.todoist.mac.Todoist }
-  - { name: Obsidian, bundle_id: md.obsidian }
+  # - { name: Obsidian, bundle_id: md.obsidian }
   - { name: AppFlowy, bundle_id: com.appflowy.appflowy.flutter }
