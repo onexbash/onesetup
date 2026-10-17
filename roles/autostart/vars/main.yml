@@ -10,10 +10,7 @@ autostart_apps:
   - { name: Capso, bundle_id: com.awesomemacapps.capso }
   # GUI Apps
   - { name: kitty, bundle_id: net.kovidgoyal.kitty }
-  - {
-      name: Firefox Developer Edition,
-      bundle_id: org.mozilla.firefoxdeveloperedition,
-    }
+  - { name: Firefox Developer Edition, bundle_id: org.mozilla.firefoxdeveloperedition }
   - { name: Spotify, bundle_id: com.spotify.client }
   - { name: KeePassXC, bundle_id: org.keepassxc.keepassxc }
   - { name: Proton Pass, bundle_id: me.proton.pass.electron }

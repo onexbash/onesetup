@@ -44,7 +44,7 @@
 
 # Skip Dotfiles Role and continue playbook if User declined to overwrite local changes
 - name: "Skip Dotfiles Role and continue playbook"
-  meta: end_role
+  ansible.builtin.meta: end_role
   when:
     - dotfiles_clone is failed
     - dotfiles_overwrite_prompt.user_input | lower != 'y'

@@ -1,7 +1,7 @@
 ---
 # -- -- -- -- -- -- -- -- #
 # --   MAIN PLAYBOOK   -- #
-- name: onesetup
+- name: Onesetup
   hosts: localhost
 
   # -- VARIABLES -- #

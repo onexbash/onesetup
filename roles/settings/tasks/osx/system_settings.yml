@@ -88,58 +88,6 @@
     value: Always
 
 # -- -- -- -- -- -- -- -- #
-# --      DESKTOP      -- #
-# -- -- -- -- -- -- -- -- #
-# Keep Folders on top
-- name: "Desktop | keep folders on top"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: _FXSortFoldersFirstOnDesktop
-    type: bool
-    value: true
-  notify: restart_finder
-# Show Desktop Items
-- name: "Desktop | show desktop items"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: CreateDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-# Show Volumes
-- name: "Desktop | show volumes"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: ShowHardDrivesOnDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-# Show External Volumes
-- name: "Desktop | show external volumes"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: ShowExternalHardDrivesOnDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-# Show Removable Volumes
-- name: "Desktop | show removable volumes"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: ShowRemovableMediaOnDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-# Show Connected Servers
-- name: "Desktop | show connected servers"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: ShowMountedServersOnDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-
-# -- -- -- -- -- -- -- -- #
 # --      MENUBAR      -- #
 # -- -- -- -- -- -- -- -- #
 # Clock Separator
@@ -330,7 +278,7 @@
 - name: "Keyboard | Disable automatic brightness"
   become: true
   community.general.osx_defaults:
-    host: null
+    host:
     domain: /Library/Preferences/com.apple.iokit.AmbientLightSensor
     key: Automatic Keyboard Enabled
     type: bool

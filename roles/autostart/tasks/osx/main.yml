@@ -40,7 +40,7 @@
     label: "{{ item.path | basename }}"
 
 # Rollout LaunchAgent Config File to pass env-vars to Claude-Code (Desktop App)
-- name: "{{ role_name | capitalize }} | Rollout LaunchAgent Config File to pass env-vars to Claude-Code (Desktop App)" 
+- name: "{{ role_name | capitalize }} | Rollout LaunchAgent Config File to pass env-vars to Claude-Code (Desktop App)"
   ansible.builtin.copy:
     src: "{{ role_path }}/files/com.onesetup.environment.claude-code.plist"
     dest: "{{ ansible_facts['env']['HOME'] }}/Library/LaunchAgents/com.onesetup.environment.claude-code.plist"

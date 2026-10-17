@@ -8,7 +8,7 @@
   block:
     # -- TAPS -- #
     # Tap Repositories defined in group_vars
-    - name: "tap repositories"
+    - name: "Tap repositories"
       community.general.homebrew_tap:
         name: "{{ item_tap }}"
         path: "/usr/local/bin:/opt/homebrew/bin"
