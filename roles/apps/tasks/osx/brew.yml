@@ -51,8 +51,12 @@
       loop: "{{ brew_taps }}"
       loop_control:
         loop_var: item_tap
-      changed_when: true
       ignore_errors: true
+      register: tap_trust
+      changed_when: tap_trust.rc == 0
+      failed_when:
+        - tap_trust.rc != 0
+        - "'already trusted' not in tap_trust.stderr"
       when: not taps_fully_trusted
 
     # -- FORMULAS -- #

@@ -3,6 +3,7 @@
 - name: "Clone Dotfiles Repository"
   ansible.builtin.git:
     repo: "{{ X_DOTFILES_URI }}"
+    version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
     force: false # respect local changes to prevent dotfile loss
@@ -24,6 +25,7 @@
 - name: "Clone Dotfiles Repository (force overwrite)"
   ansible.builtin.git:
     repo: "{{ X_DOTFILES_URI }}"
+    version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
     force: true # overwrite local changes as the user confirmed this
@@ -53,6 +55,7 @@
 - name: "Ensure parent directories of file-only dotfiles exist"
   ansible.builtin.file:
     path: "{{ item }}"
+    mode: "0755"
     state: "directory"
   loop: "{{ dotfiles | map(attribute='dest') | map('dirname') | unique }}"
 
@@ -66,7 +69,6 @@
   loop: "{{ dotfiles }}"
   loop_control:
     loop_var: "item_dotfiles"
-  ignore_errors: true
 
 # Symlink: Dotfiles
 - name: "Symlink: Dotfiles"
@@ -76,7 +78,21 @@
     state: "link"
     force: true
   loop: "{{ dotfiles }}"
+  register: dotfile_links
   ignore_errors: true
+
+# Report: Failed Symlinks
+- name: "Report: Failed Symlinks"
+  ansible.builtin.debug:
+    msg: "Could not symlink: {{ failed_links | join(', ') }}"
+  vars:
+    failed_links: >-
+      {{ dotfile_links.results
+         | selectattr('failed', 'defined')
+         | selectattr('failed')
+         | map(attribute='item.dest')
+         | list }}
+  when: failed_links | length > 0
 
 # Cleanup: Shell Config Directory
 - name: "Cleanup: Shell Config Directory"
