@@ -9,13 +9,13 @@
     # Environment Variables: User Environment
     user: "{{ ansible_facts['env']['USER'] }}"
     home: "{{ ansible_facts['env']['HOME'] }}"
-    xdg_config_home: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(HOME ~ '/.config', true) }}"
-    xdg_cache_home: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(HOME ~ '/.cache', true) }}"
-    xdg_data_home: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(HOME ~ '/.local/share', true) }}"
-    xdg_state_home: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(HOME ~ '/.local/state', true) }}"
-    zdotdir: "{{ ansible_facts['env']['ZDOTDIR'] | default(HOME, true) }}"
-    cargo_home: "{{ ansible_facts['env']['CARGO_HOME'] | default(HOME ~ '/.cargo', true) }}"
-    rustup_home: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(HOME ~ '/.rustup', true) }}"
+    xdg_config_home: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(home ~ '/.config', true) }}"
+    xdg_cache_home: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(home ~ '/.cache', true) }}"
+    xdg_data_home: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(home ~ '/.local/share', true) }}"
+    xdg_state_home: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(home ~ '/.local/state', true) }}"
+    zdotdir: "{{ ansible_facts['env']['ZDOTDIR'] | default(home, true) }}"
+    cargo_home: "{{ ansible_facts['env']['CARGO_HOME'] | default(home ~ '/.cargo', true) }}"
+    rustup_home: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(home ~ '/.rustup', true) }}"
 
   # Variable Prompts
   vars_prompt:
