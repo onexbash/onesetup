@@ -12,7 +12,7 @@
   when: item not in gh_extensions_list.stdout
 
 - name: "Upgrade gh extensions to the latest version"
-  ansible.builtin.command: "gh extension upgrade {{ item.split('/')[-1] | regex_replace('^gh-', '') }}"
+  ansible.builtin.command: "gh extension upgrade {{ item }}"
   loop: "{{ gh_extensions }}"
   register: gh_upgrade_result
   changed_when: "'Upgraded' in gh_upgrade_result.stdout or 'up to date' not in gh_upgrade_result.stdout"
