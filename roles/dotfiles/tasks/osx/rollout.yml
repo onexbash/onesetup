@@ -15,7 +15,7 @@
     # Only set for SSH: git also falls back to SSH_ASKPASS for HTTPS credential prompts,
     # which would send the key passphrase to the server as a username.
     dotfiles_git_env: >-
-      {{ {'SSH_ASKPASS': role_path ~ '/files/ssh_askpass.sh', 'SSH_ASKPASS_REQUIRE': 'force'}
+      {{ {'SSH_ASKPASS': playbook_dir ~ '/files/ssh_askpass.sh', 'SSH_ASKPASS_REQUIRE': 'force'}
          if _use_ssh else {} }}
   vars:
     _use_ssh: "{{ ONESETUP_REMOTE_SSH_KEY | default('') | length > 0 }}"
