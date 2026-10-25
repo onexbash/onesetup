@@ -125,3 +125,18 @@
     state: link
     force: true
   loop: "{{ user_shell_files.files }}"
+
+# Cleanup: ~/.claude
+- name: "Cleanup: ~/.claude"
+  ansible.builtin.file:
+    path: "{{ home }}/.claude"
+    state: absent
+    force: true
+
+# Symlink: ~/.config/claude to ~/.claude (because some parts of claude-code ignore the $CLAUDE_CONFIG_DIR env-var)
+- name: "Symlink: Claude Config Directory"
+  ansible.builtin.file:
+    src: "{{ xdg_config_home }}/claude"
+    dest: "{{ home }}/.claude"
+    state: link
+    force: true
