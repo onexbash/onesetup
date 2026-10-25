@@ -1,8 +1,23 @@
 ---
+# --              -- #
+# --   DOTFILES   -- #
+# --              -- #
+# Use SSH if an SSH key is set, otherwise the URI as given (e.g. HTTPS)
+- name: "Set Dotfiles Repository URI (SSH if key is set)"
+  ansible.builtin.set_fact:
+    dotfiles_use_ssh: "{{ ONESETUP_REMOTE_SSH_KEY | default('') | length > 0 }}"
+    # https://github.com/user/dotfiles(.git) -> git@github.com:user/dotfiles.git (SSH URIs stay unchanged)
+    dotfiles_repo: >-
+      {{ X_DOTFILES_URI | regex_replace('^https?://([^/]+)/(.+?)(\.git)?/?$', 'git@\1:\2.git')
+         if ONESETUP_REMOTE_SSH_KEY | default('') | length > 0
+         else X_DOTFILES_URI }}
+
 # Clone Dotfiles Repository
 - name: "Clone Dotfiles Repository"
   ansible.builtin.git:
-    repo: "{{ X_DOTFILES_URI }}"
+    repo: "{{ dotfiles_repo }}"
+    key_file: "{{ ONESETUP_REMOTE_SSH_KEY if dotfiles_use_ssh else omit }}"
+    accept_newhostkey: "{{ dotfiles_use_ssh }}" # trust host key on first connect, reject changed keys
     version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
@@ -24,7 +39,9 @@
 # Clone Dotfiles Repository and force overwrite local changes (after user confirmation)
 - name: "Clone Dotfiles Repository (force overwrite)"
   ansible.builtin.git:
-    repo: "{{ X_DOTFILES_URI }}"
+    repo: "{{ dotfiles_repo }}"
+    key_file: "{{ ONESETUP_REMOTE_SSH_KEY if dotfiles_use_ssh else omit }}"
+    accept_newhostkey: "{{ dotfiles_use_ssh }}"
     version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
@@ -94,6 +111,10 @@
          | list }}
   when: failed_links | length > 0
 
+
+# --                  -- #
+# --   SHELL CONFIG   -- #
+# --                  -- #
 # Cleanup: Shell Config Directory
 - name: "Cleanup: Shell Config Directory"
   ansible.builtin.file:
