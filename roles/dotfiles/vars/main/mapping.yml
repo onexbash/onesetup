@@ -47,6 +47,10 @@ dotfiles:
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/ascii-arts", dest: "{{ xdg_config_home }}/ascii-arts" }
   # fastfetch
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/fastfetch", dest: "{{ xdg_config_home }}/fastfetch" }
+  # borders (JankyBorders)
+  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/borders", dest: "{{ xdg_config_home }}/borders" }
+  # gck (git-credential-keepassxc)
+  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/gck", dest: "{{ xdg_config_home }}/gck" }
 
   # -- single files -- #
   # claude (settings.json)
@@ -57,3 +61,5 @@ dotfiles:
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/azure/config", dest: "{{ xdg_config_home }}/azure/config" }
   # containers (containers.conf)
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/containers/containers.conf", dest: "{{ xdg_config_home }}/containers/containers.conf" }
+  # peazip (config)
+  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/peazip/conf.txt", dest: "{{ xdg_config_home }}/peazip/conf.txt" }
