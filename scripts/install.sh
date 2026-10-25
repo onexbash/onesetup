@@ -205,6 +205,7 @@ function apply_config() {
   _resolve_value ONESETUP_REMOTE_CONNECTION '.remote.connection' || export ONESETUP_REMOTE_CONNECTION="https"
   _resolve_value ONESETUP_REMOTE_PROJECT_REPO '.remote.project_repo' || export ONESETUP_REMOTE_PROJECT_REPO="onesetup"
   _resolve_value ONESETUP_REMOTE_DOTFILES_REPO '.remote.dotfiles_repo' || export ONESETUP_REMOTE_DOTFILES_REPO="dotfiles"
+  _resolve_value ONESETUP_REMOTE_SSH_KEY '.remote.ssh_key' || export ONESETUP_REMOTE_SSH_KEY=""
 
   # -- [System] OS & CPU Architecture -- #
   _resolve_value ONESETUP_SYSTEM_OS '.system.os' || export ONESETUP_SYSTEM_OS="$detected_os"
