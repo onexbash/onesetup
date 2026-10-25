@@ -1,3 +1,8 @@
+---
+# Colors
+accent_color: 5 # Only accepts 1 - 6
+highlight_color: "0.705882 0.745098 0.996078 Other" # Catppuccin (Mocha): Lavender
+
 # kbd_key & kbd_mapping for setting keyboard shortcuts
 kbd_key: "com.apple.keyboard.modifiermapping.12815-20550-0" # Find Key with `defaults -currentHost read -g | grep modifiermapping`
 kbd_mapping: |
@@ -23,3 +28,19 @@ kbd_mapping: |
       <key>HIDKeyboardModifierMappingDst</key><integer>30064771302</integer>
     </dict>
   </array>
+
+# Finder Tags [0:none|1:gray|2:green|3:purple|4:blue|5:yellow|6:red|7:orange]
+finder_tags:
+  # Personal (purple)
+  - { name: Personal, color: 3 }
+  # Cratos (orange)
+  - { name: Cratos, color: 7 }
+
+# Favorite Tags
+finder_favorite_tags:
+  - Personal
+  - Cratos
+
+# Tag definitions are written to the iCloud-synced preferences (experimental)
+finder_manage_tag_definitions: true
+finder_synced_prefs: "{{ ansible_facts['user_dir'] }}/Library/SyncedPreferences/com.apple.finder.plist"

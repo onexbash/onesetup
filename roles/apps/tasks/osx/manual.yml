@@ -86,3 +86,113 @@
           - -force
       when: litexl_mount is defined and litexl_mount is succeeded
       changed_when: true
+
+# --          PEAZIP           -- #
+
+# Install / update PeaZip (MacOS, Apple Silicon) from the latest GitHub release.
+# Optional: Set the env-var `$GITHUB_PAT_PUBLIC_READ`
+
+- name: "PeaZip | Ensure target is macOS on Apple Silicon"
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['os_family'] == 'Darwin'
+      - ansible_facts['architecture'] in ['arm64', 'aarch64']
+    fail_msg: "These tasks only support macOS on Apple Silicon (aarch64)."
+    quiet: true
+
+# --- 1. Detect latest release -------------------------------------------------
+- name: "PeaZip | Detect latest release via GitHub API"
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/peazip/PeaZip/releases/latest
+    headers: "{{ {'Authorization': 'Bearer ' ~ lookup('env', 'GITHUB_PAT_PUBLIC_READ')} if lookup('env', 'GITHUB_PAT_PUBLIC_READ') else {} }}"
+  register: peazip_release
+  check_mode: false
+
+# --- 2. Read installed version (missing app -> rc != 0 -> not installed) ------
+# MacOS file systems are case-insensitive by default, so this also matches peazip.app
+- name: "PeaZip | Read installed version"
+  ansible.builtin.command:
+    argv: [/usr/libexec/PlistBuddy, -c, "Print :CFBundleShortVersionString", /Applications/PeaZip.app/Contents/Info.plist]
+  register: peazip_installed
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: "PeaZip | Set facts"
+  ansible.builtin.set_fact:
+    peazip_latest_version: "{{ peazip_release.json.tag_name | regex_replace('^v', '') }}"
+    peazip_installed_version: "{{ peazip_installed.stdout | trim if peazip_installed.rc == 0 else '' }}"
+    peazip_dmg: >-
+      {{ peazip_release.json.assets
+         | selectattr('name', 'search', '[.]DARWIN[.]aarch64[.]dmg$')
+         | first | default({}) }}
+
+- name: "PeaZip | Ensure aarch64 DMG exists in release"
+  ansible.builtin.assert:
+    that: peazip_dmg.browser_download_url is defined
+    fail_msg: "No *.DARWIN.aarch64.dmg in release {{ peazip_latest_version }}"
+    quiet: true
+
+# --- 3. Download, install, clean up (only if missing or outdated) -------------
+- name: "PeaZip | Install or update"
+  when: >-
+    peazip_installed_version == ''
+    or peazip_installed_version is version(peazip_latest_version, '<')
+  block:
+    - name: "PeaZip | Create temporary directory (respects $TMPDIR)"
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .peazip
+      register: peazip_tmp
+
+    - name: "PeaZip | Create mount point"
+      ansible.builtin.file:
+        path: "{{ peazip_tmp.path }}/mnt"
+        state: directory
+        mode: "0755"
+
+    - name: "PeaZip | Download DMG"
+      ansible.builtin.get_url:
+        url: "{{ peazip_dmg.browser_download_url }}"
+        dest: "{{ peazip_tmp.path }}/{{ peazip_dmg.name }}"
+        checksum: "{{ peazip_dmg.digest | default(omit, true) }}" # GitHub "sha256:<hash>" digest
+        mode: "0644"
+
+    - name: "PeaZip | Mount DMG"
+      ansible.builtin.command:
+        argv: [hdiutil, attach, "{{ peazip_tmp.path }}/{{ peazip_dmg.name }}", -nobrowse, -readonly, -noautoopen, -mountpoint, "{{ peazip_tmp.path }}/mnt"]
+      register: peazip_mount
+      changed_when: true
+
+    - name: "PeaZip | Locate app inside DMG"
+      ansible.builtin.find:
+        paths: "{{ peazip_tmp.path }}/mnt"
+        patterns: "(?i)^peazip\\.app$"
+        use_regex: true
+        file_type: directory
+      register: peazip_dmg_app
+      failed_when: peazip_dmg_app.matched != 1
+
+    - name: "PeaZip | Remove previous version"
+      ansible.builtin.file:
+        path: /Applications/PeaZip.app
+        state: absent
+
+    - name: "PeaZip | Copy app to /Applications"
+      ansible.builtin.command:
+        argv: [ditto, "{{ peazip_dmg_app.files[0].path }}", "/Applications/{{ peazip_dmg_app.files[0].path | basename }}"]
+      changed_when: true
+
+  always:
+    - name: "PeaZip | Unmount DMG"
+      ansible.builtin.command:
+        argv: [hdiutil, detach, "{{ peazip_tmp.path }}/mnt", -force]
+      changed_when: true
+      failed_when: false
+      when: peazip_mount is defined and peazip_mount is succeeded
+
+    - name: PeaZip | Remove temporary directory (incl. DMG)
+      ansible.builtin.file:
+        path: "{{ peazip_tmp.path }}"
+        state: absent
+      when: peazip_tmp.path is defined

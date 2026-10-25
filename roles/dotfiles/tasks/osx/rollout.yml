@@ -3,6 +3,7 @@
 - name: "Clone Dotfiles Repository"
   ansible.builtin.git:
     repo: "{{ X_DOTFILES_URI }}"
+    version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
     force: false # respect local changes to prevent dotfile loss
@@ -24,6 +25,7 @@
 - name: "Clone Dotfiles Repository (force overwrite)"
   ansible.builtin.git:
     repo: "{{ X_DOTFILES_URI }}"
+    version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
     force: true # overwrite local changes as the user confirmed this
@@ -44,10 +46,53 @@
 
 # Skip Dotfiles Role and continue playbook if User declined to overwrite local changes
 - name: "Skip Dotfiles Role and continue playbook"
-  meta: end_role
+  ansible.builtin.meta: end_role
   when:
     - dotfiles_clone is failed
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
+
+# Ensure parent directories of file-only dotfiles exist
+- name: "Ensure parent directories of file-only dotfiles exist"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0755"
+    state: "directory"
+  loop: "{{ dotfiles | map(attribute='dest') | map('dirname') | unique }}"
+
+# Cleanup: Dotfiles (dest)
+- name: "Cleanup: Dotfiles"
+  become: true
+  ansible.builtin.file:
+    path: "{{ item_dotfiles.dest }}"
+    state: "absent"
+    force: true
+  loop: "{{ dotfiles }}"
+  loop_control:
+    loop_var: "item_dotfiles"
+
+# Symlink: Dotfiles
+- name: "Symlink: Dotfiles"
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: "link"
+    force: true
+  loop: "{{ dotfiles }}"
+  register: dotfile_links
+  ignore_errors: true
+
+# Report: Failed Symlinks
+- name: "Report: Failed Symlinks"
+  ansible.builtin.debug:
+    msg: "Could not symlink: {{ failed_links | join(', ') }}"
+  vars:
+    failed_links: >-
+      {{ dotfile_links.results
+         | selectattr('failed', 'defined')
+         | selectattr('failed')
+         | map(attribute='item.dest')
+         | list }}
+  when: failed_links | length > 0
 
 # Cleanup: Shell Config Directory
 - name: "Cleanup: Shell Config Directory"
@@ -81,24 +126,17 @@
     force: true
   loop: "{{ user_shell_files.files }}"
 
-# Cleanup: Dotfiles (dest)
-- name: "Cleanup: Dotfiles"
-  become: true
+# Cleanup: ~/.claude
+- name: "Cleanup: ~/.claude"
   ansible.builtin.file:
-    path: "{{ item_dotfiles.dest }}"
-    state: "absent"
+    path: "{{ home }}/.claude"
+    state: absent
     force: true
-  loop: "{{ dotfiles }}"
-  loop_control:
-    loop_var: "item_dotfiles"
-  ignore_errors: true
 
-# Symlink: Dotfiles
-- name: "Symlink: Dotfiles"
+# Symlink: ~/.config/claude to ~/.claude (because some parts of claude-code ignore the $CLAUDE_CONFIG_DIR env-var)
+- name: "Symlink: Claude Config Directory"
   ansible.builtin.file:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    state: "link"
+    src: "{{ xdg_config_home }}/claude"
+    dest: "{{ home }}/.claude"
+    state: link
     force: true
-  loop: "{{ dotfiles }}"
-  ignore_errors: true

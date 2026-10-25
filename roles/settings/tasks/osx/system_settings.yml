@@ -88,58 +88,6 @@
     value: Always
 
 # -- -- -- -- -- -- -- -- #
-# --      DESKTOP      -- #
-# -- -- -- -- -- -- -- -- #
-# Keep Folders on top
-- name: "Desktop | keep folders on top"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: _FXSortFoldersFirstOnDesktop
-    type: bool
-    value: true
-  notify: restart_finder
-# Show Desktop Items
-- name: "Desktop | show desktop items"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: CreateDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-# Show Volumes
-- name: "Desktop | show volumes"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: ShowHardDrivesOnDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-# Show External Volumes
-- name: "Desktop | show external volumes"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: ShowExternalHardDrivesOnDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-# Show Removable Volumes
-- name: "Desktop | show removable volumes"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: ShowRemovableMediaOnDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-# Show Connected Servers
-- name: "Desktop | show connected servers"
-  community.general.osx_defaults:
-    domain: com.apple.finder
-    key: ShowMountedServersOnDesktop
-    type: bool
-    value: false
-  notify: restart_finder
-
-# -- -- -- -- -- -- -- -- #
 # --      MENUBAR      -- #
 # -- -- -- -- -- -- -- -- #
 # Clock Separator
@@ -196,7 +144,7 @@
 - name: "Mouse | Set pointer fill color"
   ansible.builtin.command: > # RGBA Values
     defaults write com.apple.universalaccess cursorFill -dict
-    red -float 0.7961 green -float 0.6510 blue -float 0.9686 alpha -float 1
+    red -float 0.6510 green -float 0.8902 blue -float 0.6314 alpha -float 1
   changed_when: false
 # Pointer Outline Color
 - name: "Mouse | Set pointer outline color"
@@ -212,6 +160,45 @@
     type: bool
     value: true
   notify: semi_logout
+
+# -- -- -- -- -- -- -- -- -- #
+# --      APPEARANCE      -- #
+# -- -- -- -- -- -- -- -- -- #
+# Theme Color
+- name: "Appearance | Theme -> Color (accent)"
+  community.general.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleAccentColor
+    type: int
+    value: "{{ accent_color }}"
+    state: present
+
+# Highlight Color
+- name: "Appearance | Theme -> Text highlight color"
+  community.general.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleHighlightColor
+    type: string
+    value: "{{ highlight_color }}"
+    state: present
+
+# Whether to tint window background
+- name: "Appearance | Windows -> Tint window background with wallpaper color (disabled)"
+  community.general.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleReduceDesktopTinting
+    type: bool
+    value: true # true = tinting OFF
+    state: present
+
+# Scroll Bar Clicking Behavior
+- name: "Appearance | Windows -> Click in the scroll bar to 'Jump to the spot that's clicked'"
+  community.general.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleScrollerPagingBehavior
+    type: bool
+    value: true # false = "Jump to the next page"
+    state: present
 
 # -- -- -- -- -- -- -- -- #
 # --      TERMINAL     -- #
@@ -291,7 +278,7 @@
 - name: "Keyboard | Disable automatic brightness"
   become: true
   community.general.osx_defaults:
-    host: null
+    host:
     domain: /Library/Preferences/com.apple.iokit.AmbientLightSensor
     key: Automatic Keyboard Enabled
     type: bool
@@ -459,50 +446,49 @@
     key: globalstate
     type: int
     value: 1
-# MacOS Inactivity Configuration
+
+# -- INACTIVITY -- #
 - name: "Inactivity Configuration"
   block:
-    # 1) Screen Saver (5m inactivity)
-    - name: "Set Screen Saver to start after 5 minutes inactivity"
+    # Screen Saver: 30 Minutes
+    - name: "Set Screen Saver to start after 30 minutes inactivity"
       community.general.osx_defaults:
         domain: com.apple.screensaver
+        host: currentHost
         key: idleTime
         type: int
-        value: 300
+        value: 1800
         state: present
-    # 2) Lock Screen (25m after screen saver)
-    - name: "Require password after Screen Saver"
+    # Require Password: 30 Minutes after Screen Saver (60 in total)
+    - name: "Require password 30 minutes after Screen Saver starts"
+      ansible.builtin.command:
+        argv:
+          - sysadminctl
+          - -screenLock
+          - "1800"
+          - -password
+          - "{{ ansible_become_password }}" # must be the target user's password
+      no_log: true
+      changed_when: true
+    # Auto Logout: Disabled
+    - name: "Disable Auto Logout"
+      become: true
       community.general.osx_defaults:
-        domain: com.apple.screensaver
-        key: askForPassword
-        type: int
-        value: 1
-        state: present
-    - name: "Set Sleep Mode Password Prompt Delay"
-      community.general.osx_defaults:
-        domain: com.apple.screensaver
-        key: askForPasswordDelay
-        type: int
-        value: 1500
-        state: present
-    # 3) Auto Logout (25m after screen saver)
-    - name: "Set Auto LogOut Delay to 30 minutes"
-      become: true # set system-wide # TODO: check if this should use become or not
-      community.general.osx_defaults:
-        domain: NSGlobalDomain
+        domain: /Library/Preferences/.GlobalPreferences
         key: com.apple.autologout.AutoLogOutDelay
         type: int
-        value: 1800 # 30min => 25m after screen saver
+        value: 0
         state: present
-    # 4) Power Management (25m after screen saver)
-    - name: "Set Display sleep to 30 minutes"
+    # [Power Adapter] | Display Sleep: 60 min System Sleep: Disabled
+    - name: "[Power Adapter] | Display Sleep: 60 min System Sleep: Disabled"
       become: true
-      ansible.builtin.command: "pmset -a displaysleep 30"
-      changed_when: false
-    - name: "Set System sleep to 30 minutes"
+      ansible.builtin.command: "pmset -c displaysleep 60 sleep 0"
+      changed_when: true
+    # [Battery] | Display Sleep: 10 min System Sleep: 20 min
+    - name: "[Battery] | Display Sleep: 10 min System Sleep: 20 min"
       become: true
-      ansible.builtin.command: "pmset -a sleep 30"
-      changed_when: false
+      ansible.builtin.command: "pmset -b displaysleep 10 sleep 20"
+      changed_when: true
 
 # -- HOT CORNERS -- #
 # Disable top-left

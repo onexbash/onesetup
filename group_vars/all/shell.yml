@@ -1,8 +1,6 @@
 ---
 # -- VARIABLES FOR SHELL PRE-TASK -- #
 
-# Default Shell
-default_shell: "{{ '/usr/bin/zsh' if ONESETUP_SYSTEM_OS == 'linux' else '/bin/zsh' }}"
 # Global Environment Variables (Defaults)
 global_env_vars:
   # XDG BASE DIRS
@@ -48,7 +46,7 @@ global_env_files:
 # Global System Paths (Added to $PATH)
 system_paths:
   - name: system
-    priority: 10 # → /etc/paths.d/10-system
+    priority: 5 # → /etc/paths.d/05-system
     entries:
       - /usr/local/bin
       - /System/Cryptexes/App/usr/bin

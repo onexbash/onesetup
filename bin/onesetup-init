@@ -3,174 +3,136 @@
 # --                              -- #
 # --     ONESETUP-INIT BINARY     -- #
 # --                              -- #
+# Rolled out by 'install.sh' | Installs/updates the project & rolls out its executables
 
-# [0] Main Function
+# -- MAIN -- #
 function main() {
-  # Function Calls
-  load_utils || echo -e "[ERR]Failed to call load_utils()"
-  prerequisites || echo -e "[ERR]Failed to call prerequisites()"
-  install || echo -e "[ERR]Failed to call install()"
+  # [1] Load utilities (onesetup-util applies styles, shell modes & config on load)
+  load_utils
+
+  # [2] Ensure prerequisites are satisfied
+  install_deps "git" "gum" "ansible"
+
+  # [3] Install / update the project repository
+  sync_repository
+
+  # [4] Ensure directory permissions & ownership
+  ensure_directories
+
+  # [5] Roll out executables
+  rollout_executables
+
+  # [6] Install Ansible collections from Ansible Galaxy
+  install_collections
 }
 
-# [1] Load & Call Utility Functions from onesetup-util
+# Source onesetup-util from the directory this executable lives in
 function load_utils() {
-  # Source onesetup-util
-  local this_dir="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  source "$this_dir/onesetup-util" || {
-    echo -e "[ERR] Utility Shell File 'onesetup-util' not found at: $this_dir"
+  local this_dir
+  this_dir="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  # shellcheck source=/dev/null
+  source "${this_dir}/onesetup-util" || {
+    echo -e "[ERROR] Failed to load 'onesetup-util' from: ${this_dir}" >&2
     sleep 3
     exit 1
   }
-  # Call Utility Functions
-  # note: tty_styles() & set_modes() & apply_config() already called within onesetup-util itself.
-  init_brew || echo -e "[ERR]Failed to call init_brew()"
 }
 
-# [2] Ensure prerequisites are satisfied
-function prerequisites() {
-  # git
-  if ! command -v "git" &>/dev/null; then
-    case "$ONESETUP_SYSTEM_OS" in
-    linux) { sudo dnf install -y git && echo -e "${I_OK}Installation succeeded: git"; } || {
-      echo -e "${I_ERR}Installation failed: git"
-      return 1
-    } ;;
-    osx) { brew install git && echo -e "${I_OK}Installation succeeded: git"; } || {
-      echo -e "${I_ERR}Installation failed: git"
-      return 1
-    } ;;
-    windows)
-      echo -e "${I_ERR}Windows not supported yet"
-      return 1
-      ;;
-    unsupported)
-      echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"
-      return 1
-      ;;
-    esac
-  fi
-  # gum
-  if ! command -v "gum" &>/dev/null; then
-    case "$ONESETUP_SYSTEM_OS" in
-    linux) { sudo dnf install -y "gum" && echo -e "${I_OK}Installation succeeded: gum"; } || {
-      echo -e "${I_ERR}Failed to install gum!"
-      return 1
-    } ;;
-    osx) { brew install "gum" && echo -e "${I_OK}Installation succeeded: gum"; } || {
-      echo -e "${I_ERR}Failed to install gum!"
-      return 1
-    } ;;
-    windows)
-      echo -e "${I_WARN}Windows not supported yet"
-      return 1
-      ;;
-    unsupported)
-      echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"
-      return 1
-      ;;
-    esac
-  fi
-  # ansible
-  if ! command -v "ansible" &>/dev/null; then
-    case "$ONESETUP_SYSTEM_OS" in
-    linux) { sudo dnf install -y ansible && echo -e "${I_OK}Installation succeeded: ansible"; } || {
-      echo -e "${I_ERR}Installation failed: ansible"
-      return 1
-    } ;;
-    osx) { brew install "ansible" && echo -e "${I_OK}Installation succeeded: ansible"; } || {
-      echo -e "${I_ERR}Installation failed: ansible"
-      return 1
-    } ;;
-    windows)
-      echo -e "${I_ERR}Windows not supported yet"
-      return 1
-      ;;
-    unsupported)
-      echo -e "${I_ERR}Unsuported Operating System: $ONESETUP_SYSTEM_OS"
-      return 1
-      ;;
-    esac
-  fi
-}
+# --                 -- #
+# --     INSTALL     -- #
+# --                 -- #
 
-# [3] Run Installation
-function install() {
-  local repo_name="${ONESETUP_REMOTE_USERNAME}/${ONESETUP_REMOTE_PROJECT_REPO}"
-  local config_dir="$ONESETUP_SYSTEM_CONFIG_DIR"
-  local install_dir="${ONESETUP_SYSTEM_INSTALL_DIR:-$HOME/.local/share/onesetup}"
-  local storage_dir="$ONESETUP_SYSTEM_STORAGE_DIR"
-  local bin_dir="$ONESETUP_SYSTEM_BIN_DIR"
-  local tmp_dir="$ONESETUP_SYSTEM_TMP_DIR"
-  local default_user="$ONESETUP_SYSTEM_USERNAME"
-  local root_user="$ONESETUP_SYSTEM_ROOT_USER"
-  local default_group="$ONESETUP_SYSTEM_USER_GROUP"
-  local root_group="$ONESETUP_SYSTEM_ROOT_GROUP"
+# Clone the project into the install dir, or re-clone it if broken/outdated
+function sync_repository() {
+  local install_dir="$ONESETUP_SYSTEM_INSTALL_DIR"
   local repo_uri="$X_ONESETUP_URI"
+  local local_sha="" remote_sha=""
 
-  # Step 1: Remove installation directory if invalid/corrupted
+  # Remove installation directory if it is not a git repository (broken/corrupted)
+  if [[ -d "$install_dir" ]] && ! git -C "$install_dir" rev-parse --git-dir &>/dev/null; then
+    rm -rf "${install_dir:?}"
+    echo -e "${I_INFO}There was a broken installation at ${install_dir}. Deletion complete."
+  fi
+
   if [[ -d "$install_dir" ]]; then
-    if ! git -C "$install_dir" rev-parse --git-dir >/dev/null 2>&1; then
-      rm -rf "$install_dir" &&
-        echo -e "${I_INFO}There was a broken installation at $install_dir. Deletion complete."
+    # Compare local commit hash with latest remote ('|| true': a failing ls-remote must not trip 'pipefail')
+    local_sha="$(git -C "$install_dir" rev-parse HEAD 2>/dev/null || true)"
+    remote_sha="$(git ls-remote "$repo_uri" HEAD 2>/dev/null | awk '{print $1}' || true)"
+
+    if [[ -z "$remote_sha" ]]; then
+      # Remote unreachable → keep the working installation instead of deleting it
+      echo -e "${I_WARN}Failed to verify remote commit hash (${repo_uri}). Keeping existing installation."
+      return 0
+    elif [[ "$local_sha" == "$remote_sha" ]]; then
+      echo -e "${I_OK}The installation directory is up-to-date with the remote (${repo_uri})."
+      echo -e "${I_SKIP}Skipping installation..."
+      return 0
     fi
-  fi
 
-  # Step 2: Check for updates if repository already exists
-  if [[ -d "$install_dir" ]]; then
-    local local_sha remote_sha
-    local_sha=$(git -C "$install_dir" rev-parse HEAD 2>/dev/null || echo "")
-    remote_sha=$(git ls-remote "$repo_uri" HEAD 2>/dev/null | awk '{print $1}')
-    # Compare local commit hash with latest remote
-    if [[ -n "$local_sha" && -n "$remote_sha" ]]; then
-      if [[ "$local_sha" != "$remote_sha" ]]; then
-        echo -e "${I_WARN}Installation directory is outdated."
-        echo -e "${I_INFO}Updating to latest version..."
-        rm -rf "$install_dir" && git clone --depth 1 --single-branch "$repo_uri" "$install_dir"
-      else
-        echo -e "${I_OK}The installation directory is up-to-date with the remote (https://github.com/$repo_name)."
-        echo -e "${I_INFO}Skipping installation..."
-      fi
-    else
-      echo -e "${I_ERR}Failed to verify remote commit hash. Re-installing..."
-      rm -rf "$install_dir" && git clone --depth 1 --single-branch "$repo_uri" "$install_dir"
-    fi
-  fi
-
-  # Step 3: Perform fresh installation if directory doesn't exist
-  if [[ ! -d "$install_dir" ]]; then
-    echo -e "${I_INFO}No installation found for 'onesetup'. Installing to ${install_dir}..."
-    git clone --depth 1 --single-branch "$repo_uri" "$install_dir" && echo -e "${I_OK}Installation complete!"
-  fi
-
-  # Step 4: Ensure Directory permissions & ownership
-  ensure_directory "$config_dir" "755" "${default_user}:${default_group}" true
-  ensure_directory "$install_dir" "755" "${default_user}:${default_group}" true
-  ensure_directory "$storage_dir" "755" "${default_user}:${default_group}" true
-  ensure_directory "$tmp_dir" "1777" "${root_user}:${root_group}" false
-
-  # Step 5: Rollout Executables
-  if is_writable "$bin_dir"; then
-    for file in "${install_dir}"/bin/*; do
-      if [[ -f "$file" ]]; then
-        local filename
-        filename=$(basename "$file")
-
-        if sudo install -m 755 -o "${root_user}" -g "${root_group}" "$file" "${bin_dir}/${filename}"; then
-          echo -e "${I_OK}${C_GREEN}$filename${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}"
-        else
-          echo -e "${I_ERR}Failed to roll-out executable ${C_RED}$filename${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"
-          return 1
-        fi
-      fi
-    done
+    echo -e "${I_WARN}Installation directory is outdated."
+    echo -e "${I_INFO}Updating to latest version..."
+    rm -rf "${install_dir:?}"
   else
+    echo -e "${I_INFO}No installation found for 'onesetup'. Installing to ${install_dir}..."
+  fi
+
+  git clone --depth 1 --single-branch "$repo_uri" "$install_dir" || {
+    echo -e "${I_ERR}Failed to clone ${repo_uri} into ${install_dir}"
+    exit 1
+  }
+  echo -e "${I_OK}Installation complete!"
+}
+
+# Ensure directory presence, permissions & ownership
+function ensure_directories() {
+  local user_owner="${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}"
+  local root_owner="${ONESETUP_SYSTEM_ROOT_USER}:${ONESETUP_SYSTEM_ROOT_GROUP}"
+
+  ensure_directory "$ONESETUP_SYSTEM_CONFIG_DIR" "755" "$user_owner" true
+  ensure_directory "$ONESETUP_SYSTEM_INSTALL_DIR" "755" "$user_owner" true
+  ensure_directory "$ONESETUP_SYSTEM_STORAGE_DIR" "755" "$user_owner" true
+  ensure_directory "$ONESETUP_SYSTEM_TMP_DIR" "1777" "$root_owner" false
+}
+
+# Copy all executables from <install_dir>/bin to the bin dir
+function rollout_executables() {
+  local bin_dir="$ONESETUP_SYSTEM_BIN_DIR"
+  local rc=0 file filename
+
+  is_writable "$bin_dir" || rc=$?
+  case "$rc" in
+  0) ;;
+  2) {
+    # is_writable already reported the missing directory
+    echo -e "${I_INFO}Please create it or set 'system.bin_dir' in your config.yml, then re-run the Installation Script."
+    exit 1
+  } ;;
+  *) {
     echo -e "${I_ERR}The Bin-Directory you've set is not writable, which is mostly caused by macOS System Integrity Protection. Please set 'system.bin_dir' in your config.yml to a Directory that is writable with sudo rights."
     echo -e "${I_INFO}Please re-run the Installation Script after."
     exit 1
-  fi
+  } ;;
+  esac
 
-  # Step 6: Install Ansible Modules from Ansible Galaxy
-  ansible-galaxy collection install --requirements-file "${install_dir}/requirements.yml" --no-cache --upgrade
+  for file in "${ONESETUP_SYSTEM_INSTALL_DIR}"/bin/*; do
+    [[ -f "$file" ]] || continue
+    filename="$(basename "$file")"
+    sudo install -m 755 -o "$ONESETUP_SYSTEM_ROOT_USER" -g "$ONESETUP_SYSTEM_ROOT_GROUP" "$file" "${bin_dir}/${filename}" || {
+      echo -e "${I_ERR}Failed to roll-out executable ${C_RED}${filename}${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"
+      exit 1
+    }
+    echo -e "${I_OK}${C_GREEN}${filename}${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}"
+  done
+}
+
+# Install Ansible collections listed in requirements.yml
+function install_collections() {
+  ansible-galaxy collection install \
+    --requirements-file "${ONESETUP_SYSTEM_INSTALL_DIR}/requirements.yml" \
+    --no-cache --upgrade || {
+    echo -e "${I_ERR}Failed to install Ansible collections."
+    exit 1
+  }
 }
 
 # Call Main Function with args

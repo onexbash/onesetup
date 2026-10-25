@@ -1,22 +1,21 @@
 ---
 # -- -- -- -- -- -- -- -- #
 # --   MAIN PLAYBOOK   -- #
-- name: onesetup
-  tags: [always]
+- name: Onesetup
   hosts: localhost
 
   # -- VARIABLES -- #
   vars:
     # Environment Variables: User Environment
-    USER: "{{ ansible_facts['env']['USER'] }}"
-    HOME: "{{ ansible_facts['env']['HOME'] }}"
-    XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(HOME ~ '/.config', true) }}"
-    XDG_CACHE_HOME: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(HOME ~ '/.cache', true) }}"
-    XDG_DATA_HOME: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(HOME ~ '/.local/share', true) }}"
-    XDG_STATE_HOME: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(HOME ~ '/.local/state', true) }}"
-    ZDOTDIR: "{{ ansible_facts['env']['ZDOTDIR'] | default(HOME, true) }}"
-    CARGO_HOME: "{{ ansible_facts['env']['CARGO_HOME'] | default(HOME ~ '/.cargo', true) }}"
-    RUSTUP_HOME: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(HOME ~ '/.rustup', true) }}"
+    user: "{{ ansible_facts['env']['USER'] }}"
+    home: "{{ ansible_facts['env']['HOME'] }}"
+    xdg_config_home: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(home ~ '/.config', true) }}"
+    xdg_cache_home: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(home ~ '/.cache', true) }}"
+    xdg_data_home: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(home ~ '/.local/share', true) }}"
+    xdg_state_home: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(home ~ '/.local/state', true) }}"
+    zdotdir: "{{ ansible_facts['env']['ZDOTDIR'] | default(home, true) }}"
+    cargo_home: "{{ ansible_facts['env']['CARGO_HOME'] | default(home ~ '/.cargo', true) }}"
+    rustup_home: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(home ~ '/.rustup', true) }}"
 
   # Variable Prompts
   vars_prompt:
@@ -28,19 +27,15 @@
   pre_tasks:
     # Pre-Task: Set Become Password as Ansible Fact
     - name: "Set become password gathered in user-prompt as Ansible Fact"
-      set_fact:
+      ansible.builtin.set_fact:
         ansible_become_password: "{{ SUDO_PASSWORD }}"
         cacheable: false
       no_log: true
-      tags: [always]
 
     # Pre-Task: Include Environment Pre-Task (! RUNS FIRST !)
     - name: "Include Environment Pre-Task"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/all/env.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
 
@@ -48,15 +43,11 @@
     - name: "Add host to OS group ({{ ONESETUP_SYSTEM_OS }})"
       ansible.builtin.group_by:
         key: "{{ ONESETUP_SYSTEM_OS }}"
-      tags: [always]
 
     # Include: OS-Independent Pre-Tasks
     - name: "Include OS-Independent Pre-Tasks"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/all/{{ pretask }}.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
@@ -68,11 +59,8 @@
 
     # Include: MacOS Pre-Tasks
     - name: "Include Pre-Tasks (MacOS)"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/osx/{{ pretask }}.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
@@ -86,11 +74,8 @@
 
     # Include: Linux Pre-Tasks
     - name: "Include Pre-Tasks (linux)"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/linux/{{ pretask }}.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
@@ -102,11 +87,8 @@
 
     # Include: Windows Pre-Tasks
     - name: "Include Pre-Tasks (windows)"
-      tags: [always]
       ansible.builtin.include_tasks:
         file: "pre_tasks/windows/{{ pretask }}.yml"
-        apply:
-          tags: [always]
       vars:
         prefix: "PRE-TASK: {{ pretask }} |"
       loop:
@@ -118,6 +100,7 @@
 
   # -- ROLES -- #
   roles:
+    - { role: ssh, tags: ["ssh"] }
     - { role: dotfiles, tags: ["dotfiles"] }
     - { role: fonts, tags: ["fonts"] }
     - { role: apps, tags: ["apps"] }

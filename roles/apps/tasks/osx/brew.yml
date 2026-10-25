@@ -8,7 +8,7 @@
   block:
     # -- TAPS -- #
     # Tap Repositories defined in group_vars
-    - name: "tap repositories"
+    - name: "Tap repositories"
       community.general.homebrew_tap:
         name: "{{ item_tap }}"
         path: "/usr/local/bin:/opt/homebrew/bin"
@@ -22,7 +22,7 @@
     # Check current Trust Store state
     - name: "Check: Homebrew Trust Store file"
       ansible.builtin.stat:
-        path: "{{ XDG_CONFIG_HOME }}/homebrew/trust.json"
+        path: "{{ xdg_config_home }}/homebrew/trust.json"
       register: trust_file
 
     # Load Homebrew Trust Store contents
@@ -40,7 +40,7 @@
     - name: "Cleanup: Homebrew Trust Store"
       become: true
       ansible.builtin.file:
-        path: "{{ XDG_CONFIG_HOME }}/homebrew"
+        path: "{{ xdg_config_home }}/homebrew"
         state: absent
       when: not taps_fully_trusted
 
@@ -51,12 +51,16 @@
       loop: "{{ brew_taps }}"
       loop_control:
         loop_var: item_tap
-      changed_when: true
       ignore_errors: true
+      register: tap_trust
+      changed_when: tap_trust.rc == 0
+      failed_when:
+        - tap_trust.rc != 0
+        - "'already trusted' not in tap_trust.stderr"
       when: not taps_fully_trusted
 
     # -- FORMULAS -- #
-    - name: "install formulas"
+    - name: "Install: Formulas"
       community.general.homebrew:
         name: "{{ item_formulae }}"
         path: "/usr/local/bin:/opt/homebrew/bin"
@@ -73,14 +77,14 @@
       register: log_formulae # register output for debugging
 
     # Link Formulas
-    - name: "Link libpq (keg-only formula)"
+    - name: "Link: libpq (keg-only formula)"
       ansible.builtin.command:
         cmd: brew link --force libpq
       args:
         creates: "{{ brew_prefix }}/bin/psql"
 
     # -- CASKS -- #
-    - name: "install casks"
+    - name: "Install: Casks"
       community.general.homebrew_cask:
         name: "{{ item_cask }}"
         path: "/usr/local/bin:/opt/homebrew/bin"
@@ -99,3 +103,15 @@
       ignore_errors: true # failed tasks should not exit the playbook (to ensure that one broken package doesn't break everything)
       register: log_cask # register output for debugging
       no_log: true # prevents leaking become password to the logs
+
+    # -- HEALTH CHECK -- #
+    - name: "Health Check: Run brew doctor"
+      ansible.builtin.command:
+        cmd: "brew doctor"
+      register: log_brew_doctor
+      changed_when: false # read-only check, never changes anything
+      failed_when: false # brew doctor exits non-zero on warnings, which shouldn't fail the play
+
+    - name: "Print: Health Check Results"
+      ansible.builtin.debug:
+        msg: "{{ (log_brew_doctor.stdout_lines + log_brew_doctor.stderr_lines) | default(['brew doctor produced no output']) }}"

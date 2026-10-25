@@ -2,7 +2,7 @@
 # Ensure LaunchAgents Directory exists
 - name: "{{ role_name | capitalize }} | Ensure LaunchAgents Directory exists"
   ansible.builtin.file:
-    path: "{{ HOME }}/Library/LaunchAgents"
+    path: "{{ home }}/Library/LaunchAgents"
     state: directory
     mode: "0755"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
@@ -12,7 +12,7 @@
 - name: "{{ role_name | capitalize }} | Rollout LaunchAgent files"
   ansible.builtin.template:
     src: autostart.plist.j2
-    dest: "{{ HOME }}/Library/LaunchAgents/{{ autostart_domain }}.{{ item.name | lower | regex_replace('[^a-z0-9]+', '-') }}.plist"
+    dest: "{{ home }}/Library/LaunchAgents/{{ autostart_domain }}.{{ item.name | lower | regex_replace('[^a-z0-9]+', '-') }}.plist"
     mode: "0644"
     owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
     group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
@@ -23,7 +23,7 @@
 # Find all LaunchAgent files created by this role
 - name: "{{ role_name | capitalize }} | Find managed LaunchAgent files"
   ansible.builtin.find:
-    paths: "{{ HOME }}/Library/LaunchAgents"
+    paths: "{{ home }}/Library/LaunchAgents"
     patterns: "{{ autostart_domain }}.*.plist"
   register: autostart_found
 
@@ -38,3 +38,12 @@
   loop: "{{ autostart_found.files }}"
   loop_control:
     label: "{{ item.path | basename }}"
+
+# Rollout LaunchAgent Config File to pass env-vars to Claude-Code (Desktop App)
+- name: "{{ role_name | capitalize }} | Rollout LaunchAgent Config File to pass env-vars to Claude-Code (Desktop App)"
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/com.onesetup.environment.claude-code.plist"
+    dest: "{{ ansible_facts['env']['HOME'] }}/Library/LaunchAgents/com.onesetup.environment.claude-code.plist"
+    mode: "0644"
+    force: true
+  register: claude_code_plist

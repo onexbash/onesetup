@@ -2,13 +2,13 @@
 # Check for existing rustup binary
 - name: "Check if rustup binary exists"
   ansible.builtin.stat:
-    path: "{{ CARGO_HOME }}/bin/rustup"
+    path: "{{ cargo_home }}/bin/rustup"
   register: rustup_bin
 
 # Check for existing rustup Toolchain
 - name: "Check if rustup toolchains exist"
   ansible.builtin.find:
-    paths: "{{ RUSTUP_HOME }}/toolchains"
+    paths: "{{ rustup_home }}/toolchains"
     file_type: any
   register: rustup_toolchains
   ignore_errors: true # path may not exist yet
@@ -25,12 +25,13 @@
 - name: "Install & Initialize rustup"
   # NOTE: The Cargo Environment has to be sourced in the shell config files as we install with '--no-modify-path'
   ansible.builtin.shell: |
+    set -o pipefail
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
   args:
     executable: "{{ bash_path | default('/bin/bash', true) }}"
   environment:
-    CARGO_HOME: "{{ CARGO_HOME }}"
-    RUSTUP_HOME: "{{ RUSTUP_HOME }}"
+    CARGO_HOME: "{{ cargo_home }}"
+    RUSTUP_HOME: "{{ rustup_home }}"
   when:
     - not rustup_bin.stat.exists
     - (rustup_toolchains.matched | default(0)) == 0

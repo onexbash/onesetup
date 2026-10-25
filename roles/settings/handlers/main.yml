@@ -9,6 +9,11 @@
   ansible.builtin.command: killall Finder
   listen: restart_finder
 
+# Handler: Reopen Finder
+- name: "Start Finder"
+  ansible.builtin.command: open -a Finder
+  listen: start_finder
+
 # Handler: Restart SystemUIServer Daemon
 - name: "Restart SystemUIServer"
   ansible.builtin.command: killall SystemUIServer

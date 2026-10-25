@@ -1,0 +1,81 @@
+---
+# Ensure ~/.ssh directory exists with correct permissions
+- name: "Ensure existing & correct permissions: ~/.ssh"
+  become: true
+  ansible.builtin.file:
+    path: "{{ home }}/.ssh"
+    state: "directory"
+    mode: "0700"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+
+# Ensure ~/.ssh/agent directory exists (agent sockets, OpenSSH >= 10.1)
+- name: "Ensure existing & correct permissions: ~/.ssh/agent"
+  become: true
+  ansible.builtin.file:
+    path: "{{ home }}/.ssh/agent"
+    state: "directory"
+    mode: "0700"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+
+# Rollout SSH Config File (vault-encrypted, see: group_vars/all/ssh.yml)
+- name: "Rollout SSH Config File"
+  become: true
+  ansible.builtin.copy:
+    content: "{{ ssh_config | trim }}\n"
+    dest: "{{ home }}/.ssh/config"
+    mode: "0600"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+  no_log: true # Prevents secret leaking (also in --diff output)
+
+# Decrypt & Rollout SSH Keys (see: group_vars/all/ssh.yml)
+- name: "Decrypt & Rollout SSH Keys"
+  become: true
+  ansible.builtin.copy:
+    content: "{{ item.value | trim }}\n" # exactly one trailing newline (required by OpenSSH)
+    dest: "{{ home }}/.ssh/{{ item.key | regex_replace('_pub$', '.pub') }}"
+    mode: "{{ '0644' if item.key.endswith('_pub') else '0600' }}"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+  loop: "{{ ssh_keys | dict2items }}"
+  no_log: true # Prevents secret leaking
+
+# Collect authorized SSH Keys for this host
+- name: "Collect authorized SSH keys for {{ ansible_facts['hostname'] }}"
+  ansible.builtin.set_fact:
+    _authorized_keys: >-
+      {{ authorized_keys
+         | selectattr('hosts', 'contains', ansible_facts['hostname'] | lower)
+         | map(attribute='key')
+         | list }}
+
+# Prevent writing an empty authorized_keys (would lock you out)
+- name: "Ensure at least one authorized key is defined for {{ ansible_facts['hostname'] }}"
+  ansible.builtin.assert:
+    that: _authorized_keys | length > 0
+    fail_msg: "No entry in authorized_keys for hostname '{{ ansible_facts['hostname'] }}' – refusing to empty authorized_keys."
+    quiet: true
+
+# Write authorized_keys from template (overwrites manual changes)
+- name: "Create ~/.ssh/authorized_keys based on template"
+  become: true
+  ansible.builtin.template:
+    src: authorized_keys.j2
+    dest: "{{ home }}/.ssh/authorized_keys"
+    mode: "0600"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+    validate: "/usr/bin/ssh-keygen -l -f %s" # fails on malformed keys before the file is replaced
+
+# Write known_hosts from template (overwrites manual changes)
+- name: "Create ~/.ssh/known_hosts based on template"
+  become: true
+  ansible.builtin.template:
+    src: known_hosts.j2
+    dest: "{{ home }}/.ssh/known_hosts"
+    mode: "0644"
+    owner: "{{ ONESETUP_SYSTEM_USERNAME }}"
+    group: "{{ ONESETUP_SYSTEM_USER_GROUP }}"
+    validate: "/usr/bin/ssh-keygen -l -f %s" # fails on malformed keys before the file is replaced

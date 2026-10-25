@@ -7,7 +7,7 @@
       become: true
       ansible.builtin.replace:
         path: "{{ item }}"
-        regexp: '(?m)^if \[ -x /usr/libexec/path_helper \]; then\n\teval `/usr/libexec/path_helper -s`\nfi\n?'
+        regexp: "(?m)^if \\[ -x /usr/libexec/path_helper \\]; then\\n\\teval `/usr/libexec/path_helper -s`\\nfi\\n?"
         replace: ""
       loop:
         - /etc/profile
@@ -26,20 +26,18 @@
         backup: true # Keeps a copy of Apple's original file
       when: ONESETUP_SYSTEM_OS == "osx"
 
-    # Write PATH Entries to /etc/paths.d/[file] | see: vars/main/shell.yml
-    - name: "{{ prefix }} Write PATH Entries to /etc/paths & /etc/paths.d/"
+    # Write PATH Entries to /etc/paths.d/[priority]-[name] | see: group_vars/all/shell.yml
+    - name: "{{ prefix }} Write PATH Entries to /etc/paths.d/"
       become: true
       ansible.builtin.copy:
-        dest: >-
-          {{ '/etc/paths' if item.priority is not defined
-             else '/etc/paths.d/' ~ ('%02d' | format(item.priority | int)) ~ '-' ~ item.name }}
+        dest: "/etc/paths.d/{{ '%02d' | format(item.priority | int) }}-{{ item.name }}"
         content: "{{ item.entries | join('\n') }}\n"
         owner: "{{ ONESETUP_SYSTEM_ROOT_USER }}"
         group: "{{ ONESETUP_SYSTEM_ROOT_GROUP }}"
         mode: "0644"
       loop: "{{ system_paths }}"
       loop_control:
-        label: "{{ item.name }}"
+        label: "{{ '%02d' | format(item.priority | int) }}-{{ item.name }}"
       when: ONESETUP_SYSTEM_OS == "osx"
 
     # Ensure specified login shells exist in /etc/shells
@@ -49,7 +47,7 @@
         path: /etc/shells
         line: "{{ item }}"
         create: false
-      loop: "{{ valid_shells }}"
+      loop: "{{ (valid_shells + [ONESETUP_SYSTEM_SHELL]) | unique }}" # Loops {{ valid_shells }} & includes {{ ONESETUP_SYSTEM_SHELL }} additionally
 
     # Ensure global environment variables are exported in /etc/zshenv & /etc/profile
     - name: "{{ prefix }} Ensure global environment variables are exported in /etc/zshenv & /etc/profile"
@@ -72,27 +70,68 @@
       loop_control:
         label: "{{ item.path }}"
 
-    # Set User's Default Shell
-    - name: "{{ prefix }} Set User's Default Shell"
+    # -- SET DEFAULT SHELL -- #
+    # Ensure Default Shell exists
+    - name: "{{ prefix }} Ensure Shell Binary exists: {{ ONESETUP_SYSTEM_SHELL }}"
+      ansible.builtin.stat:
+        path: "{{ ONESETUP_SYSTEM_SHELL }}"
+        follow: true
+      register: default_shell
+      failed_when: not (default_shell.stat.exists and default_shell.stat.executable)
+      when: ONESETUP_SYSTEM_OS != 'windows'
+
+    # Read current login shells (user + root) to keep the tasks idempotent
+    - name: "{{ prefix }} Read current Login Shells"
+      ansible.builtin.command:
+        argv: [dscl, ., -read, "/Users/{{ item }}", UserShell]
+      loop:
+        - "{{ ONESETUP_SYSTEM_USERNAME }}"
+        - "{{ ONESETUP_SYSTEM_ROOT_USER }}"
+      register: current_shells
+      changed_when: false
+      check_mode: false
+      when: ONESETUP_SYSTEM_OS == 'osx'
+
+    # Set Default Shell in multiple ways (only if not already set)
+    - name: "{{ prefix }} Set Default Login Shell"
+      when:
+        - ONESETUP_SYSTEM_OS == 'osx'
+        - current_shells.results | rejectattr('stdout', 'search', (ONESETUP_SYSTEM_SHELL | regex_escape) ~ '$') | list | length > 0
       become: true
-      ansible.builtin.user:
-        name: "{{ ONESETUP_SYSTEM_USERNAME }}"
-        shell: "{{ default_shell }}"
+      block:
+        # 1) chsh for root user
+        - name: "{{ prefix }} Set Login Shell via chsh: {{ ONESETUP_SYSTEM_ROOT_USER }}"
+          ansible.builtin.command:
+            argv: [chsh, -s, "{{ ONESETUP_SYSTEM_SHELL }}", "{{ ONESETUP_SYSTEM_ROOT_USER }}"]
+          changed_when: true
 
-    # Resolve bash interpreter path
-    - name: "{{ prefix }} Resolve bash interpreter path"
-      ansible.builtin.shell: command -v bash
-      register: bash_path_result
+        # 2) chsh for user
+        - name: "{{ prefix }} Set Login Shell via chsh: {{ ONESETUP_SYSTEM_USERNAME }}"
+          ansible.builtin.command:
+            argv: [chsh, -s, "{{ ONESETUP_SYSTEM_SHELL }}", "{{ ONESETUP_SYSTEM_USERNAME }}"]
+          changed_when: true
+
+        # 3) dscl (directory record path is /Users/<username>, not $HOME)
+        - name: "{{ prefix }} Set Login Shell via dscl: {{ ONESETUP_SYSTEM_USERNAME }}"
+          ansible.builtin.command:
+            argv: [dscl, ., -create, "/Users/{{ ONESETUP_SYSTEM_USERNAME }}", UserShell, "{{ ONESETUP_SYSTEM_SHELL }}"]
+          changed_when: true
+
+        # 4) ansible.builtin.user module
+        - name: "{{ prefix }} Set Login Shell via user module: {{ ONESETUP_SYSTEM_USERNAME }}"
+          ansible.builtin.user:
+            name: "{{ ONESETUP_SYSTEM_USERNAME }}"
+            shell: "{{ ONESETUP_SYSTEM_SHELL }}"
+
+    # Verify the result for both users
+    - name: "{{ prefix }} Verify Login Shells"
+      ansible.builtin.command:
+        argv: [dscl, ., -read, "/Users/{{ item }}", UserShell]
+      loop:
+        - "{{ ONESETUP_SYSTEM_USERNAME }}"
+        - "{{ ONESETUP_SYSTEM_ROOT_USER }}"
+      register: verify_shells
       changed_when: false
-
-    # Resolve zsh interpreter path
-    - name: "{{ prefix }} Resolve zsh interpreter path"
-      ansible.builtin.shell: command -v zsh
-      register: zsh_path_result
-      changed_when: false
-
-    # Set Ansible Facts for bash_path & zsh_path
-    - name: "{{ prefix }} Store resolved interpreter paths as Ansible Facts"
-      ansible.builtin.set_fact:
-        bash_path: "{{ bash_path_result.stdout | trim }}"
-        zsh_path: "{{ zsh_path_result.stdout | trim }}"
+      check_mode: false
+      failed_when: verify_shells.stdout is not search((ONESETUP_SYSTEM_SHELL | regex_escape) ~ '$')
+      when: ONESETUP_SYSTEM_OS == 'osx'

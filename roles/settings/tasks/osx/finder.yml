@@ -7,6 +7,7 @@
     type: "{{ item.type }}"
     value: "{{ item.value }}"
   loop:
+    # -- Finder -- #
     # Show Quit Option
     - { key: QuitMenuItem, type: bool, value: true }
     # Empty bin after 30days
@@ -20,14 +21,37 @@
     - { key: _FXShowPosixPathInTitle, type: bool, value: true }
     # Folder Sorting
     - { key: _FXSortFoldersFirst, type: bool, value: true }
+    # Show a warning before removing from iCloud Drive
+    - { key: FXEnableRemoveFromICloudDriveWarning, type: bool, value: true }
+    # Show a warning before emptying the Trash
+    - { key: WarnOnEmptyTrash, type: bool, value: true }
     # Show a warning when changing File Extensions
     - { key: FXEnableExtensionChangeWarning, type: bool, value: false }
-    # View Style
     - { key: FXPreferredViewStyle, type: string, value: Nlsv } # list: Nlsv | column: clmv | gallery: glyv | icon: icnv
     # Search Scope
     - { key: FXDefaultSearchScope, type: string, value: SCcf } # SCcf = current folder | SCsp = previous scope | SCev = entire volume
     # Where to open new windows
     - { key: NewWindowTarget, type: string, value: PfHm } # PfHm=home
+    # NEW: Path for new windows (needs gather_facts)
+    - { key: NewWindowTargetPath, type: string, value: "file://{{ ansible_facts['user_dir'] }}/" }
+    # NEW: Open folders in tabs instead of new windows
+    - { key: FinderSpawnTab, type: bool, value: true }
+    # NEW: Show "Recent Tags" in the sidebar (verify on your macOS version)
+    - { key: ShowRecentTags, type: bool, value: true }
+    # -- Desktop -- #
+    # Folder Sorting (Desktop)
+    - { key: _FXSortFoldersFirstOnDesktop, type: bool, value: true }
+    # Show Desktop Items
+    - { key: CreateDesktop, type: bool, value: false }
+    # Show Hard Drives on Desktop
+    - { key: ShowHardDrivesOnDesktop, type: bool, value: false }
+    # Show External Drives on Desktop
+    - { key: ShowExternalHardDrivesOnDesktop, type: bool, value: false }
+    # Show Media Drives on Desktop
+    - { key: ShowRemovableMediaOnDesktop, type: bool, value: false }
+    # Show Servers on Desktop
+    - { key: ShowMountedServersOnDesktop, type: bool, value: false }
+
   # Trigger handlers
   notify:
     - restart_cache
@@ -53,3 +77,66 @@
     - restart_cache
     - restart_finder
     - semi_logout
+
+# -- FINDER TAGS -- #
+- name: "Finder: Configure favorite tags"
+  community.general.osx_defaults:
+    domain: "com.apple.finder"
+    key: FavoriteTagNames
+    type: array
+    value: "{{ finder_favorite_tags }}"
+  notify:
+    - restart_cache
+    - restart_finder
+
+- name: "Finder: Configure tag definitions (experimental)"
+  when: finder_manage_tag_definitions | bool
+  block:
+    - name: "Finder: Check synced preferences file"
+      ansible.builtin.stat:
+        path: "{{ finder_synced_prefs }}"
+      register: _finder_synced
+
+    - name: "Finder: Detect tags that need changes"
+      ansible.builtin.script:
+        cmd: "osx/finder_tag.sh check {{ item.name | quote }} {{ item.color | int }}"
+      loop: "{{ finder_tags }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: _finder_tag_check
+      changed_when: false
+      when: _finder_synced.stat.exists
+
+    - name: "Finder: Collect pending tag changes"
+      ansible.builtin.set_fact:
+        _finder_tags_pending: >-
+          {{ _finder_tag_check.results | default([])
+             | selectattr('stdout', 'defined')
+             | selectattr('stdout', 'search', 'NEEDS_CHANGE')
+             | map(attribute='item') | list }}
+
+    - name: "Finder: Apply tag changes"
+      when: _finder_tags_pending | length > 0
+      block:
+        - name: "Finder: Back up synced preferences"
+          ansible.builtin.copy:
+            src: "{{ finder_synced_prefs }}"
+            dest: "{{ finder_synced_prefs }}.ansible-backup-{{ ansible_facts['date_time']['iso8601_basic_short'] }}"
+            remote_src: true
+            mode: preserve
+
+        # Finder must not run while the file is written, otherwise it overwrites it
+        - name: "Finder: Quit Finder"
+          ansible.builtin.command: osascript -e 'tell application "Finder" to quit'
+          changed_when: true
+          notify: start_finder
+
+        - name: "Finder: Write tag definitions"
+          ansible.builtin.script:
+            cmd: "osx/finder_tag.sh apply {{ item.name | quote }} {{ item.color | int }}"
+          loop: "{{ _finder_tags_pending }}"
+          loop_control:
+            label: "{{ item.name }} (color {{ item.color }})"
+          register: _finder_tag_apply
+          changed_when: "'CHANGED' in _finder_tag_apply.stdout"
+          notify: start_finder

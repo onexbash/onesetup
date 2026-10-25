@@ -65,12 +65,19 @@ Invoke-WebRequest -Uri $url -OutFile PrepareTargetForAnsible.ps1
 ```
 
 ### 2) Installation
-- Run the installation script
-- Replace the username & repo_name variables with the actual values of your Remote Repository (e.g: github):
+Run the Installation Script below to install the onesetup commands on your System.
 ```bash
-username="<USERNAME>" repo_name="<REPOSITORY>" bash -c 'curl -fsSL "https://raw.githubusercontent.com/$username/$repo_name/main/scripts/install.sh" | bash'
+bash -c 'curl -fsSL "https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/install.sh" | bash'
 ```
-- Restart your terminal or reload the default shell
+*Verify using `which onesetup` & `which onesetup-init`*
+
+### 2.1) Initialization
+Run the `onesetup-init` Command to initialize onesetup. This is the actual installation that places the Ansible Playbook directory to the Installation Directory etc.
+```bash
+onesetup-init
+# OR (if not in $PATH)
+/usr/local/bin/onesetup-init
+```
 
 ### 3) Ansible Vault Encryption
 To encrypt your Secrets (e.g: SSH Keys) you can use the `onesetup-vault` command. 
@@ -150,6 +157,7 @@ remote:
 system:
   os: [osx|linux|windows] # Operating System (Auto-Detected but can be overridden here)
   arch: [arm64|x86] # CPU Architecture (Auto-Detected but can be overridden here)
+  shell: "" # Default Shell you wanna use (e.g: `/bin/zsh` or `/opt/homebrew/bin/bash` etc.)
   hostname: [String] # Name of your Machine
   username: [String] # Name of a User on your system that has sudo privileges but is not the root user
   root_user: [String] # Name of the Root user on your system
