@@ -302,7 +302,10 @@ function apply_config() {
     if [[ -n "$_key" && -f "$config_file" ]]; then
       _val="$(yq -r "$_key" "$config_file" 2>/dev/null || true)"
       if [[ -n "$_val" && "$_val" != "null" ]]; then
-        printf -v "$_name" '%s' "${_val/#\~/$HOME}"
+        _val="${_val/#\~/$HOME}"              # ~/...
+        _val="${_val/#\$\{HOME\}/$HOME}"      # ${HOME}/...
+        _val="${_val/#\$HOME/$HOME}"          # $HOME/...
+        printf -v "$_name" '%s' "$_val"
         export "${_name?}"
         return 0
       fi
