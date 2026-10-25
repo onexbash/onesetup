@@ -155,6 +155,7 @@ remote:
   project_repo: [String] # Repository Name
   dotfiles_repo: [String] # Name of a separate Git Repository that stores all your dotfiles
   ssh_key: [String] # Path to an SSH-Key(private) to clone GitHub Repositories with (especially the Dotfiles Repo)
+  ssh_pass: [String] # Password for the SSH-Key (optional, but required if the ssh-key uses a password)
 system:
   os: [osx|linux|windows] # Operating System (Auto-Detected but can be overridden here)
   arch: [arm64|x86] # CPU Architecture (Auto-Detected but can be overridden here)

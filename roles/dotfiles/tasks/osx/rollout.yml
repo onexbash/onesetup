@@ -2,22 +2,31 @@
 # --              -- #
 # --   DOTFILES   -- #
 # --              -- #
-# Use SSH if an SSH key is set, otherwise the URI as given (e.g. HTTPS)
-- name: "Set Dotfiles Repository URI (SSH if key is set)"
+# Clone via SSH if ONESETUP_REMOTE_SSH_KEY is set, otherwise via HTTPS.
+# The SSH key passphrase is read from the environment variable ONESETUP_REMOTE_SSH_PASS
+# It is only requested by ssh if the key is encrypted and not already loaded in a running agent
+- name: "Set Dotfiles Repository URI and Git Environment"
   ansible.builtin.set_fact:
-    dotfiles_use_ssh: "{{ ONESETUP_REMOTE_SSH_KEY | default('') | length > 0 }}"
-    # https://github.com/user/dotfiles(.git) -> git@github.com:user/dotfiles.git (SSH URIs stay unchanged)
+    dotfiles_use_ssh: "{{ _use_ssh }}"
     dotfiles_repo: >-
-      {{ X_DOTFILES_URI | regex_replace('^https?://([^/]+)/(.+?)(\.git)?/?$', 'git@\1:\2.git')
-         if ONESETUP_REMOTE_SSH_KEY | default('') | length > 0
-         else X_DOTFILES_URI }}
+      {{ (X_DOTFILES_URI | regex_replace('^https?://([^/]+)/(.+?)(\.git)?/?$', 'git@\1:\2.git'))
+         if _use_ssh
+         else (X_DOTFILES_URI | regex_replace('^(?:ssh://)?git@([^:/]+)[:/](.+?)(\.git)?/?$', 'https://\1/\2.git')) }}
+    # Only set for SSH: git also falls back to SSH_ASKPASS for HTTPS credential prompts,
+    # which would send the key passphrase to the server as a username.
+    dotfiles_git_env: >-
+      {{ {'SSH_ASKPASS': role_path ~ '/files/ssh_askpass.sh', 'SSH_ASKPASS_REQUIRE': 'force'}
+         if _use_ssh else {} }}
+  vars:
+    _use_ssh: "{{ ONESETUP_REMOTE_SSH_KEY | default('') | length > 0 }}"
 
 # Clone Dotfiles Repository
 - name: "Clone Dotfiles Repository"
   ansible.builtin.git:
     repo: "{{ dotfiles_repo }}"
-    key_file: "{{ ONESETUP_REMOTE_SSH_KEY if dotfiles_use_ssh else omit }}"
-    accept_newhostkey: "{{ dotfiles_use_ssh }}" # trust host key on first connect, reject changed keys
+    key_file: "{{ ONESETUP_REMOTE_SSH_KEY if dotfiles_use_ssh | bool else omit }}"
+    ssh_opts: "{{ '-o BatchMode=no' if dotfiles_use_ssh | bool else omit }}" # allow passphrase via SSH_ASKPASS
+    accept_newhostkey: "{{ dotfiles_use_ssh | bool }}" # trust host key on first connect, reject changed keys
     version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
@@ -25,23 +34,32 @@
     remote: origin
     update: true
     recursive: true # whether submodules should be included/skipped
+  environment: "{{ dotfiles_git_env }}"
   register: dotfiles_clone
-  failed_when: false # suppresses possible error message as this is handled down below
-  # ignore_errors: true
+  # Tolerate only "local modifications" (handled below); any other error (auth, network, ...) fails the play
+  failed_when:
+    - dotfiles_clone.failed | default(false)
+    - "'Local modifications' not in (dotfiles_clone.msg | default(''))"
+
+# Detect local modifications in the dotfiles directory
+- name: "Dotfiles: Detect Local Modifications"
+  ansible.builtin.set_fact:
+    dotfiles_local_changes: "{{ 'Local modifications' in (dotfiles_clone.msg | default('')) }}"
 
 # Prompt User if local changes can be overwritten
 - name: "Prompt: Overwrite Local Dotfiles Directory?"
   ansible.builtin.pause:
     prompt: "Local modifications detected in {{ ONESETUP_SYSTEM_DOTFILES_DIR }}. Overwrite and lose local changes? [y/n]"
   register: dotfiles_overwrite_prompt
-  when: dotfiles_clone is failed
+  when: dotfiles_local_changes | bool
 
 # Clone Dotfiles Repository and force overwrite local changes (after user confirmation)
 - name: "Clone Dotfiles Repository (force overwrite)"
   ansible.builtin.git:
     repo: "{{ dotfiles_repo }}"
-    key_file: "{{ ONESETUP_REMOTE_SSH_KEY if dotfiles_use_ssh else omit }}"
-    accept_newhostkey: "{{ dotfiles_use_ssh }}"
+    key_file: "{{ ONESETUP_REMOTE_SSH_KEY if dotfiles_use_ssh | bool else omit }}"
+    ssh_opts: "{{ '-o BatchMode=no' if dotfiles_use_ssh | bool else omit }}"
+    accept_newhostkey: "{{ dotfiles_use_ssh | bool }}"
     version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
@@ -49,8 +67,9 @@
     remote: origin
     update: true
     recursive: true # whether submodules should be included/skipped
+  environment: "{{ dotfiles_git_env }}"
   when:
-    - dotfiles_clone is failed
+    - dotfiles_local_changes | bool
     - dotfiles_overwrite_prompt.user_input | lower == 'y'
 
 # Notify: Skipping Dotfiles Rollout
@@ -58,14 +77,14 @@
   ansible.builtin.debug:
     msg: "Skipping Dotfiles Rollout & continue playbook — local changes in {{ ONESETUP_SYSTEM_DOTFILES_DIR }} preserved."
   when:
-    - dotfiles_clone is failed
+    - dotfiles_local_changes | bool
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
 # Skip Dotfiles Role and continue playbook if User declined to overwrite local changes
 - name: "Skip Dotfiles Role and continue playbook"
   ansible.builtin.meta: end_role
   when:
-    - dotfiles_clone is failed
+    - dotfiles_local_changes | bool
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
 # Ensure parent directories of file-only dotfiles exist

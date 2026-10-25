@@ -9,6 +9,7 @@ remote:
   project_repo: "onesetup" # Default: onesetup
   dotfiles_repo: "dotfiles" # Default: dotfiles
   ssh_key: "" # Default: null
+  ssh_pass: [String] # Default: null
 system:
   os: "" # Default: Auto-Detected by detect_os() function in ./scripts/util.sh
   arch: "" # Default: Auto-Detected in ./scripts/util.sh
