@@ -37,8 +37,6 @@ dotfiles:
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/vim", dest: "{{ xdg_config_home }}/vim" }
   # github (gh)
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/gh", dest: "{{ xdg_config_home }}/gh" }
-  # onesetup
-  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/onesetup", dest: "{{ xdg_config_home }}/onesetup" }
   # zed
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/zed", dest: "{{ xdg_config_home }}/zed" }
   # litexl
