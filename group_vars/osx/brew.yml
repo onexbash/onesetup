@@ -45,8 +45,6 @@ brew_casks:
   - canva
   - figma
   - obs # Streaming Software
-  - keka # Compression Tool
-  - kekaexternalhelper # Helper Utility for keka
   - whatsapp
   - karabiner-elements # Keyboard Mapping Tool
   - supercmd # Spotlight Replacement (free alternative to raycast)
@@ -63,6 +61,7 @@ brew_formulas:
   - gping # ping with a graph
   - ansible # infrastructure as code
   - hashicorp/tap/terraform # infrastructure as code
+  - opentofu # infrastructure as code
   - lua
   - imagemagick
   - libpq # PostgreSQL Client (without the full server & daemon that the 'postgres' formulae installs)
@@ -105,14 +104,12 @@ brew_formulas:
   - git-filter-repo # git tool for rewriting git commit history
   - infisical # secret manager
   - fontforge # font patcher / editor
-  - unzip # extraction tool
   - tlrc # CLI Cheatsheet Engine (based on tldr)
   - pinentry
   - git-delta # git pager
   - glow # markdown preview
   - ollama # Toolchain for llama AI
   - vim
-  - zip # archiving tool
   - gh # Github CLI
   - defaultbrowser # utility to set default browser
   - catimg # ASCII Image preview
@@ -127,7 +124,6 @@ brew_formulas:
   - speedtest # Speedtest CLI (tap: `teamookla/speedtest`)
   - ffmpegthumbnailer # terminal video thumbnailer
   - mas # MacOS app store CLI interface
-  - unar # Unarchiving tool
   # - poppler # PDF rendering library
   - tree
   - swift # Programming Language
