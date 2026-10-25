@@ -157,6 +157,7 @@ remote:
 system:
   os: [osx|linux|windows] # Operating System (Auto-Detected but can be overridden here)
   arch: [arm64|x86] # CPU Architecture (Auto-Detected but can be overridden here)
+  shell: "" # Default Shell you wanna use (e.g: `/bin/zsh` or `/opt/homebrew/bin/bash` etc.)
   hostname: [String] # Name of your Machine
   username: [String] # Name of a User on your system that has sudo privileges but is not the root user
   root_user: [String] # Name of the Root user on your system

@@ -1,8 +1,6 @@
 ---
 # -- VARIABLES FOR SHELL PRE-TASK -- #
 
-# Default Shell
-default_shell: "{{ '/usr/bin/zsh' if ONESETUP_SYSTEM_OS == 'linux' else '/bin/zsh' }}"
 # Global Environment Variables (Defaults)
 global_env_vars:
   # XDG BASE DIRS

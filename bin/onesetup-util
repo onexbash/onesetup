@@ -350,6 +350,7 @@ function apply_config() {
     _resolve_value ONESETUP_SYSTEM_ROOT_USER '.system.root_user' || export ONESETUP_SYSTEM_ROOT_USER="$(id -nu 0)"
     _resolve_value ONESETUP_SYSTEM_USER_GROUP '.system.user_group' || export ONESETUP_SYSTEM_USER_GROUP="$(id -ng)"
     _resolve_value ONESETUP_SYSTEM_ROOT_GROUP '.system.root_group' || export ONESETUP_SYSTEM_ROOT_GROUP="$(id -ng 0)"
+    _resolve_value ONESETUP_SYSTEM_SHELL '.system.shell' || export ONESETUP_SYSTEM_SHELL="$SHELL"
     ;;
   windows)
     _resolve_value ONESETUP_SYSTEM_HOSTNAME '.system.hostname' ||
@@ -362,6 +363,8 @@ function apply_config() {
       export ONESETUP_SYSTEM_USER_GROUP="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-545" }).Name' | tr -d '\r')"
     _resolve_value ONESETUP_SYSTEM_ROOT_GROUP '.system.root_group' ||
       export ONESETUP_SYSTEM_ROOT_GROUP="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-544" }).Name' | tr -d '\r')"
+    _resolve_value ONESETUP_SYSTEM_SHELL '.system.shell' ||
+      export ONESETUP_SYSTEM_SHELL="$(powershell.exe -NoProfile -Command '$c = Get-Command pwsh.exe -ErrorAction SilentlyContinue; if (-not $c) { $c = Get-Command powershell.exe }; $c.Source' | tr -d '\r')"
     ;;
   *)
     echo -e "${I_ERR}Unsupported Operating System: $ONESETUP_SYSTEM_OS"

@@ -219,6 +219,7 @@ function apply_config() {
   # -- [System] Hostname, Username & Group of Default User & Admin/Root User -- #
   case "$ONESETUP_SYSTEM_OS" in
   osx | linux)
+    _resolve_value ONESETUP_SYSTEM_SHELL '.system.shell' || export ONESETUP_SYSTEM_SHELL="$SHELL"
     _resolve_value ONESETUP_SYSTEM_HOSTNAME '.system.hostname' ||
       export ONESETUP_SYSTEM_HOSTNAME="$(scutil --get HostName 2>/dev/null || scutil --get LocalHostName 2>/dev/null || hostname -s)"
     _resolve_value ONESETUP_SYSTEM_USERNAME '.system.username' || export ONESETUP_SYSTEM_USERNAME="$USER"
@@ -227,6 +228,8 @@ function apply_config() {
     _resolve_value ONESETUP_SYSTEM_ROOT_GROUP '.system.root_group' || export ONESETUP_SYSTEM_ROOT_GROUP="$(id -ng 0)"
     ;;
   windows)
+    _resolve_value ONESETUP_SYSTEM_SHELL '.system.shell' ||
+      export ONESETUP_SYSTEM_SHELL="$(powershell.exe -NoProfile -Command '$c = Get-Command pwsh.exe -ErrorAction SilentlyContinue; if (-not $c) { $c = Get-Command powershell.exe }; $c.Source' | tr -d '\r')"
     _resolve_value ONESETUP_SYSTEM_HOSTNAME '.system.hostname' ||
       export ONESETUP_SYSTEM_HOSTNAME="${COMPUTERNAME:-$(hostname 2>/dev/null | tr -d '\r')}"
     _resolve_value ONESETUP_SYSTEM_USERNAME '.system.username' ||

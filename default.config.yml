@@ -11,6 +11,7 @@ remote:
 system:
   os: "" # Default: Auto-Detected by detect_os() function in ./scripts/util.sh
   arch: "" # Default: Auto-Detected in ./scripts/util.sh
+  shell: "" # Default: $SHELL
   hostname: "" # Default: Value from Commands ["scutil --get HostName", "scutil --get LocalHostName", "hostname -s"]
   username: "" # Default: Value from Environment Variable "$USER"
   root_user: "" # Default: Value from Command "id -nu 0"
