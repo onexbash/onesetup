@@ -23,6 +23,8 @@ dotfiles:
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/wezterm", dest: "{{ xdg_config_home }}/wezterm" }
   # zellij
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/zellij", dest: "{{ xdg_config_home }}/zellij" }
+  # tuios
+  - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/tuios", dest: "{{ xdg_config_home }}/tuios" }
   # git
   - { src: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}/git", dest: "{{ xdg_config_home }}/git" }
   # lazygit
