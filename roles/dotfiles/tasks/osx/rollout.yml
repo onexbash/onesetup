@@ -209,9 +209,10 @@
   ansible.builtin.set_fact:
     shell_secrets_file: "{{ lookup('env', 'XDG_CONFIG_HOME') | default(ansible_env.HOME ~ '/.config', true) }}/shell/secrets.sh"
 
-- name: "Check that the token is safe inside double quotes"
+- name: "Check that the token is safe inside single quotes"
   ansible.builtin.assert:
-    that: claude_code_oauth_token is match('^[A-Za-z0-9_-]+$')
+    that: >-
+      claude_code_oauth_token | trim is match("^[^'\s]+\Z")
     quiet: true
   no_log: true
 
@@ -227,7 +228,7 @@
   ansible.builtin.lineinfile:
     path: "{{ shell_secrets_file }}"
     regexp: '^\s*export\s+CLAUDE_CODE_OAUTH_TOKEN='
-    line: 'export CLAUDE_CODE_OAUTH_TOKEN="{{ claude_code_oauth_token }}"'
+    line: "export CLAUDE_CODE_OAUTH_TOKEN='{{ claude_code_oauth_token | trim }}'"
     mode: "0600"
   no_log: true
   diff: false
