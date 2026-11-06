@@ -2,8 +2,8 @@
 # -- WALLPAPER -- #
 - name: "Wallpaper | copy to pictures directory"
   ansible.builtin.copy:
-    src: "wallpaper.jpeg"
-    dest: "{{ home }}/Pictures/wallpaper.jpeg"
+    src: "wallpaper_sailormoon.jpg"
+    dest: "{{ home }}/Pictures/wallpaper_sailormoon.jpg"
     mode: "0644"
     force: true
 - name: "Wallpaper | apply"
@@ -13,7 +13,7 @@
       set desktopCount to count of desktops
       repeat with desktopNumber from 1 to desktopCount
         tell desktop desktopNumber
-          set picture to "{{ home }}/Pictures/wallpaper.jpeg"
+          set picture to "{{ home }}/Pictures/wallpaper_sailormoon.jpg"
         end tell
       end repeat
     end tell

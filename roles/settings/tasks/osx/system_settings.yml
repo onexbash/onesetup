@@ -123,7 +123,7 @@
     domain: NSGlobalDomain
     key: com.apple.mouse.scaling
     type: float
-    value: 1.5
+    value: 1.25
 # Natural Scrolling
 - name: "Mouse | Disable natural scrolling"
   community.general.osx_defaults:

@@ -158,15 +158,18 @@ function apply_config() {
     local _name="$1" _key="$2" _val
     # 1. Environment variable already set (non-empty): keep & export it
     if [[ -n "${!_name:-}" ]]; then
-      export "$_name"
+      export "${_name?}"
       return 0
     fi
-    # 2. Config key
+    # 2. Config key ('-r' prints raw strings with both yq variants: mikefarah/yq & python-yq)
     if [[ -n "$_key" && -f "$config_file" ]]; then
-      _val="$(yq "$_key" "$config_file" 2>/dev/null)"
+      _val="$(yq -r "$_key" "$config_file" 2>/dev/null || true)"
       if [[ -n "$_val" && "$_val" != "null" ]]; then
-        printf -v "$_name" '%s' "${_val/#\~/$HOME}"
-        export "$_name"
+        _val="${_val/#\~/$HOME}"              # ~/...
+        _val="${_val/#\$\{HOME\}/$HOME}"      # ${HOME}/...
+        _val="${_val/#\$HOME/$HOME}"          # $HOME/...
+        printf -v "$_name" '%s' "$_val"
+        export "${_name?}"
         return 0
       fi
     fi
@@ -205,6 +208,8 @@ function apply_config() {
   _resolve_value ONESETUP_REMOTE_CONNECTION '.remote.connection' || export ONESETUP_REMOTE_CONNECTION="https"
   _resolve_value ONESETUP_REMOTE_PROJECT_REPO '.remote.project_repo' || export ONESETUP_REMOTE_PROJECT_REPO="onesetup"
   _resolve_value ONESETUP_REMOTE_DOTFILES_REPO '.remote.dotfiles_repo' || export ONESETUP_REMOTE_DOTFILES_REPO="dotfiles"
+  _resolve_value ONESETUP_REMOTE_SSH_KEY '.remote.ssh_key' || export ONESETUP_REMOTE_SSH_KEY=""
+  _resolve_value ONESETUP_REMOTE_SSH_PASS '.remote.ssh_pass' || export ONESETUP_REMOTE_SSH_PASS=""
 
   # -- [System] OS & CPU Architecture -- #
   _resolve_value ONESETUP_SYSTEM_OS '.system.os' || export ONESETUP_SYSTEM_OS="$detected_os"

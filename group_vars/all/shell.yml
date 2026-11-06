@@ -43,10 +43,29 @@ global_env_files:
     validate: "sh -n %s"
     # Insert before /etc/bashrc is sourced, so user configs already see the vars
     insertbefore: '^if \[ "\$\{BASH-no\}" != "no" \]'
+
 # Global System Paths (Added to $PATH)
+# Priority: Lower Number => Higher Priority | 0 - 99
 system_paths:
+  # custom (Highest Priority)
+  - name: custom
+    priority: 0 # → /etc/paths.d/00-custom
+    entries: []
+  # homebrew
+  - name: homebrew
+    priority: 10 # → /etc/paths.d/10-homebrew
+    entries:
+      - /opt/homebrew/bin
+      - /opt/homebrew/sbin
+  # gnu-coreutils
+  - name: gnu
+    priority: 20 # → /etc/paths.d/20-gnu (GNU tools override the BSD versions in /usr/bin)
+    entries:
+      - /opt/homebrew/opt/coreutils/libexec/gnubin
+      - /opt/homebrew/opt/grep/libexec/gnubin
+  # system
   - name: system
-    priority: 5 # → /etc/paths.d/05-system
+    priority: 30 # → /etc/paths.d/30-system
     entries:
       - /usr/local/bin
       - /System/Cryptexes/App/usr/bin
@@ -54,22 +73,19 @@ system_paths:
       - /bin
       - /usr/sbin
       - /sbin
+  # cryptex
   - name: cryptex
-    priority: 10 # → /etc/paths.d/10-cryptex
+    priority: 40 # → /etc/paths.d/40-cryptex
     entries:
       - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin
       - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin
       - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin
-  - name: "pmk-global"
-    priority: 10 # → /etc/paths.d/10-pmk-global
+  # pmk-global
+  - name: pmk-global
+    priority: 50 # → /etc/paths.d/50-pmk-global
     entries:
       - /pkg/env/global/bin
-  - name: homebrew
-    priority: 1 # → /etc/paths.d/01-homebrew
-    entries:
-      - /opt/homebrew/bin
-      - /opt/homebrew/sbin
-  - name: onexbash
-    priority: 2 # → /etc/paths.d/02-onexbash
-    entries:
-      - /opt/onexbash/bin
+  # custom (Lowest Priority)
+  - name: custom
+    priority: 99 # → /etc/paths.d/99-custom
+    entries: []

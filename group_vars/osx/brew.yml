@@ -17,6 +17,7 @@ brew_casks:
   - wezterm # Terminal Emulator (Cross Platform)
   - kitty # Terminal Emulator (MacOS & Linux)
   - ghostty # Terminal Emulator (MacOS & Linux)
+  - drawio # Diagrams
   - deepl
   - discord
   - session # Onion routed messenger
@@ -42,8 +43,8 @@ brew_casks:
   - intellij-idea-oss # IntelliJ Community Edition (replacement when nvim gets on my nerves)
   - vscodium # VSCodium (replacement when nvim gets on my nerves)
   - zed # Interesting IDE Project written in rust
-  - canva
-  - figma
+  - canva # UI/UX Design
+  - figma # UI/UX Design
   - obs # Streaming Software
   - whatsapp
   - karabiner-elements # Keyboard Mapping Tool
@@ -68,6 +69,7 @@ brew_formulas:
   - utftex # Transform latex strings to unicode
   # -- VERSION MANAGERS -- #
   - asdf # Version Manager for everything (extensible via plugins)
+  - mise # Dev Environment Manager for everything
   # -- LINUX UTILITIES -- #
   - coreutils # gnu utilities
   - gawk # awk (gnu version)
@@ -83,6 +85,7 @@ brew_formulas:
   - xz # compression tool
   - openssh # replace built-in | ssh
   - openssl@3 # replace built-in | ssl
+  - ouch # Compression & Archiving Tool (unzip / zip)
   - jq # json parser
   - maven # java build tool
   # -- SHELL -- #
@@ -117,7 +120,9 @@ brew_formulas:
   - bat # better cat
   - ripgrep # better grep
   - fastfetch # system info
-  - zellij # terminal multiplexer (tmux alternative)
+  - zellij # Terminal Multiplexer
+  - tuios # Terminal Multiplexer
+  - herdr # Terminal Multiplexer
   # - telnet # UI for TELNET protocol
   - netcat # network CLI tool
   - zoxide # better cd

@@ -1,8 +1,32 @@
 ---
+# --              -- #
+# --   DOTFILES   -- #
+# --              -- #
+# Clone via SSH if ONESETUP_REMOTE_SSH_KEY is set, otherwise via HTTPS.
+# The SSH key passphrase is read from the environment variable ONESETUP_REMOTE_SSH_PASS
+# It is only requested by ssh if the key is encrypted and not already loaded in a running agent
+- name: "Set Dotfiles Repository URI and Git Environment"
+  ansible.builtin.set_fact:
+    dotfiles_use_ssh: "{{ _use_ssh }}"
+    dotfiles_repo: >-
+      {{ (X_DOTFILES_URI | regex_replace('^https?://([^/]+)/(.+?)(\.git)?/?$', 'git@\1:\2.git'))
+         if _use_ssh
+         else (X_DOTFILES_URI | regex_replace('^(?:ssh://)?git@([^:/]+)[:/](.+?)(\.git)?/?$', 'https://\1/\2.git')) }}
+    # Only set for SSH: git also falls back to SSH_ASKPASS for HTTPS credential prompts,
+    # which would send the key passphrase to the server as a username.
+    dotfiles_git_env: >-
+      {{ {'SSH_ASKPASS': playbook_dir ~ '/files/ssh_askpass.sh', 'SSH_ASKPASS_REQUIRE': 'force'}
+         if _use_ssh else {} }}
+  vars:
+    _use_ssh: "{{ ONESETUP_REMOTE_SSH_KEY | default('') | length > 0 }}"
+
 # Clone Dotfiles Repository
 - name: "Clone Dotfiles Repository"
   ansible.builtin.git:
-    repo: "{{ X_DOTFILES_URI }}"
+    repo: "{{ dotfiles_repo }}"
+    key_file: "{{ ONESETUP_REMOTE_SSH_KEY if dotfiles_use_ssh | bool else omit }}"
+    ssh_opts: "{{ '-o BatchMode=no' if dotfiles_use_ssh | bool else omit }}" # allow passphrase via SSH_ASKPASS
+    accept_newhostkey: "{{ dotfiles_use_ssh | bool }}" # trust host key on first connect, reject changed keys
     version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
@@ -10,21 +34,32 @@
     remote: origin
     update: true
     recursive: true # whether submodules should be included/skipped
+  environment: "{{ dotfiles_git_env }}"
   register: dotfiles_clone
-  failed_when: false # suppresses possible error message as this is handled down below
-  # ignore_errors: true
+  # Tolerate only "local modifications" (handled below); any other error (auth, network, ...) fails the play
+  failed_when:
+    - dotfiles_clone.failed | default(false)
+    - "'Local modifications' not in (dotfiles_clone.msg | default(''))"
+
+# Detect local modifications in the dotfiles directory
+- name: "Dotfiles: Detect Local Modifications"
+  ansible.builtin.set_fact:
+    dotfiles_local_changes: "{{ 'Local modifications' in (dotfiles_clone.msg | default('')) }}"
 
 # Prompt User if local changes can be overwritten
 - name: "Prompt: Overwrite Local Dotfiles Directory?"
   ansible.builtin.pause:
     prompt: "Local modifications detected in {{ ONESETUP_SYSTEM_DOTFILES_DIR }}. Overwrite and lose local changes? [y/n]"
   register: dotfiles_overwrite_prompt
-  when: dotfiles_clone is failed
+  when: dotfiles_local_changes | bool
 
 # Clone Dotfiles Repository and force overwrite local changes (after user confirmation)
 - name: "Clone Dotfiles Repository (force overwrite)"
   ansible.builtin.git:
-    repo: "{{ X_DOTFILES_URI }}"
+    repo: "{{ dotfiles_repo }}"
+    key_file: "{{ ONESETUP_REMOTE_SSH_KEY if dotfiles_use_ssh | bool else omit }}"
+    ssh_opts: "{{ '-o BatchMode=no' if dotfiles_use_ssh | bool else omit }}"
+    accept_newhostkey: "{{ dotfiles_use_ssh | bool }}"
     version: main
     clone: true
     dest: "{{ ONESETUP_SYSTEM_DOTFILES_DIR }}"
@@ -32,8 +67,9 @@
     remote: origin
     update: true
     recursive: true # whether submodules should be included/skipped
+  environment: "{{ dotfiles_git_env }}"
   when:
-    - dotfiles_clone is failed
+    - dotfiles_local_changes | bool
     - dotfiles_overwrite_prompt.user_input | lower == 'y'
 
 # Notify: Skipping Dotfiles Rollout
@@ -41,14 +77,14 @@
   ansible.builtin.debug:
     msg: "Skipping Dotfiles Rollout & continue playbook — local changes in {{ ONESETUP_SYSTEM_DOTFILES_DIR }} preserved."
   when:
-    - dotfiles_clone is failed
+    - dotfiles_local_changes | bool
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
 # Skip Dotfiles Role and continue playbook if User declined to overwrite local changes
 - name: "Skip Dotfiles Role and continue playbook"
   ansible.builtin.meta: end_role
   when:
-    - dotfiles_clone is failed
+    - dotfiles_local_changes | bool
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
 # Ensure parent directories of file-only dotfiles exist
@@ -59,27 +95,51 @@
     state: "directory"
   loop: "{{ dotfiles | map(attribute='dest') | map('dirname') | unique }}"
 
-# Cleanup: Dotfiles (dest)
-- name: "Cleanup: Dotfiles"
-  become: true
-  ansible.builtin.file:
-    path: "{{ item_dotfiles.dest }}"
-    state: "absent"
-    force: true
-  loop: "{{ dotfiles }}"
-  loop_control:
-    loop_var: "item_dotfiles"
-
-# Symlink: Dotfiles
+# Symlink Dotfiles (atomic)
 - name: "Symlink: Dotfiles"
-  ansible.builtin.file:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    state: "link"
-    force: true
+  ansible.builtin.command:
+    argv:
+      - sh
+      - -c
+      - |
+        [ "$(readlink "$2")" = "$1" ] && { echo ok; exit 0; }
+        i=0
+        while [ "$i" -lt 10 ]; do
+          rm -rf "$2"
+          ln -s "$1" "$2" 2>/dev/null
+          [ "$(readlink "$2")" = "$1" ] && { echo changed; exit 0; }
+          i=$((i + 1))
+        done
+        echo "could not replace $2: it keeps being recreated" >&2
+        exit 1
+      - sh
+      - "{{ item.src }}"
+      - "{{ item.dest }}"
   loop: "{{ dotfiles }}"
   register: dotfile_links
+  changed_when: dotfile_links.stdout | default('') == 'changed'
   ignore_errors: true
+
+# # Cleanup: Dotfiles (dest)
+# - name: "Cleanup: Dotfiles"
+#   become: true
+#   ansible.builtin.file:
+#     path: "{{ item_dotfiles.dest }}"
+#     state: "absent"
+#     force: true
+#   loop: "{{ dotfiles }}"
+#   loop_control:
+#     loop_var: "item_dotfiles"
+# # Symlink: Dotfiles
+# - name: "Symlink: Dotfiles"
+#   ansible.builtin.file:
+#     src: "{{ item.src }}"
+#     dest: "{{ item.dest }}"
+#     state: "link"
+#     force: true
+#   loop: "{{ dotfiles }}"
+#   register: dotfile_links
+#   ignore_errors: true
 
 # Report: Failed Symlinks
 - name: "Report: Failed Symlinks"
@@ -94,6 +154,9 @@
          | list }}
   when: failed_links | length > 0
 
+# --                  -- #
+# --   SHELL CONFIG   -- #
+# --                  -- #
 # Cleanup: Shell Config Directory
 - name: "Cleanup: Shell Config Directory"
   ansible.builtin.file:
@@ -140,3 +203,32 @@
     dest: "{{ home }}/.claude"
     state: link
     force: true
+
+# -- SECRETS -- #
+- name: "Set path to shell secrets file"
+  ansible.builtin.set_fact:
+    shell_secrets_file: "{{ lookup('env', 'XDG_CONFIG_HOME') | default(ansible_env.HOME ~ '/.config', true) }}/shell/secrets.sh"
+
+- name: "Check that the token is safe inside single quotes"
+  ansible.builtin.assert:
+    that: >-
+      claude_code_oauth_token | trim is match("^[^'\s]+\Z")
+    quiet: true
+  no_log: true
+
+- name: "Ensure shell secrets file exists with restricted permissions"
+  ansible.builtin.file:
+    path: "{{ shell_secrets_file }}"
+    state: touch
+    mode: "0600"
+    access_time: preserve
+    modification_time: preserve
+
+- name: "Ensure CLAUDE_CODE_OAUTH_TOKEN is set in shell secrets"
+  ansible.builtin.lineinfile:
+    path: "{{ shell_secrets_file }}"
+    regexp: '^\s*export\s+CLAUDE_CODE_OAUTH_TOKEN='
+    line: "export CLAUDE_CODE_OAUTH_TOKEN='{{ claude_code_oauth_token | trim }}'"
+    mode: "0600"
+  no_log: true
+  diff: false
