@@ -53,6 +53,9 @@ brew_casks:
 
 # Formulas
 brew_formulas:
+  # -- DEPENDENCIES -- #
+  - pkg-config
+  - libzip
   # -- LANGUAGES -- #
   - ast-grep # structural code search tool
   - yazi # terminal file manager
@@ -98,6 +101,7 @@ brew_formulas:
   - pnpm # node package manager
   - yarn # node package manager
   - sdkman-cli # java version manager
+  - neovim # IDE
   # -- TOOLS -- #
   - scc # code cost analyzer
   - fnm # node version manager
