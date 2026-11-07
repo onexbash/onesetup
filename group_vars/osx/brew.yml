@@ -56,6 +56,8 @@ brew_formulas:
   # -- DEPENDENCIES -- #
   - pkg-config
   - libzip
+  - libxml2
+  - libiconv
   # -- LANGUAGES -- #
   - ast-grep # structural code search tool
   - yazi # terminal file manager
