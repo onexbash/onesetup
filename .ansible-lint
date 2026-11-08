@@ -5,6 +5,7 @@ skip_list:
   - var-naming[no-role-prefix]
   - name[template]
   - yaml[commas]
+  - yaml[indentation]
 
 # Rules to report only warnings, not errors
 warn_list:
