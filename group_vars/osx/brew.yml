@@ -54,6 +54,7 @@ brew_casks:
 # Formulas
 brew_formulas:
   # -- DEPENDENCIES -- #
+  - pinentry-mac
   - pkg-config
   - libzip
   - libxml2
@@ -157,6 +158,7 @@ brew_formulas:
 
 # Taps
 brew_taps:
+  - domt4/autoupdate # Homebrew Auto-Update & Auto-Upgrade
   - FelixKratz/formulae # used by: SketchyBar, JankyBorders
   - hashicorp/tap # used by: Terraform and other Hashicorp software
   - nikitabobko/tap # used by: aerospace
