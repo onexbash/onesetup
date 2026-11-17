@@ -1,0 +1,14 @@
+---
+- name: "Default browser"
+  when: cfg.browser | length > 0
+  block:
+    - name: "Install 'defaultbrowser' utility"
+      community.general.homebrew:
+        name: defaultbrowser
+        path: "/usr/local/bin:/opt/homebrew/bin"
+        state: present
+
+    - name: "Set default browser: {{ cfg.browser }}"
+      ansible.builtin.command:
+        argv: [defaultbrowser, "{{ cfg.browser }}"]
+      changed_when: true

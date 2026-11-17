@@ -1,0 +1,24 @@
+---
+# Test config for tests/config.yml
+modules:
+  - apps
+  - settings.dock
+  - custom
+
+apps:
+  install:
+    brew:
+      formulas: [k9s]
+      exclude: [git]
+
+custom:
+  tasks:
+    - "{{ playbook_dir }}/fixtures/task.yml"
+
+profiles:
+  work:
+    apps:
+      install:
+        brew:
+          casks: [microsoft-teams]
+    modules: [ssh.config]

@@ -1,0 +1,132 @@
+---
+# -- One manual installation (see apps.install.manual in defaults/main.yml), loop_var: app -- #
+- name: "{{ app.name }} | Validate entry"
+  ansible.builtin.assert:
+    that:
+      - app.type | default('') in ['dmg', 'pkg', 'zip', 'script']
+      - (app.type == 'script') == (app.script is defined)
+      - app.type == 'script' or (app.url is defined) != (app.github is defined)
+      - app.github is not defined or app.asset is defined
+      - app.type not in ['dmg', 'pkg'] or os == 'osx'
+    fail_msg: >-
+      Invalid entry '{{ app.name }}' in apps.install.manual: needs type (dmg | pkg | zip | script),
+      plus 'script' for type script, otherwise either 'url' or 'github' + 'asset' (dmg & pkg: macOS only).
+    quiet: true
+
+- name: "{{ app.name }} | Check if already installed"
+  ansible.builtin.stat:
+    path: "{{ app.creates | expanduser }}"
+  register: _manual_creates
+  when: app.creates is defined
+
+- name: "{{ app.name }} | Run install script"
+  ansible.builtin.shell:
+    cmd: "{{ app.script }}"
+    executable: /bin/bash
+  when:
+    - app.type == 'script'
+    - not (_manual_creates.stat.exists | default(false))
+
+- name: "{{ app.name }} | Download & install"
+  when:
+    - app.type != 'script'
+    - not (_manual_creates.stat.exists | default(false))
+  block:
+    - name: "{{ app.name }} | Create temporary directory"
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .onesetup
+      register: _manual_tmp
+
+    # Optional: export GITHUB_PAT_PUBLIC_READ to avoid GitHub API rate limits
+    - name: "{{ app.name }} | Find latest release asset of {{ app.github | default('') }}"
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/{{ app.github }}/releases/latest"
+        headers: "{{ {'Authorization': 'Bearer ' ~ lookup('env', 'GITHUB_PAT_PUBLIC_READ')} if lookup('env', 'GITHUB_PAT_PUBLIC_READ') else {} }}"
+      register: _manual_release
+      check_mode: false
+      when: app.github is defined
+
+    - name: "{{ app.name }} | Resolve download"
+      ansible.builtin.set_fact:
+        _manual_asset: >-
+          {{ (_manual_release.json.assets | selectattr('name', 'search', app.asset) | first | default({}))
+             if app.github is defined
+             else {'browser_download_url': app.url, 'name': app.url | urlsplit('path') | basename} }}
+
+    - name: "{{ app.name }} | Fail if the release has no matching asset"
+      ansible.builtin.assert:
+        that: _manual_asset.browser_download_url is defined
+        fail_msg: "No asset matching '{{ app.asset | default('') }}' in the latest release of {{ app.github | default('') }}"
+        quiet: true
+
+    - name: "{{ app.name }} | Download"
+      ansible.builtin.get_url:
+        url: "{{ _manual_asset.browser_download_url }}"
+        dest: "{{ _manual_tmp.path }}/{{ _manual_asset.name }}"
+        checksum: "{{ _manual_asset.digest | default(omit, true) }}" # GitHub "sha256:<hash>" digest
+        mode: "0644"
+
+    - name: "{{ app.name }} | Extract zip"
+      ansible.builtin.unarchive:
+        src: "{{ _manual_tmp.path }}/{{ _manual_asset.name }}"
+        dest: "{{ _manual_tmp.path }}"
+        remote_src: true
+      when: app.type == 'zip'
+
+    - name: "{{ app.name }} | Mount dmg"
+      ansible.builtin.command:
+        argv: [hdiutil, attach, "{{ _manual_tmp.path }}/{{ _manual_asset.name }}", -nobrowse, -readonly, -noautoopen, -mountpoint, "{{ _manual_tmp.path }}/mnt"]
+      register: _manual_mount
+      changed_when: true
+      when: app.type == 'dmg'
+
+    # .app bundles are copied to /Applications, .pkg installers are run
+    - name: "{{ app.name }} | Find .app & .pkg files"
+      ansible.builtin.find:
+        paths: "{{ _manual_tmp.path ~ ('/mnt' if app.type == 'dmg' else '') }}"
+        patterns: ["*.app", "*.pkg"]
+        file_type: any
+        recurse: true
+        depth: 2
+      register: _manual_found
+      when: app.type in ['dmg', 'zip']
+
+    - name: "{{ app.name }} | Fail if nothing installable was found"
+      ansible.builtin.assert:
+        that: _manual_items | length > 0
+        fail_msg: "No .app or .pkg found in {{ _manual_asset.name }}"
+        quiet: true
+      vars: &manual_items
+        _manual_items: >-
+          {{ [_manual_tmp.path ~ '/' ~ _manual_asset.name] if app.type == 'pkg'
+             else (_manual_found.files | map(attribute='path') | sort | list) }}
+
+    - name: "{{ app.name }} | Copy app to /Applications"
+      ansible.builtin.command:
+        argv: [ditto, "{{ item }}", "/Applications/{{ item | basename }}"]
+      loop: "{{ _manual_items | select('match', '.*[.]app$') | list }}"
+      vars: *manual_items
+      changed_when: true
+
+    - name: "{{ app.name }} | Run installer"
+      become: true
+      ansible.builtin.command:
+        argv: [installer, -pkg, "{{ item }}", -target, /]
+      loop: "{{ _manual_items | select('match', '.*[.]pkg$') | list }}"
+      vars: *manual_items
+      changed_when: true
+
+  always:
+    - name: "{{ app.name }} | Unmount dmg"
+      ansible.builtin.command:
+        argv: [hdiutil, detach, "{{ _manual_tmp.path }}/mnt", -force]
+      changed_when: true
+      failed_when: false
+      when: _manual_mount is defined and _manual_mount is succeeded and _manual_mount is not skipped
+
+    - name: "{{ app.name }} | Remove temporary directory"
+      ansible.builtin.file:
+        path: "{{ _manual_tmp.path }}"
+        state: absent
+      when: _manual_tmp.path is defined

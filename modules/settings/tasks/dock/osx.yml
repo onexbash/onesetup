@@ -1,0 +1,36 @@
+---
+# Replace the Dock apps with settings.dock (skipped when empty, so the Dock is never wiped by accident)
+- name: "Dock apps"
+  when: cfg.dock | length > 0
+  vars:
+    # 'Ghostty' → /Applications/Ghostty.app | '/System/Applications/Mail.app' stays | { path: ... } → path
+    dock_paths: >-
+      {%- set ns = namespace(out=[]) -%}
+      {%- for app in cfg.dock -%}
+        {%- set p = app.path if app is mapping else app -%}
+        {%- set ns.out = ns.out + [(p | expanduser) if '/' in p else '/Applications/' ~ p ~ '.app'] -%}
+      {%- endfor -%}
+      {{ ns.out }}
+  block:
+    - name: "Install 'dockutil' to manage Dock items"
+      community.general.homebrew:
+        name: dockutil
+        path: "/usr/local/bin:/opt/homebrew/bin"
+        state: present
+
+    - name: "Clear Dock"
+      ansible.builtin.command: "dockutil --remove all --no-restart"
+      register: dock_clear
+      changed_when: "'Removed' in dock_clear.stdout"
+      failed_when: >-
+        dock_clear.rc != 0 and
+        'No dock items to remove' not in dock_clear.stderr
+
+    # Apps that are not installed (yet) are skipped
+    - name: "Add Dock items"
+      ansible.builtin.command:
+        argv: [dockutil, --add, "{{ item }}", --no-restart]
+      loop: "{{ dock_paths }}"
+      when: item is exists
+      changed_when: true
+      notify: restart_dock

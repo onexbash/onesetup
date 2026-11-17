@@ -1,0 +1,44 @@
+---
+- name: "Startup sound"
+  become: true
+  ansible.builtin.command: "nvram StartupMute=%0{{ '0' if cfg.system.startup_sound else '1' }}"
+  changed_when: true
+  when: cfg.system.startup_sound is not none
+
+- name: "Restart automatically when the system freezes"
+  become: true
+  ansible.builtin.command: "systemsetup -setrestartfreeze {{ 'on' if cfg.system.restart_on_freeze else 'off' }}"
+  changed_when: true
+  when: cfg.system.restart_on_freeze is not none
+
+- name: "Require the password {{ cfg.system.screen_lock_delay }}s after the screen saver starts"
+  ansible.builtin.command:
+    argv:
+      - sysadminctl
+      - -screenLock
+      - "{{ cfg.system.screen_lock_delay }}"
+      - -password
+      - "{{ ansible_become_password }}" # must be the target user's password
+  no_log: true
+  changed_when: true
+  when: cfg.system.screen_lock_delay is not none
+
+# pmset -c (charger) / -b (battery) <setting> <value> ...
+- name: "Power settings"
+  become: true
+  ansible.builtin.command:
+    argv: "{{ ['pmset', {'charger': '-c', 'battery': '-b'}[item.key]] + (item.value | dict2items | map(attribute='key') | zip(item.value.values() | map('string')) | flatten) }}"
+  loop: "{{ cfg.system.power | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  changed_when: true
+
+- name: "Pointer colors"
+  ansible.builtin.command:
+    argv: "{{ ['defaults', 'write', 'com.apple.universalaccess', 'cursor' ~ (item.key | capitalize), '-dict']
+              + (['red', 'green', 'blue', 'alpha'] | zip(item.value | map('string')) | map('join', ' -float ') | map('split', ' ') | flatten) }}"
+  loop: "{{ cfg.system.cursor | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  changed_when: false
+  notify: semi_logout

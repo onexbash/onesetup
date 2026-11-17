@@ -1,0 +1,11 @@
+---
+- name: "Finder: favorite tags"
+  community.general.osx_defaults:
+    domain: com.apple.finder
+    key: FavoriteTagNames
+    type: array
+    value: "{{ cfg.finder.favorite_tags }}"
+  when: cfg.finder.favorite_tags | length > 0
+  notify:
+    - restart_cache
+    - restart_finder

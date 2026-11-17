@@ -1,0 +1,49 @@
+---
+# One LaunchAgent per app in apps.autostart; agents of removed apps are deleted
+- name: "Autostart"
+  vars:
+    autostart_domain: com.onesetup.autostart
+    # Entries can be a plain app name or { name, bundle_id, hidden, background }
+    autostart_apps: >-
+      {%- set ns = namespace(out=[]) -%}
+      {%- for app in cfg.autostart -%}
+        {%- set ns.out = ns.out + [app if app is mapping else {'name': app}] -%}
+      {%- endfor -%}
+      {{ ns.out }}
+    autostart_expected_files: >-
+      {{ autostart_apps | map(attribute='name') | map('lower') | map('regex_replace', '[^a-z0-9]+', '-')
+         | map('regex_replace', '^', autostart_domain ~ '.') | map('regex_replace', '$', '.plist') | list }}
+  block:
+    - name: "Ensure LaunchAgents directory exists"
+      ansible.builtin.file:
+        path: "{{ home }}/Library/LaunchAgents"
+        state: directory
+        mode: "0755"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
+
+    - name: "Rollout LaunchAgent files"
+      ansible.builtin.template:
+        src: autostart.plist.j2
+        dest: "{{ home }}/Library/LaunchAgents/{{ autostart_domain }}.{{ item.name | lower | regex_replace('[^a-z0-9]+', '-') }}.plist"
+        mode: "0644"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
+      loop: "{{ autostart_apps }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: "Find managed LaunchAgent files"
+      ansible.builtin.find:
+        paths: "{{ home }}/Library/LaunchAgents"
+        patterns: "{{ autostart_domain }}.*.plist"
+      register: autostart_found
+
+    - name: "Remove LaunchAgent files of apps no longer in apps.autostart"
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      when: (item.path | basename) not in autostart_expected_files
+      loop: "{{ autostart_found.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"

@@ -1,0 +1,14 @@
+---
+- name: "Ensure ~/.ssh"
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/_ssh_dir.yml"
+
+# Write known_hosts from template (overwrites manual changes)
+- name: "Create ~/.ssh/known_hosts based on template"
+  become: true
+  ansible.builtin.template:
+    src: known_hosts.j2
+    dest: "{{ home }}/.ssh/known_hosts"
+    mode: "0644"
+    owner: "{{ user }}"
+    group: "{{ user_group }}"
+    validate: "/usr/bin/ssh-keygen -l -f %s" # fails on malformed keys before the file is replaced

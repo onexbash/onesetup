@@ -8,13 +8,11 @@
 # -- GLOBALS -- #
 SUBCMD=""              # encrypt | help | "" (empty → interactive prompt)
 ACTION=""              # string | file | "" (empty → interactive prompt)
-ARG_TARGET=""          # --target <clipboard|ansible> ("" → prompt, or clipboard without a terminal)
+ARG_TARGET=""          # --target <clipboard|config> ("" → prompt, or clipboard without a terminal)
 ARG_FILE=""            # --file [path]
-ARG_VARNAME=""         # --file [path] [varname]
-ARG_DEV_DIR=""         # --dev-dir <path>
+ARG_VARNAME=""         # --file [path] [name]
 ARG_VAULT_PASS_FILE="" # --vault-pass-file <path>
 ARG_VAULT_PASS=""      # --vault-pass <password> (visible in shell history & process list!)
-VARFILE=""             # Vars file for target 'ansible' (set in setup)
 
 # -- MAIN -- #
 function main() {
@@ -111,9 +109,9 @@ function parse_args() {
     --target)
       require_value "$1" "${2:-}"
       case "$2" in
-      clipboard | ansible) ARG_TARGET="$2" ;;
+      clipboard | config) ARG_TARGET="$2" ;;
       *) {
-        echo -e "${I_ERR}Invalid value for '--target': '$2' (allowed: clipboard, ansible)"
+        echo -e "${I_ERR}Invalid value for '--target': '$2' (allowed: clipboard, config)"
         exit 1
       } ;;
       esac
@@ -127,11 +125,6 @@ function parse_args() {
     --vault-pass)
       require_value "$1" "${2:-}"
       ARG_VAULT_PASS="$2"
-      shift 2
-      ;;
-    --dev-dir)
-      require_value "$1" "${2:-}"
-      ARG_DEV_DIR="$2"
       shift 2
       ;;
     -h | --help)
@@ -165,11 +158,11 @@ function parse_args() {
     exit 1
   fi
 
-  # Positional arguments: only '--file [path] [varname]' takes any
+  # Positional arguments: only '--file [path] [name]' takes any
   case "$ACTION" in
   file)
     [[ ${#positional[@]} -le 2 ]] || {
-      echo -e "${I_ERR}Too many arguments for '--file' (usage: --file [path] [varname])."
+      echo -e "${I_ERR}Too many arguments for '--file' (usage: --file [path] [name])."
       exit 1
     }
     ARG_FILE="${positional[0]:-}"
@@ -196,18 +189,18 @@ Commands:
 
 Encrypt Options:
   --string                        Encrypt a string (prompted, input hidden)
-  --file [path] [varname]         Encrypt a file's content (prompts for missing values)
-  --target <clipboard|ansible>    Copy to clipboard or append to group_vars/all/encrypted.yml
+  --file [path] [name]            Encrypt a file's content (prompts for missing values)
+  --target <clipboard|config>     Copy to clipboard, or write it into the config file
                                   (prompted if omitted)
 
-Vault Password Options (default: prompted by ansible-vault):
+  The name is the key in the config file, e.g. 'ssh.identities.id_ed25519'.
+  Config file: ${ONESETUP_CONFIG}
+
+Vault Password Options (default: ONESETUP_VAULT_PASS, else prompted by ansible-vault):
   --vault-pass-file <path>        Read the vault password from a file
                                   (executable files are run as a script by ansible-vault)
   --vault-pass <password>         Use this vault password
                                   (visible in shell history & process list – prefer --vault-pass-file)
-
-Global Options:
-  --dev-dir <path>                Use a local project directory instead of the installed one
 EOF
 }
 
@@ -217,11 +210,18 @@ EOF
 
 # Prepare everything needed to encrypt
 function setup() {
-  install_deps "ansible" "gum"
-  use_dev_dir "$ARG_DEV_DIR"
+  install_deps "ansible" "gum" "yq"
+  # The python 'yq' wrapper cannot write the '!vault' tag
+  yq --version 2>/dev/null | grep -q "mikefarah" || {
+    echo -e "${I_ERR}onesetup-vault needs mikefarah/yq (https://github.com/mikefarah/yq), found another 'yq' in PATH."
+    exit 1
+  }
 
-  # Vars file for target 'ansible' (depends on the final X_TARGET_DIR)
-  VARFILE="${X_TARGET_DIR}/group_vars/all/encrypted.yml"
+  # No vault password option given → ONESETUP_VAULT_PASS (env or config 'secrets:', may be a password manager reference)
+  if [[ -z "$ARG_VAULT_PASS" && -z "$ARG_VAULT_PASS_FILE" ]]; then
+    load_secrets ONESETUP_VAULT_PASS
+    ARG_VAULT_PASS="$ONESETUP_VAULT_PASS"
+  fi
 }
 
 # --                 -- #
@@ -244,11 +244,11 @@ function prompt_action() {
   esac
 }
 
-# Ask for the output target (prints "clipboard", "ansible" or nothing if cancelled)
+# Ask for the output target (prints "clipboard", "config" or nothing if cancelled)
 function prompt_output_target() {
-  case "$(choose "Choose Output Target:" "Copy to Clipboard" "Save to ${VARFILE}")" in
+  case "$(choose "Choose Output Target:" "Copy to Clipboard" "Save to ${ONESETUP_CONFIG}")" in
   "Copy to Clipboard") echo "clipboard" ;;
-  "Save to ${VARFILE}") echo "ansible" ;;
+  "Save to ${ONESETUP_CONFIG}") echo "config" ;;
   esac
 }
 
@@ -256,14 +256,14 @@ function prompt_output_target() {
 # --     ENCRYPT     -- #
 # --                 -- #
 
-# Validate an Ansible variable name: validate_varname <varname>
+# Validate a name / config key path: validate_varname <name>
 function validate_varname() {
   [[ -n "$1" ]] || {
-    echo -e "${I_ERR}Variable name cannot be empty."
+    echo -e "${I_ERR}Name cannot be empty."
     exit 1
   }
-  if [[ ! "$1" =~ ^[a-zA-Z0-9_]+$ ]]; then
-    echo -e "${I_ERR}Invalid characters in variable name: '$1' (allowed: letters, numbers, underscores)"
+  if [[ ! "$1" =~ ^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$ ]]; then
+    echo -e "${I_ERR}Invalid name: '$1' (allowed: letters, numbers & underscores, nested keys separated by dots)"
     exit 1
   fi
 }
@@ -285,17 +285,28 @@ function resolve_output_target() {
     exit 0
   fi
 
-  if [[ "$ARG_TARGET" == "ansible" ]] && grep -qE "^${varname}:" "$VARFILE" 2>/dev/null; then
-    echo -e "${I_ERR}Variable [ ${C_PURPLE}${varname}${C_RESET} ] already exists in [ ${C_PURPLE}${VARFILE}${C_RESET} ]. Please choose a different name."
-    exit 1
+  if [[ "$ARG_TARGET" == "config" ]]; then
+    [[ -f "$ONESETUP_CONFIG" ]] || {
+      echo -e "${I_ERR}Config file not found: ${ONESETUP_CONFIG} (run 'onesetup-init' first)"
+      exit 1
+    }
+    # 'yq -e' exits non-zero when the key is missing or null
+    if yq -e ".${varname}" "$ONESETUP_CONFIG" &>/dev/null; then
+      echo -e "${I_ERR}Key [ ${C_PURPLE}${varname}${C_RESET} ] already exists in [ ${C_PURPLE}${ONESETUP_CONFIG}${C_RESET} ]. Please choose a different name."
+      exit 1
+    fi
   fi
 }
 
-# Encrypt stdin as an Ansible variable: vault_encrypt <varname> < plaintext
+# Encrypt stdin: vault_encrypt <name> < plaintext
+# Target 'clipboard' → "<last key>: !vault |..." | target 'config' → only the vault ciphertext
 # (reading the plaintext from stdin keeps secrets out of the process list)
 # Vault password source: --vault-pass > --vault-pass-file > interactive prompt
 function vault_encrypt() {
-  local args=(encrypt_string --encrypt-vault-id "onesetup" --stdin-name "$1")
+  local args=(encrypt_string --encrypt-vault-id "onesetup")
+  if [[ "$ARG_TARGET" == "clipboard" ]]; then
+    args+=(--stdin-name "${1##*.}")
+  fi
 
   if [[ -n "$ARG_VAULT_PASS" ]]; then
     # Hand the password over through a pipe (/dev/fd/N): no temp file, not in ansible-vault's argv
@@ -316,14 +327,14 @@ function write_output() {
     printf '%s\n' "$encrypted" | copy_to_clipboard
     echo -e "${I_OK}Encrypted Ansible Variable [ ${C_PURPLE}${varname}${C_RESET} ] copied to clipboard"
     ;;
-  ansible)
-    mkdir -p "$(dirname "$VARFILE")"
-    # Ensure the file ends with a newline, so the new variable starts on its own line
-    if [[ -s "$VARFILE" && -n "$(tail -c 1 "$VARFILE")" ]]; then
-      echo >>"$VARFILE"
-    fi
-    printf '%s\n' "$encrypted" >>"$VARFILE"
-    echo -e "${I_OK}Encrypted Ansible Variable [ ${C_PURPLE}${varname}${C_RESET} ] appended to [ ${C_PURPLE}${VARFILE}${C_RESET} ]"
+  config)
+    # Drop the '!vault |' header & indentation, then write it as a tagged literal block (keeps comments)
+    VAULT_VALUE="$(printf '%s\n' "$encrypted" | sed -e '1s/^!vault |$//' -e 's/^ *//' -e '/^$/d')" \
+      yq -i ".${varname} = strenv(VAULT_VALUE) | .${varname} tag = \"!vault\" | .${varname} style = \"literal\"" "$ONESETUP_CONFIG" || {
+      echo -e "${I_ERR}Failed to write [ ${varname} ] to ${ONESETUP_CONFIG}"
+      exit 1
+    }
+    echo -e "${I_OK}Encrypted value written to [ ${C_PURPLE}${varname}${C_RESET} ] in [ ${C_PURPLE}${ONESETUP_CONFIG}${C_RESET} ]"
     ;;
   esac
 }
@@ -341,7 +352,7 @@ function encrypt_string() {
     exit 1
   }
 
-  printf '%b' "${I_ASK}Variable Name: "
+  printf '%b' "${I_ASK}Name (e.g. ssh.config): "
   read -r varname || true
   validate_varname "$varname"
 
@@ -396,7 +407,7 @@ function encrypt_file() {
           --header.foreground "$GUM_COLOR" \
           --prompt.foreground "$GUM_COLOR" \
           --value "$default_name" \
-          --header "Adjust variable name (or press Enter to keep default):" \
+          --header "Adjust name, e.g. ssh.identities.${default_name} (or press Enter to keep it):" \
           --placeholder "$default_name" \
           --width 50 || true
       )"

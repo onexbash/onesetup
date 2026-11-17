@@ -1,0 +1,91 @@
+---
+- name: "Skip the dotfiles module when no repository is configured"
+  when: cfg.repo | length == 0
+  block:
+    - name: "Info: no dotfiles repository"
+      ansible.builtin.debug:
+        msg: "No 'dotfiles.repo' in {{ ONESETUP_CONFIG }}, skipping the dotfiles module."
+
+    - name: "Skip the rest of the dotfiles module"
+      ansible.builtin.meta: end_role
+
+# Set Remote Origin of Dotfiles Repository (SSH if possible, HTTPS as fallback)
+- name: "Set Dotfiles Repository URI and Git Environment"
+  ansible.builtin.set_fact:
+    dotfiles_use_ssh: "{{ _use_ssh }}"
+    dotfiles_repo: >-
+      {{ (cfg.repo | regex_replace('^https?://([^/]+)/(.+?)(\.git)?/?$', 'git@\1:\2.git'))
+         if _use_ssh
+         else (cfg.repo | regex_replace('^(?:ssh://)?git@([^:/]+)[:/](.+?)(\.git)?/?$', 'https://\1/\2.git')) }}
+    dotfiles_git_env: >-
+      {{ {'SSH_ASKPASS': playbook_dir ~ '/files/ssh_askpass.sh', 'SSH_ASKPASS_REQUIRE': 'force'}
+         if _use_ssh else {} }}
+  vars:
+    _use_ssh: "{{ ONESETUP_SSH_KEY | default('') | length > 0 }}"
+
+# Clone Dotfiles Repository
+- name: "Clone Dotfiles Repository"
+  ansible.builtin.git:
+    repo: "{{ dotfiles_repo }}"
+    key_file: "{{ ONESETUP_SSH_KEY if dotfiles_use_ssh | bool else omit }}"
+    ssh_opts: "{{ '-o BatchMode=no' if dotfiles_use_ssh | bool else omit }}" # allow passphrase via SSH_ASKPASS
+    accept_newhostkey: "{{ dotfiles_use_ssh | bool }}" # trust host key on first connect, reject changed keys
+    version: "{{ cfg.branch }}"
+    clone: true
+    dest: "{{ (cfg.dir | expanduser) }}"
+    force: false # respect local changes to prevent dotfile loss
+    remote: origin
+    update: true
+    recursive: true # whether submodules should be included/skipped
+  environment: "{{ dotfiles_git_env }}"
+  register: dotfiles_clone
+  # Tolerate only "local modifications" (handled below); any other error (auth, network, ...) fails the play
+  failed_when:
+    - dotfiles_clone.failed | default(false)
+    - "'Local modifications' not in (dotfiles_clone.msg | default(''))"
+
+# Detect local changes
+- name: "Dotfiles: Detect Local Modifications"
+  ansible.builtin.set_fact:
+    dotfiles_local_changes: "{{ 'Local modifications' in (dotfiles_clone.msg | default('')) }}"
+
+# Prompt User if local changes can be overwritten
+- name: "Prompt: Overwrite Local Dotfiles Directory?"
+  ansible.builtin.pause:
+    prompt: "Local modifications detected in {{ (cfg.dir | expanduser) }}. Overwrite and lose local changes? [y/n]"
+  register: dotfiles_overwrite_prompt
+  when: dotfiles_local_changes | bool
+
+# Force Overwrite Dotfiles Repository (after user confirmation)
+- name: "Clone Dotfiles Repository (force overwrite)"
+  ansible.builtin.git:
+    repo: "{{ dotfiles_repo }}"
+    key_file: "{{ ONESETUP_SSH_KEY if dotfiles_use_ssh | bool else omit }}"
+    ssh_opts: "{{ '-o BatchMode=no' if dotfiles_use_ssh | bool else omit }}"
+    accept_newhostkey: "{{ dotfiles_use_ssh | bool }}"
+    version: "{{ cfg.branch }}"
+    clone: true
+    dest: "{{ (cfg.dir | expanduser) }}"
+    force: true # overwrite local changes as the user confirmed this
+    remote: origin
+    update: true
+    recursive: true # whether submodules should be included/skipped
+  environment: "{{ dotfiles_git_env }}"
+  when:
+    - dotfiles_local_changes | bool
+    - dotfiles_overwrite_prompt.user_input | lower == 'y'
+
+# Notify: Skipping Dotfiles Rollout
+- name: "Info: Skipping Dotfiles Rollout.."
+  ansible.builtin.debug:
+    msg: "Skipping Dotfiles Rollout & continue playbook — local changes in {{ (cfg.dir | expanduser) }} preserved."
+  when:
+    - dotfiles_local_changes | bool
+    - dotfiles_overwrite_prompt.user_input | lower != 'y'
+
+# Skip Dotfiles Role and continue playbook if User declined to overwrite local changes
+- name: "Skip Dotfiles Role and continue playbook"
+  ansible.builtin.meta: end_role
+  when:
+    - dotfiles_local_changes | bool
+    - dotfiles_overwrite_prompt.user_input | lower != 'y'

@@ -1,0 +1,40 @@
+---
+# -- CORE: Module Dispatcher -- #
+# Included by every module's tasks/main.yml. It
+#   1. merges the module's defaults (<module>_defaults) with its section in the config file → cfg
+#      (lists are extended, values are replaced, see README: Configuration)
+#   2. runs the selected submodules in registry order: tasks/<submodule>/<os>.yml, then tasks/<submodule>/all.yml
+
+- name: "Merge defaults with config"
+  ansible.builtin.set_fact:
+    cfg: >-
+      {{ lookup('ansible.builtin.vars', role_name ~ '_defaults')
+         | combine(onesetup_config[role_name] | default({}, true), recursive=true, list_merge='append_rp') }}
+
+- name: "Warn about unknown keys in the config file"
+  ansible.builtin.debug:
+    msg: >-
+      Unknown key(s) under '{{ role_name }}' in {{ ONESETUP_CONFIG }}: {{ _unknown_keys | join(', ') }}.
+      Known keys: {{ lookup('ansible.builtin.vars', role_name ~ '_defaults').keys() | join(', ') }}.
+  vars:
+    _unknown_keys: >-
+      {{ (onesetup_config[role_name] | default({}, true)).keys()
+         | reject('in', lookup('ansible.builtin.vars', role_name ~ '_defaults')) | list }}
+  when: _unknown_keys | length > 0
+
+- name: "Run submodules"
+  ansible.builtin.include_tasks: "{{ onesetup_submodule_file }}"
+  loop: >-
+    {%- set ns = namespace(out=[]) -%}
+    {%- for sub in onesetup_plan[role_name] -%}
+      {%- for file in [os, 'all'] -%}
+        {%- set path = role_path ~ '/tasks/' ~ sub ~ '/' ~ file ~ '.yml' -%}
+        {%- if path is file -%}
+          {%- set ns.out = ns.out + [path] -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+    {{ ns.out }}
+  loop_control:
+    loop_var: onesetup_submodule_file
+    label: "{{ onesetup_submodule_file | dirname | basename }}/{{ onesetup_submodule_file | basename }}"

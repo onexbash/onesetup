@@ -24,6 +24,9 @@ function main() {
 
   # [6] Install Ansible collections from Ansible Galaxy
   install_collections
+
+  # [7] Create the config file from the example (never overwrites an existing one)
+  create_config
 }
 
 # Source onesetup-util from the directory this executable lives in
@@ -44,8 +47,8 @@ function load_utils() {
 
 # Clone the project into the install dir, or re-clone it if broken/outdated
 function sync_repository() {
-  local install_dir="$ONESETUP_SYSTEM_INSTALL_DIR"
-  local repo_uri="$X_ONESETUP_URI"
+  local install_dir="$ONESETUP_INSTALL_DIR"
+  local repo_uri="$ONESETUP_REPO"
   local local_sha="" remote_sha=""
 
   # Remove installation directory if it is not a git repository (broken/corrupted)
@@ -57,7 +60,7 @@ function sync_repository() {
   if [[ -d "$install_dir" ]]; then
     # Compare local commit hash with latest remote ('|| true': a failing ls-remote must not trip 'pipefail')
     local_sha="$(git -C "$install_dir" rev-parse HEAD 2>/dev/null || true)"
-    remote_sha="$(git ls-remote "$repo_uri" HEAD 2>/dev/null | awk '{print $1}' || true)"
+    remote_sha="$(git ls-remote "$repo_uri" "refs/heads/${ONESETUP_BRANCH}" 2>/dev/null | awk '{print $1}' || true)"
 
     if [[ -z "$remote_sha" ]]; then
       # Remote unreachable → keep the working installation instead of deleting it
@@ -76,8 +79,8 @@ function sync_repository() {
     echo -e "${I_INFO}No installation found for 'onesetup'. Installing to ${install_dir}..."
   fi
 
-  git clone --depth 1 --single-branch "$repo_uri" "$install_dir" || {
-    echo -e "${I_ERR}Failed to clone ${repo_uri} into ${install_dir}"
+  git clone --depth 1 --single-branch --branch "$ONESETUP_BRANCH" "$repo_uri" "$install_dir" || {
+    echo -e "${I_ERR}Failed to clone ${repo_uri} (branch: ${ONESETUP_BRANCH}) into ${install_dir}"
     exit 1
   }
   echo -e "${I_OK}Installation complete!"
@@ -85,39 +88,40 @@ function sync_repository() {
 
 # Ensure directory presence, permissions & ownership
 function ensure_directories() {
-  local user_owner="${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}"
-  local root_owner="${ONESETUP_SYSTEM_ROOT_USER}:${ONESETUP_SYSTEM_ROOT_GROUP}"
+  local user_owner
+  user_owner="$(id -un):$(id -gn)"
 
-  ensure_directory "$ONESETUP_SYSTEM_CONFIG_DIR" "755" "$user_owner" true
-  ensure_directory "$ONESETUP_SYSTEM_INSTALL_DIR" "755" "$user_owner" true
-  ensure_directory "$ONESETUP_SYSTEM_STORAGE_DIR" "755" "$user_owner" true
-  ensure_directory "$ONESETUP_SYSTEM_TMP_DIR" "1777" "$root_owner" false
+  ensure_directory "$(dirname "$ONESETUP_CONFIG")" "755" "$user_owner" false
+  ensure_directory "$ONESETUP_INSTALL_DIR" "755" "$user_owner" true
+  ensure_directory "$ONESETUP_STATE_DIR" "755" "$user_owner" true
 }
 
 # Copy all executables from <install_dir>/bin to the bin dir
 function rollout_executables() {
-  local bin_dir="$ONESETUP_SYSTEM_BIN_DIR"
-  local rc=0 file filename
+  local bin_dir="$ONESETUP_BIN_DIR"
+  local rc=0 file filename root_user root_group
+  root_user="$(id -nu 0)"
+  root_group="$(id -ng 0)"
 
   is_writable "$bin_dir" || rc=$?
   case "$rc" in
   0) ;;
   2) {
     # is_writable already reported the missing directory
-    echo -e "${I_INFO}Please create it or set 'system.bin_dir' in your config.yml, then re-run the Installation Script."
+    echo -e "${I_INFO}Please create it or export ONESETUP_BIN_DIR=<dir>, then re-run onesetup-init."
     exit 1
   } ;;
   *) {
-    echo -e "${I_ERR}The Bin-Directory you've set is not writable, which is mostly caused by macOS System Integrity Protection. Please set 'system.bin_dir' in your config.yml to a Directory that is writable with sudo rights."
-    echo -e "${I_INFO}Please re-run the Installation Script after."
+    echo -e "${I_ERR}The Bin-Directory you've set is not writable, which is mostly caused by macOS System Integrity Protection. Please export ONESETUP_BIN_DIR=<dir> with a Directory that is writable with sudo rights."
+    echo -e "${I_INFO}Please re-run onesetup-init after."
     exit 1
   } ;;
   esac
 
-  for file in "${ONESETUP_SYSTEM_INSTALL_DIR}"/bin/*; do
+  for file in "${ONESETUP_INSTALL_DIR}"/bin/*; do
     [[ -f "$file" ]] || continue
     filename="$(basename "$file")"
-    sudo install -m 755 -o "$ONESETUP_SYSTEM_ROOT_USER" -g "$ONESETUP_SYSTEM_ROOT_GROUP" "$file" "${bin_dir}/${filename}" || {
+    sudo install -m 755 -o "$root_user" -g "$root_group" "$file" "${bin_dir}/${filename}" || {
       echo -e "${I_ERR}Failed to roll-out executable ${C_RED}${filename}${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"
       exit 1
     }
@@ -128,11 +132,25 @@ function rollout_executables() {
 # Install Ansible collections listed in requirements.yml
 function install_collections() {
   ansible-galaxy collection install \
-    --requirements-file "${ONESETUP_SYSTEM_INSTALL_DIR}/requirements.yml" \
+    --requirements-file "${ONESETUP_INSTALL_DIR}/requirements.yml" \
     --no-cache --upgrade || {
     echo -e "${I_ERR}Failed to install Ansible collections."
     exit 1
   }
+}
+
+# Copy onesetup.example.yml to ONESETUP_CONFIG if there is no config file yet
+function create_config() {
+  if [[ -e "$ONESETUP_CONFIG" ]]; then
+    echo -e "${I_OK}Config file found: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
+    return 0
+  fi
+  install -m 644 "${ONESETUP_INSTALL_DIR}/onesetup.example.yml" "$ONESETUP_CONFIG" || {
+    echo -e "${I_ERR}Failed to create the config file: ${ONESETUP_CONFIG}"
+    exit 1
+  }
+  echo -e "${I_OK}Config file created: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
+  echo -e "${I_INFO}Adjust it to your needs, then run 'onesetup'."
 }
 
 # Call Main Function with args

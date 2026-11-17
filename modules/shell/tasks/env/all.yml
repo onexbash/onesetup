@@ -1,0 +1,27 @@
+---
+# Export global environment variables in /etc/zshenv & /etc/profile
+- name: "Export global environment variables"
+  become: true
+  ansible.builtin.blockinfile:
+    path: "{{ item.path }}"
+    marker: "# -- {mark} GLOBAL ENV VARS (managed by onesetup) -- #"
+    block: |
+      {% for name, value in cfg.env.items() %}
+      export {{ name }}="{{ value }}"
+      {% endfor %}
+    insertbefore: "{{ item.insertbefore | default(omit) }}"
+    create: true
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"
+    mode: "0644"
+    backup: true
+    validate: "{{ item.validate }}"
+  loop:
+    - path: /etc/zshenv
+      validate: "zsh -n %s"
+    - path: /etc/profile
+      validate: "sh -n %s"
+      # Insert before /etc/bashrc is sourced, so user configs already see the vars
+      insertbefore: '^if \[ "\$\{BASH-no\}" != "no" \]'
+  loop_control:
+    label: "{{ item.path }}"

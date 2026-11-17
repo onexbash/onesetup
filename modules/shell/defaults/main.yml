@@ -1,0 +1,63 @@
+---
+# -- MODULE: shell -- #
+# Defaults, merged with the 'shell:' section of your config file.
+shell_defaults:
+  # Login shell for your user & root (path to the binary). Empty: leave it as it is.
+  login: ""
+
+  # Allowed login shells (/etc/shells). The login shell above is added automatically.
+  shells:
+    - /bin/bash
+    - /bin/csh
+    - /bin/dash
+    - /bin/ksh
+    - /bin/sh
+    - /bin/tcsh
+    - /bin/zsh
+    - /opt/homebrew/bin/bash
+    - /opt/homebrew/bin/zsh
+
+  # Environment variables exported for every shell (/etc/zshenv & /etc/profile), in this order.
+  # Values are written as they are, so shell syntax like ${VAR:-default} works.
+  env:
+    XDG_CONFIG_HOME: "${XDG_CONFIG_HOME:-$HOME/.config}"
+    XDG_CACHE_HOME: "${XDG_CACHE_HOME:-$HOME/.cache}"
+    XDG_DATA_HOME: "${XDG_DATA_HOME:-$HOME/.local/share}"
+    XDG_STATE_HOME: "${XDG_STATE_HOME:-$HOME/.local/state}"
+    ZDOTDIR: "${ZDOTDIR:-$HOME}"
+
+  # PATH entries, one file per name in /etc/paths.d/<priority>-<name> (macOS).
+  # Lower priority number = earlier in $PATH. Add your own entries to 'custom'.
+  paths:
+    custom:
+      priority: 0
+      entries: []
+    homebrew:
+      priority: 10
+      entries:
+        - /opt/homebrew/bin
+        - /opt/homebrew/sbin
+    gnu: # GNU tools override the BSD versions in /usr/bin
+      priority: 20
+      entries:
+        - /opt/homebrew/opt/coreutils/libexec/gnubin
+        - /opt/homebrew/opt/grep/libexec/gnubin
+    system:
+      priority: 30
+      entries:
+        - /usr/local/bin
+        - /System/Cryptexes/App/usr/bin
+        - /usr/bin
+        - /bin
+        - /usr/sbin
+        - /sbin
+    cryptex:
+      priority: 40
+      entries:
+        - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin
+        - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin
+        - /var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin
+
+  # Environment variables for GUI apps (macOS apps don't read your shell config), set at login.
+  # Example: { CLAUDE_CONFIG_DIR: ~/.config/claude }
+  gui_env: {}

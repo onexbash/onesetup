@@ -1,0 +1,31 @@
+---
+# Write every macOS default from settings.defaults (see defaults/main.yml for the format)
+- name: "Write macOS defaults"
+  become: "{{ item.domain.startswith('/') }}"
+  community.general.osx_defaults:
+    domain: "{{ item.domain }}"
+    key: "{{ item.key }}"
+    type: "{{ item.type }}"
+    value: "{{ item.value }}"
+    host: "{{ item.host | default(omit) }}"
+  loop: >-
+    {%- set ns = namespace(out=[]) -%}
+    {%- for domain, keys in cfg.defaults.items() -%}
+      {%- for key, raw in keys.items() if raw is not none -%}
+        {%- set explicit = raw is mapping and 'value' in raw -%}
+        {%- set value = raw.value if explicit else raw -%}
+        {%- set inferred = 'bool' if value is boolean else 'int' if value is integer else 'float' if value is float
+                           else 'array' if (value is sequence and value is not string) else 'string' -%}
+        {%- set entry = {'domain': domain, 'key': key, 'value': value, 'type': raw.type | default(inferred) if explicit else inferred} -%}
+        {%- set ns.out = ns.out + [entry | combine({'host': raw.host} if explicit and raw.host is defined else {})] -%}
+      {%- endfor -%}
+    {%- endfor -%}
+    {{ ns.out }}
+  loop_control:
+    label: "{{ item.domain }} {{ item.key }} = {{ item.value }}"
+  notify:
+    - restart_cache
+    - restart_dock
+    - restart_finder
+    - restart_systemui_server
+    - semi_logout

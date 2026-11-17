@@ -1,0 +1,27 @@
+---
+# -- CORE: Play variables (used by main.yml & tests/) -- #
+# Module registry: every module with its submodules, in the order they run.
+# Adding a module: create modules/<name>/ (see README: Writing a Module) and list it here.
+onesetup_registry:
+  shell: [env, paths, login, gui_env]
+  ssh: [identities, config, known_hosts, authorized_keys]
+  dotfiles: [clone, link]
+  fonts: [nerdfonts]
+  apps: [install, configure, autostart]
+  settings: [defaults, system, dock, finder, keymaps, wallpaper, browser]
+  custom: [tasks]
+
+# System facts (normalized)
+os: "{{ {'Darwin': 'osx', 'Linux': 'linux', 'Win32NT': 'windows'}[ansible_facts['system']] | default('unsupported') }}"
+arch: "{{ 'arm64' if ansible_facts['architecture'] in ['arm64', 'aarch64'] else 'x86' }}"
+user: "{{ ansible_facts['user_id'] }}"
+
+# Environment Variables: User Environment
+home: "{{ ansible_facts['env']['HOME'] }}"
+xdg_config_home: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(home ~ '/.config', true) }}"
+xdg_cache_home: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(home ~ '/.cache', true) }}"
+xdg_data_home: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(home ~ '/.local/share', true) }}"
+xdg_state_home: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(home ~ '/.local/state', true) }}"
+zdotdir: "{{ ansible_facts['env']['ZDOTDIR'] | default(home, true) }}"
+cargo_home: "{{ ansible_facts['env']['CARGO_HOME'] | default(home ~ '/.cargo', true) }}"
+rustup_home: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(home ~ '/.rustup', true) }}"

@@ -1,0 +1,83 @@
+---
+- name: "Configure Firefox profile {{ _ff.profile }}"
+  vars:
+    _ff: "{{ cfg.configure.firefox }}"
+    firefox_profiles_dir: >-
+      {{ {'osx': home ~ '/Library/Application Support/Firefox/Profiles', 'linux': home ~ '/.mozilla/firefox'}[os] }}
+  block:
+    - name: "Search for profile directory"
+      ansible.builtin.find:
+        paths: "{{ firefox_profiles_dir }}"
+        patterns: "*.{{ _ff.profile }}"
+        file_type: directory
+      register: firefox_profile_search
+
+    - name: "Remember found profiles"
+      ansible.builtin.set_fact:
+        firefox_profile_matches: "{{ firefox_profile_search.files }}"
+
+    - name: "Create profile if it does not exist yet"
+      ansible.builtin.command:
+        argv:
+          - "{{ _ff.binary }}"
+          - "-CreateProfile"
+          - "{{ _ff.profile }}"
+      when:
+        - firefox_profile_matches | length == 0
+        - _ff.create | bool
+      register: firefox_profile_created
+      changed_when: true
+
+    - name: "Search again after creating the profile" # noqa: no-handler
+      ansible.builtin.find:
+        paths: "{{ firefox_profiles_dir }}"
+        patterns: "*.{{ _ff.profile }}"
+        file_type: directory
+      register: firefox_profile_search_after
+      when: firefox_profile_created is changed
+
+    - name: "Update found profiles" # noqa: no-handler
+      ansible.builtin.set_fact:
+        firefox_profile_matches: "{{ firefox_profile_search_after.files }}"
+      when: firefox_profile_created is changed
+
+    - name: "Make sure exactly one profile matches"
+      ansible.builtin.assert:
+        that: firefox_profile_matches | length == 1
+        fail_msg: >-
+          Expected exactly one profile matching '*.{{ _ff.profile }}'
+          in '{{ firefox_profiles_dir }}', found {{ firefox_profile_matches | length }}.
+        quiet: true
+
+    - name: "Set profile path"
+      ansible.builtin.set_fact:
+        firefox_profile_path: "{{ firefox_profile_matches[0].path }}"
+
+    - name: "Ensure chrome directory exists"
+      ansible.builtin.file:
+        path: "{{ firefox_profile_path }}/chrome"
+        state: directory
+        mode: "0755"
+
+    - name: "Copy userChrome.css and userContent.css"
+      ansible.builtin.copy:
+        src: "{{ _ff.files | expanduser }}/chrome/{{ item }}"
+        dest: "{{ firefox_profile_path }}/chrome/{{ item }}"
+        mode: "0644"
+      loop:
+        - userChrome.css
+        - userContent.css
+
+    - name: "Copy bookmarks.html"
+      ansible.builtin.copy:
+        src: "{{ _ff.files | expanduser }}/bookmarks.html"
+        dest: "{{ firefox_profile_path }}/bookmarks.html"
+        mode: "0644"
+
+    # user.js is rendered as a template so it can contain Ansible variables
+    # (e.g. The absolute path to bookmarks.html).
+    - name: "Render user.js"
+      ansible.builtin.template:
+        src: "{{ _ff.files | expanduser }}/user.js"
+        dest: "{{ firefox_profile_path }}/user.js"
+        mode: "0644"

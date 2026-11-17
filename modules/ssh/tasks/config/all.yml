@@ -1,0 +1,17 @@
+---
+- name: "Rollout ~/.ssh/config"
+  when: cfg.config | length > 0
+  block:
+    - name: "Ensure ~/.ssh"
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/_ssh_dir.yml"
+
+    # Vault-encrypted, see: ssh.config in your config file
+    - name: "Rollout SSH config file"
+      become: true
+      ansible.builtin.copy:
+        content: "{{ cfg.config | trim }}\n"
+        dest: "{{ home }}/.ssh/config"
+        mode: "0600"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
+      no_log: true # Prevents secret leaking (also in --diff output)

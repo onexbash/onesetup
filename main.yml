@@ -1,21 +1,13 @@
 ---
 # -- -- -- -- -- -- -- -- #
 # --   MAIN PLAYBOOK   -- #
+# Runs the core (always) and then every module selected in the config file ($ONESETUP_CONFIG).
 - name: Onesetup
   hosts: localhost
 
-  # -- VARIABLES -- #
-  vars:
-    # Environment Variables: User Environment
-    user: "{{ ansible_facts['env']['USER'] }}"
-    home: "{{ ansible_facts['env']['HOME'] }}"
-    xdg_config_home: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default(home ~ '/.config', true) }}"
-    xdg_cache_home: "{{ ansible_facts['env']['XDG_CACHE_HOME'] | default(home ~ '/.cache', true) }}"
-    xdg_data_home: "{{ ansible_facts['env']['XDG_DATA_HOME'] | default(home ~ '/.local/share', true) }}"
-    xdg_state_home: "{{ ansible_facts['env']['XDG_STATE_HOME'] | default(home ~ '/.local/state', true) }}"
-    zdotdir: "{{ ansible_facts['env']['ZDOTDIR'] | default(home, true) }}"
-    cargo_home: "{{ ansible_facts['env']['CARGO_HOME'] | default(home ~ '/.cargo', true) }}"
-    rustup_home: "{{ ansible_facts['env']['RUSTUP_HOME'] | default(home ~ '/.rustup', true) }}"
+  # -- VARIABLES (module registry & system facts) -- #
+  vars_files:
+    - core/vars.yml
 
   # Variable Prompts
   vars_prompt:
@@ -23,86 +15,45 @@
       prompt: "Sudo password"
       private: true
 
-  # -- PRE-TASKS -- #
+  # -- CORE (always runs) -- #
   pre_tasks:
-    # Pre-Task: Set Become Password as Ansible Fact
     - name: "Set become password gathered in user-prompt as Ansible Fact"
       ansible.builtin.set_fact:
         ansible_become_password: "{{ SUDO_PASSWORD }}"
         cacheable: false
       no_log: true
 
-    # Pre-Task: Include Environment Pre-Task (! RUNS FIRST !)
-    - name: "Include Environment Pre-Task"
-      ansible.builtin.include_tasks:
-        file: "pre_tasks/all/env.yml"
-      vars:
-        prefix: "PRE-TASK: {{ pretask }} |"
+    - name: "Fail on unsupported operating systems"
+      ansible.builtin.assert:
+        that: os == 'osx'
+        fail_msg: "onesetup currently supports macOS only (detected: {{ ansible_facts['system'] }})."
+        quiet: true
 
-    # Pre-Task: Add host to OS group (auto-loads group_vars/<OS>/)
-    - name: "Add host to OS group ({{ ONESETUP_SYSTEM_OS }})"
-      ansible.builtin.group_by:
-        key: "{{ ONESETUP_SYSTEM_OS }}"
+    - name: "Read environment variables & system facts"
+      ansible.builtin.include_tasks: core/env.yml
 
-    # Include: OS-Independent Pre-Tasks
-    - name: "Include OS-Independent Pre-Tasks"
-      ansible.builtin.include_tasks:
-        file: "pre_tasks/all/{{ pretask }}.yml"
-      vars:
-        prefix: "PRE-TASK: {{ pretask }} |"
-      loop:
-        - system
-        - shell
+    - name: "Load config file & select modules"
+      ansible.builtin.include_tasks: core/config.yml
+
+    - name: "Set hostname"
+      ansible.builtin.include_tasks: core/hostname.yml
+      when: ONESETUP_HOSTNAME | length > 0
+
+    - name: "Prepare {{ os }}"
+      ansible.builtin.include_tasks: "core/{{ os }}/{{ core_task }}.yml"
+      loop: [filesystem, dependencies, clt]
       loop_control:
-        loop_var: pretask
-        label: "{{ pretask }}"
-
-    # Include: MacOS Pre-Tasks
-    - name: "Include Pre-Tasks (MacOS)"
-      ansible.builtin.include_tasks:
-        file: "pre_tasks/osx/{{ pretask }}.yml"
+        loop_var: core_task
       vars:
-        prefix: "PRE-TASK: {{ pretask }} |"
-      loop:
-        - filesystem
-        - dependencies
-        - clt
-      loop_control:
-        loop_var: pretask
-        label: "{{ pretask }}"
-      when: ONESETUP_SYSTEM_OS == 'osx'
+        clt_path: /Library/Developer/CommandLineTools
+        clt_marker: /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+        softwareupdate_timeout: 1800 # How long to wait for 'softwareupdate' before timing out. 0 => never timeout
 
-    # Include: Linux Pre-Tasks
-    - name: "Include Pre-Tasks (linux)"
-      ansible.builtin.include_tasks:
-        file: "pre_tasks/linux/{{ pretask }}.yml"
-      vars:
-        prefix: "PRE-TASK: {{ pretask }} |"
-      loop:
-        - distro
+  # -- MODULES -- #
+  tasks:
+    - name: "Run modules"
+      ansible.builtin.include_role:
+        name: "{{ onesetup_module }}"
+      loop: "{{ onesetup_plan | list }}"
       loop_control:
-        loop_var: pretask
-        label: "{{ pretask }}"
-      when: ONESETUP_SYSTEM_OS == 'linux'
-
-    # Include: Windows Pre-Tasks
-    - name: "Include Pre-Tasks (windows)"
-      ansible.builtin.include_tasks:
-        file: "pre_tasks/windows/{{ pretask }}.yml"
-      vars:
-        prefix: "PRE-TASK: {{ pretask }} |"
-      loop:
-        - main
-      loop_control:
-        loop_var: pretask
-        label: "{{ pretask }}"
-      when: ONESETUP_SYSTEM_OS == 'windows'
-
-  # -- ROLES -- #
-  roles:
-    - { role: ssh, tags: ["ssh"] }
-    - { role: dotfiles, tags: ["dotfiles"] }
-    - { role: fonts, tags: ["fonts"] }
-    - { role: apps, tags: ["apps"] }
-    - { role: settings, tags: ["settings"] }
-    - { role: autostart, tags: ["autostart"] }
+        loop_var: onesetup_module

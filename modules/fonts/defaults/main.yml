@@ -1,0 +1,14 @@
+---
+# -- MODULE: fonts -- #
+# Defaults, merged with the 'fonts:' section of your config file.
+fonts_defaults:
+  # Nerd Fonts (https://www.nerdfonts.com) from the GitHub releases
+  nerdfonts:
+    version: v3.5.1
+    # name: archive name in the release | prefix: file name prefix | styles: files to install
+    fonts:
+      - { name: JetBrainsMono, prefix: JetBrainsMonoNerdFont, styles: [Regular, Bold, Italic, BoldItalic] }
+      - { name: FiraCode, prefix: FiraCodeNerdFont, styles: [Regular, Bold] }
+      - { name: NerdFontsSymbolsOnly, prefix: SymbolsNerdFont, styles: [Regular] }
+    # Names of default fonts to skip
+    exclude: []
