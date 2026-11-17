@@ -5,6 +5,7 @@
 **Automated workstation setup — Ansible, shell scripts & a bit of magic.**
 
 Bootstrap a fresh Mac into your fully configured dev machine with a single command.
+Customize everything in one YAML file — no Ansible knowledge needed.
 
 ![Platform](https://img.shields.io/badge/platform-macOS-000000?logo=apple&logoColor=white)
 ![Ansible](https://img.shields.io/badge/automation-Ansible-EE0000?logo=ansible&logoColor=white)
@@ -17,15 +18,18 @@ Bootstrap a fresh Mac into your fully configured dev machine with a single comma
 
 ## 📋 Table of Contents
 
-- [Supported Platforms](#-supported-platforms)
+- [Supported Platforms](#️-supported-platforms)
 - [Getting Started](#-getting-started)
 - [Configuration](#-configuration)
-- [What It Does](#-what-it-does)
-  - [Software Installation](#software-installation)
-  - [Dotfiles](#dotfiles)
-  - [System Settings](#system-settings)
-  - [SSH](#ssh)
-- [Roadmap](#-roadmap)
+  - [Modules](#modules)
+  - [Merge Rules](#merge-rules)
+  - [Secrets](#secrets)
+  - [Profiles](#profiles)
+  - [Environment Variables](#environment-variables)
+- [Commands](#-commands)
+- [Development](#-development)
+  - [Writing a Module](#writing-a-module)
+- [Roadmap](#️-roadmap)
 - [Contributing](#-contributing)
 
 ---
@@ -35,203 +39,215 @@ Bootstrap a fresh Mac into your fully configured dev machine with a single comma
 | OS | Architecture | Status |
 |---|---|---|
 | MacOS | Apple Silicon (arm64) | ✅ Supported |
-| MacOS | Intel (x86_64) | ✅ Supported | 🚧 Not entirely tested yet
-| Linux | x86_64 | 🚧 Planned | *Fedora/Arch/Debian/Ubuntu*
-| Windows | x86_64 | 🚧 Planned | *Windows 11*
+| MacOS | Intel (x86_64) | 🚧 Not entirely tested yet |
+| Linux | x86_64 | 🚧 Planned (*Fedora/Arch/Debian/Ubuntu*) |
+| Windows | x86_64 | 🚧 Planned (*Windows 11*) |
+
 ---
 
 ## 🚀 Getting Started
-### 1) Remote Target Preparation 
-A Target in this Context is the Device you want to configure, aka [Managed Node](https://docs.ansible.com/projects/ansible/latest/network/getting_started/basic_concepts.html#managed-nodes) in Ansible terms.
-Because of some lovely Chicken-Egg-Problems, there are some steps that can't be automated smooth and need to be prepared manually. I'm trying to keep these as little as possible.
 
-#### 1a) MacOS
-*Make sure Homebrew is installed on your system and initialized by your Shell Config (ZSH: `~/.zprofile` | BASH: `~/.bashrc`)*
+### 1) Prepare your Mac
+*Make sure Homebrew is installed and initialized by your shell config (ZSH: `~/.zprofile` | BASH: `~/.bashrc`)*
 ```bash
-# Homebrew Installation Script (https://brew.sh)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
-#### 1b) Linux
-*COMING SOON / In Testing*
 
-#### 1c) Windows
-*Run the official Ansible Target Preperation Script in an elevated Powershell Instance*
-```bash
-# Fetch Script from Ansible Github Repository
-$url = "https://raw.githubusercontent.com/ansible/ansible-documentation/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"
-Invoke-WebRequest -Uri $url -OutFile PrepareTargetForAnsible.ps1
-# Execute Script
-./PrepareTargetForAnsible.ps1
-```
-
-### 2) Installation
-Run the Installation Script below to install the onesetup commands on your System.
+### 2) Install the onesetup commands
 ```bash
 bash -c 'curl -fsSL "https://raw.githubusercontent.com/onexbash/onesetup/main/scripts/install.sh" | bash'
 ```
-*Verify using `which onesetup` & `which onesetup-init`*
+*Verify with `which onesetup`.*
 
-### 2.1) Initialization
-Run the `onesetup-init` Command to initialize onesetup. This is the actual installation that places the Ansible Playbook directory to the Installation Directory etc.
+### 3) Initialize
+`onesetup-init` installs the playbook to `$ONESETUP_INSTALL_DIR` and creates your config file from [onesetup.example.yml](./onesetup.example.yml).
+Run it again at any time to update onesetup — your config file is never touched.
 ```bash
 onesetup-init
-# OR (if not in $PATH)
-/usr/local/bin/onesetup-init
 ```
 
-### 3) Ansible Vault Encryption
-To encrypt your Secrets (e.g: SSH Keys) you can use the `onesetup-vault` command. 
-The idea is that you encrypt them via Ansible Vault *(id: onesetup)* 
-and store them as a Variable in e.g: [encrypted.yml](./group_vars/all/encrypted.yml) or [ssh.yml](./group_vars/all/ssh.yml).
-*Use --target "ansible" to write them directly to the vars-file or "clipboard" to save them to your system clipboard first*
+### 4) Customize *(optional)*
+Edit your config file (`~/.config/onesetup/onesetup.yml`): choose the [modules](#modules) and add your apps, dotfiles, settings, ...
+Without changes you get the base setup.
+
+### 5) Encrypt your secrets *(optional)*
 ```bash
-# Encrypt SSH Key (private & public key)
-onesetup-vault encrypt --file "~/.ssh/id_ed25519" --target "ansible"
-onesetup-vault encrypt --file "~/.ssh/id_ed25519.pub" --target "ansible"
-# Encrypt SSH Config
-onesetup-vault encrypt --file "~/.ssh/config" --target "ansible"
-# Encrypt everything else you wanna rollout via Ansible
+onesetup-vault encrypt --file ~/.ssh/id_ed25519 --target config   # asks for the key, e.g. ssh.identities.id_ed25519
 ```
 
-### 4) Run Playbook
-To apply your Configuration defined in the Ansible Playbook, use the `onesetup` Command.
+### 6) Set device-specific environment variables *(optional)*
 ```bash
-# Running without arguments will prompt you for everything that's needed
+export ONESETUP_HOSTNAME="my-macbook"
+export ONESETUP_SSH_KEY="~/.ssh/id_github"   # key used to clone your dotfiles via SSH
+```
+See [Environment Variables](#environment-variables) for all of them.
+
+### 7) Run
+```bash
 onesetup
-# Skip individual roles
-onesetup --skip "<role_name>, <role_name>"
 ```
 
-> 💡 Roles are tagged (`dotfiles`, `apps`, `settings`) — pass any combination of tag names to `--skip` to opt out of specific stages.
-
 ---
-
-## Commands
-
-Once installed, the `onesetup` binaries are available in `/usr/local/bin`. 
-
-> **Note:** `/usr/local/bin` has to be included in your `$PATH` variable.
-
----
-
-### [`onesetup`](./bin/onesetup)
-Applies defined system configurations using Ansible.
-
-| Command | Description |
-| :--- | :--- |
-| `onesetup` | If run without arguments or subcommands, you will be prompted interactively. |
-| `onesetup run [options]` | Executes the Ansible playbook on your target environment. |
-| `onesetup run --directory "dev"` | Runs the playbook directly from your local Git repo to test changes without reinstalling |
-| `onesetup --help` | Displays command usage and available flags. |
-
-**Available Options for `onesetup run`:**
-* `--dev-dir <dev|prod>`        - Specify a directory to run the playbook in. *If set, it's used instead of the Installation Directory*
-* `--include <role1,role2>`     — roles/tags to include (comma-separated). *If set, only these roles/tags will run*
-* `--skip <role1,...>`          — roles/tags to skip (comma-separated). *If set, these roles/tags will be excluded from the playbook run*
-
----
-
-### [`onesetup-vault`](./bin/onesetup-vault)
-Encrypts sensitive variables using Ansible Vault.
-
-| Command | Description |
-| :--- | :--- |
-| `onesetup-vault` | If run without arguments or subcommands, you will be prompted interactively. |
-| `onesetup-vault --help` | Displays usage instructions for vault operations. |
 
 ## 🔧 Configuration
-For configuration, onesetup will check for a config.yml in the following locations:
-$XDG_CONFIG_HOME/onesetup/config.yml
-$HOME/.config/onesetup/config.yml
 
-Check [default.config.yml](./default.config.yml) for the Default Values.
-See Explanation and all valid options below:
+Everything you customize lives in **one file**: `$ONESETUP_CONFIG` (default: `~/.config/onesetup/onesetup.yml`).
+It only contains *your* changes — the defaults stay in this repository, so updates never conflict with your config.
+Keep the file in your dotfiles repository to use the same setup on every machine.
 
 ```yaml
-remote:
-  provider: [github|gitlab|bitbucket|azure_devops] # Provider of the Git Repository Remote for your Ansible Playbook Source-Code [github/gitlab/bitbucket/azure_devops]
-  username: [String] # Username on your Remote Repository (e.g: Github Username)
-  connection: [https|ssh] # Connection Type for Repository Operations
-  project_repo: [String] # Repository Name
-  dotfiles_repo: [String] # Name of a separate Git Repository that stores all your dotfiles
-  ssh_key: [String] # Path to an SSH-Key(private) to clone GitHub Repositories with (especially the Dotfiles Repo)
-  ssh_pass: [String] # Password for the SSH-Key (optional, but required if the ssh-key uses a password)
-system:
-  os: [osx|linux|windows] # Operating System (Auto-Detected but can be overridden here)
-  arch: [arm64|x86] # CPU Architecture (Auto-Detected but can be overridden here)
-  shell: "" # Default Shell you wanna use (e.g: `/bin/zsh` or `/opt/homebrew/bin/bash` etc.)
-  hostname: [String] # Name of your Machine
-  username: [String] # Name of a User on your system that has sudo privileges but is not the root user
-  root_user: [String] # Name of the Root user on your system
-  user_group: [String] # Group of the system user
-  root_group: [String] # Group of the root user
-  config_dir: [String] # Config Directory for your config.yml
-  install_dir: [String] # Installation Directory
-  storage_dir: [String] # Storage Directory
-  dotfiles_dir: [String] # Dotfiles Directory used to clone your Dotfiles repo into and symlink them to the mapped locations
-  bin_dir: [String] # Directory where the onesetup Binaries are installed to (has to be in $PATH to enable them as commands)
-  tmp_dir: [String] # Directory for Temporary Files
-project:
-  debug: [0|1|2|3] # Debug Level for Console Outputs [0: Normal | 1: Info | 2: Verbose | 3: Debug]
-  dev_dir: [String] # Development Directory (if set, used as Target over Installation Directory)
+modules: [shell, apps, settings.dock]
+
+apps:
+  install:
+    brew:
+      formulas: [k9s]          # installed on top of the default formulas
+      casks: [ghostty, firefox]
+      exclude: [lazygit]       # skip a default formula
+  autostart: [Ghostty]
+
+settings:
+  dock: [Ghostty, Firefox]
 ```
+
+[onesetup.example.yml](./onesetup.example.yml) shows the common options; each module's `defaults/main.yml` documents all of them.
+
+### Modules
+
+Only the modules listed under `modules:` run. `apps` runs all parts of the module, `apps.install` only this part.
+They always run in the order of this table.
+
+| Module | Parts | What it does | All options |
+|---|---|---|---|
+| `shell` | `env`, `paths`, `login`, `gui_env` | Global environment variables, `$PATH` (`/etc/paths.d`), login shell, environment variables for GUI apps | [defaults](./modules/shell/defaults/main.yml) |
+| `ssh` | `identities`, `config`, `known_hosts`, `authorized_keys` | Rolls out your (encrypted) SSH keys & config, `known_hosts` (overwritten) and `authorized_keys` | [defaults](./modules/ssh/defaults/main.yml) |
+| `dotfiles` | `clone`, `link` | Clones your dotfiles repository and symlinks the files into place (existing files are backed up) | [defaults](./modules/dotfiles/defaults/main.yml) |
+| `fonts` | `nerdfonts` | Installs Nerd Fonts | [defaults](./modules/fonts/defaults/main.yml) |
+| `apps` | `install`, `configure`, `autostart` | Package managers per OS (Homebrew, Mac App Store), manual installs (dmg, pkg, zip, script), gh extensions, Firefox profile, apps started at login | [defaults](./modules/apps/defaults/main.yml) |
+| `settings` | `defaults`, `system`, `dock`, `finder`, `keymaps`, `wallpaper`, `browser` | macOS preferences (any `defaults write`), power & startup settings, Dock apps, Finder tags, shortcuts, wallpaper, default browser | [defaults](./modules/settings/defaults/main.yml) |
+| `custom` | `tasks` | Runs your own Ansible task files — for everything the modules don't cover | [defaults](./modules/custom/defaults/main.yml) |
+
+Before the modules, the **core** always runs: it checks the environment variables, loads your config, sets the hostname and installs the prerequisites (Xcode Command Line Tools, Rosetta 2, brew versions of bash/zsh/openssh, mas).
+
+### Merge Rules
+
+Your config is merged into the module defaults with three rules:
+
+| You write | Result |
+|---|---|
+| a list (`formulas: [k9s]`) | **added** to the default list |
+| a value (`login: /opt/homebrew/bin/zsh`) | **replaces** the default |
+| `exclude: [...]` *(brew, fonts)* | **removes** default entries |
+
+For `settings.defaults`, set a key to `null` to skip a default. Paths may start with `~/`.
+Typos are reported: unknown modules stop the run, unknown keys print a warning.
+
+### Secrets
+
+Secrets are stored inline in your config file, encrypted with Ansible Vault (vault id `onesetup`), and decrypted during the run (`onesetup` asks for the vault password).
+```bash
+onesetup-vault encrypt --string --target config                        # prompts for the secret & the key
+onesetup-vault encrypt --file ~/.ssh/config ssh.config --target config
+onesetup-vault encrypt --file ~/.ssh/id_ed25519 --target clipboard     # paste it yourself
+```
+
+### Profiles
+
+One config for several machines: settings under `profiles.<name>` are merged into the config (same [rules](#merge-rules)) when `ONESETUP_PROFILE=<name>` is set.
+```yaml
+profiles:
+  work:
+    modules: [ssh]
+    apps:
+      install:
+        brew:
+          casks: [microsoft-teams]
+```
+
+### Environment Variables
+
+Device-specific settings are environment variables only — everything else belongs into the config file.
+
+| Variable | Default | Description |
+|---|---|---|
+| `ONESETUP_CONFIG` | `$XDG_CONFIG_HOME/onesetup/onesetup.yml` | Your config file |
+| `ONESETUP_PROFILE` | – | [Profile](#profiles) to apply |
+| `ONESETUP_HOSTNAME` | – | Hostname to set (HostName, LocalHostName & ComputerName). Unset: keep the current one |
+| `ONESETUP_SSH_KEY` | – | Private key to clone the dotfiles repository via SSH (else HTTPS) |
+| `ONESETUP_SSH_PASS` | – | Passphrase of that key |
+| `ONESETUP_INSTALL_DIR` | `$XDG_DATA_HOME/onesetup` | Where `onesetup-init` installs the playbook |
+| `ONESETUP_STATE_DIR` | `$XDG_STATE_HOME/onesetup` | Ansible collections & state |
+| `ONESETUP_BIN_DIR` | `/usr/local/bin` | Where the commands are installed (must be in `$PATH`) |
+| `ONESETUP_REPO` | `https://github.com/onexbash/onesetup.git` | Repository `onesetup-init` installs from |
+| `ONESETUP_BRANCH` | `main` | Branch `onesetup-init` installs from |
+| `ONESETUP_DEV_DIR` | – | Run the playbook from this local checkout instead of the installation (same as `--dev-dir`) |
+| `ONESETUP_DEBUG` | `0` | `1`–`3`: verbose Ansible output, `4`: also traces the onesetup scripts |
 
 ---
 
-### Configuration: Environment Variables
-Each Config Key also exists as Environment Variable. For example:
+## 💻 Commands
+
+The commands are installed to `$ONESETUP_BIN_DIR` (default `/usr/local/bin`, has to be in your `$PATH`).
+
+### [`onesetup`](./bin/onesetup)
+| Command | Description |
+| :--- | :--- |
+| `onesetup` | Prompts for what to do |
+| `onesetup run [options]` | Applies your setup |
+| `onesetup test [options] [--diff]` | Shows what would change, without changing anything (`--check`) |
+| `onesetup --help` | Usage |
+
+Options: `--include <module,...>` only runs these modules/parts (instead of `modules:`), `--skip <module,...>` skips them (e.g. `--skip apps.autostart,settings`), `--dev-dir <path>` uses a local checkout.
+
+### [`onesetup-init`](./bin/onesetup-init)
+Installs or updates the playbook, the commands and the Ansible collections, and creates your config file if it doesn't exist.
+
+### [`onesetup-vault`](./bin/onesetup-vault)
+Encrypts secrets with Ansible Vault — into your config file (`--target config`) or to the clipboard (`--target clipboard`). See [Secrets](#secrets) and `onesetup-vault --help`.
+
+---
+
+## 🧪 Development
+
+Test playbook changes without reinstalling:
 ```bash
-export ONESETUP_REMOTE_PROVIDER # Equals the Config-Key 'remote.provider'
-export ONESETUP_SYSTEM_CONFIG_DIR # # Equals the Config-Key 'system.config_dir'
-# ... etc. etc.
+onesetup test --dev-dir .   # dry run
+onesetup run --dev-dir .
 ```
-So instead of using the [config.yml](./default.config.yml) you can pass them to the `onesetup` and `onesetup-vault` command as well.
 
-## Development
-During development, you probably want to test or apply playbook changes without having to run the Installation Script everytime. 
-For this purpose, you can export an environment variable or pass the `--dev-dir` argument to the `onesetup` command:
+Checks:
 ```bash
-# Set by exporting Environment Variable
-export ONESETUP_PROJECT_DEV_DIR="<path to dev directory>"
-# Set by passing an argument
-onesetup run --dev-dir # Runs & Applies the Playbook
-onesetup test --dev-dir # Tests the changes that it would make without applying them
+yamllint .
+ansible-lint
+ansible-playbook tests/config.yml   # config loading, profiles, module selection & dispatcher
 ```
-*NOTE: The Installation Directory is not used anymore and completely ignored when a development directory is set!*
 
-## ⚙️ What It Does
+### Layout
+```
+main.yml            # core, then the selected modules
+core/               # always runs: env vars, config & run plan, hostname, macOS prerequisites
+  vars.yml          # module registry (modules, parts, order) & system facts
+  module.yml        # shared by all modules: merges defaults + config into 'cfg', runs the parts
+modules/<module>/   # one Ansible role per module
+  defaults/main.yml # <module>_defaults: the base setup & documentation of all options
+  tasks/main.yml    # includes core/module.yml
+  tasks/<part>/     # <os>.yml (osx, linux) and/or all.yml
+```
 
-### Software Installation
-- Installs XCode Command Line Tools & accepts the license
-- Installs Rosetta 2 (for Apple Silicon compatibility)
-- Installs [Homebrew](https://brew.sh)
-- Installs casks & formulae defined in [`group_vars/osx/brew.yml`](./group_vars/osx/brew.yml) — languages, CLI tools, apps
-- Installs App Store software via `mas` (e.g. XCode) defined in the `apps` role
-- Handles anything that can't be installed via Homebrew or the App Store through custom tasks
+### Writing a Module
+1. Create `modules/<name>/defaults/main.yml` with `<name>_defaults:` (every option, documented).
+2. Create `modules/<name>/tasks/main.yml` (copy it from another module) and one directory per part with `osx.yml` and/or `all.yml`. Read the merged config from `cfg`.
+3. Register the module and its parts in [`core/vars.yml`](./core/vars.yml) (`onesetup_registry`) at the position it should run.
 
-### Dotfiles
-
-- Clones your [dotfiles repository](https://github.com/onexbash/dotfiles) to `~/.local/share/dotfiles`
-- Symlinks files into place based on the mapping in [`roles/dotfiles/vars/main.yml`](./roles/dotfiles/vars/main.yml)
-
-### System Settings
-
-- Sets MacOS Dock items based on [`group_vars/osx/dock.yml`](./group_vars/osx/dock.yml)
-- Applies additional system defaults & preferences defined in the [`settings`](./roles/settings) role
-
-### SSH
-
-- Decrypts vault-encrypted SSH keys & known hosts from [`group_vars/all/ssh.yml`](./group_vars/all/ssh.yml)
-- Rolls out keys, `authorized_keys`, and `known_hosts` to `~/.ssh` with correct permissions
+Available variables: `cfg`, `os`, `arch`, `user`, `user_group`, `root_user`, `root_group`, `home`, `xdg_*_home`, `ONESETUP_*`.
 
 ---
 
 ## 🗺️ Roadmap
 
-- [ ] Fedora Linux support
+- [ ] Linux support (package managers per distribution in `apps.install.managers`)
 - [ ] Intel-based MacOS support
-- [ ] Additional CLI parameters
-- [ ] Setup wizard to semi-automate secret encryption & storage
+- [ ] JSON schema for editor autocompletion of the config file
 - [ ] Auto-Installation of manual drivers (printer, ..)
 
 ---
@@ -243,7 +259,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 ```bash
 git clone git@github.com:onexbash/onesetup.git
 cd onesetup
-yamllint .   # lint before submitting
+yamllint . && ansible-lint && ansible-playbook tests/config.yml
 ```
 
 ---
