@@ -247,12 +247,13 @@ function set_target_dir() {
 # [UTIL] Use a local project directory instead of the installed one: use_dev_dir [path]
 # (no-op if path is empty, e.g. when '--dev-dir' was not given)
 function use_dev_dir() {
-  [[ -n "${1:-}" ]] || return 0
-  [[ -d "$1" ]] || {
-    echo -e "${I_ERR}Development directory not found: ${C_CYAN}$1${C_RESET}"
+  local dir="${1/#\~/$HOME}" # quoted "~/..." is not expanded by the shell
+  [[ -n "$dir" ]] || return 0
+  [[ -d "$dir" ]] || {
+    echo -e "${I_ERR}Development directory not found: ${C_CYAN}$dir${C_RESET}"
     exit 1
   }
-  ONESETUP_DEV_DIR="$(cd -P "$1" && pwd)"
+  ONESETUP_DEV_DIR="$(cd -P "$dir" && pwd)"
   export ONESETUP_DEV_DIR
   set_target_dir "$ONESETUP_DEV_DIR"
 }
@@ -283,6 +284,7 @@ function apply_config() {
   ONESETUP_CONFIG="${ONESETUP_CONFIG/#\~/$HOME}"
   ONESETUP_SSH_KEY="${ONESETUP_SSH_KEY/#\~/$HOME}"
   ONESETUP_KEEPASSXC_DB="${ONESETUP_KEEPASSXC_DB/#\~/$HOME}"
+  ONESETUP_DEV_DIR="${ONESETUP_DEV_DIR/#\~/$HOME}"
 
   set_target_dir "${ONESETUP_DEV_DIR:-$ONESETUP_INSTALL_DIR}"
   export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_STATE_DIR}/collections"
