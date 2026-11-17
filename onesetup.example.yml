@@ -88,6 +88,14 @@ modules:
 # custom:
 #   tasks: [~/.config/onesetup/tasks/printer.yml]
 
+# -- secrets -- #
+# Environment variables exported for the run, as password manager references only
+# (pass://<vault>/<item>/<field> | keepassxc://<group>/<entry>/<attribute> | bitwarden://<item>/<field>).
+# A set environment variable wins. See README: Password Manager References.
+# secrets:
+#   ONESETUP_VAULT_PASS: "pass://Development/Ansible Vault - onesetup/Secret"
+#   ONESETUP_SSH_PASS: "pass://Development/GitHub SSH Key/Passphrase"
+
 # -- profiles -- #
 # Extra settings for some machines: export ONESETUP_PROFILE=work to merge 'work' into everything above.
 # profiles:

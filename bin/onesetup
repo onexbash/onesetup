@@ -161,12 +161,15 @@ EOF
 function setup() {
   # gum is only needed for the interactive prompt
   if [[ -z "$SUBCMD" ]]; then
-    install_deps "ansible" "gum"
+    install_deps "ansible" "gum" "yq"
   else
-    install_deps "ansible"
+    install_deps "ansible" "yq"
   fi
 
   use_dev_dir "$ARG_DEV_DIR"
+
+  # Password manager references → values (ONESETUP_SSH_PASS, ONESETUP_VAULT_PASS, config 'secrets:')
+  load_secrets
 }
 
 # --             -- #
@@ -185,6 +188,8 @@ function prompt_subcommand() {
 function run_playbook() {
   local playbook="${X_TARGET_DIR}/main.yml"
   local args=("--ask-vault-pass")
+  local vault_pass="$ONESETUP_VAULT_PASS"
+  unset ONESETUP_VAULT_PASS # keep it out of the playbook's environment
 
   [[ -f "$playbook" && -r "$playbook" ]] || {
     echo -e "${I_ERR}No readable Playbook Entrypoint found at: ${C_CYAN}${playbook}${C_RESET}"
@@ -218,7 +223,13 @@ function run_playbook() {
   echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
   echo -e "${I_INFO}onesetup ==> Mode: ${C_CYAN}${SUBCMD}${C_RESET}"
 
-  ansible-playbook "$playbook" "${args[@]}" || {
+  # Vault password: ONESETUP_VAULT_PASS through a pipe (/dev/fd/N: not in argv, no temp file), else prompted
+  # (the process substitution must be part of the command itself, its fd is closed afterwards)
+  if [[ -n "$vault_pass" ]]; then
+    ansible-playbook "$playbook" --vault-id "onesetup@"<(printf '%s\n' "$vault_pass") "${args[@]:1}"
+  else
+    ansible-playbook "$playbook" "${args[@]}"
+  fi || {
     echo -e "${I_ERR}onesetup ==> ansible playbook failed"
     exit 1
   }

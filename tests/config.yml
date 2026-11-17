@@ -100,3 +100,13 @@
       vars:
         apps_defaults: "{{ (lookup('ansible.builtin.file', playbook_dir ~ '/../modules/apps/defaults/main.yml') | from_yaml).apps_defaults }}"
         _merged: "{{ apps_defaults | combine(onesetup_config.apps, recursive=true, list_merge='append_rp') }}"
+
+    - name: "Plan from onesetup.default.yml"
+      ansible.builtin.include_tasks: ../core/config.yml
+      vars:
+        ONESETUP_CONFIG: "{{ playbook_dir }}/../onesetup.default.yml"
+
+    - name: "Assert: the default config runs every module completely"
+      ansible.builtin.assert:
+        that: onesetup_plan == onesetup_registry
+        fail_msg: "onesetup.default.yml is missing modules: {{ onesetup_registry.keys() | difference(onesetup_plan.keys()) }}"

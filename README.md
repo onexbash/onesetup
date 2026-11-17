@@ -111,6 +111,7 @@ settings:
 ```
 
 [onesetup.example.yml](./onesetup.example.yml) shows the common options; each module's `defaults/main.yml` documents all of them.
+To run every module with its defaults only, use [onesetup.default.yml](./onesetup.default.yml): `ONESETUP_CONFIG=<install dir>/onesetup.default.yml onesetup`.
 
 ### Modules
 
@@ -144,11 +145,34 @@ Typos are reported: unknown modules stop the run, unknown keys print a warning.
 
 ### Secrets
 
-Secrets are stored inline in your config file, encrypted with Ansible Vault (vault id `onesetup`), and decrypted during the run (`onesetup` asks for the vault password).
+Secrets are stored inline in your config file, encrypted with Ansible Vault (vault id `onesetup`), and decrypted during the run (`onesetup` asks for the vault password, unless `ONESETUP_VAULT_PASS` is set).
 ```bash
 onesetup-vault encrypt --string --target config                        # prompts for the secret & the key
 onesetup-vault encrypt --file ~/.ssh/config ssh.config --target config
 onesetup-vault encrypt --file ~/.ssh/id_ed25519 --target clipboard     # paste it yourself
+```
+
+#### Password Manager References
+
+Secret environment variables (`ONESETUP_SSH_PASS`, `ONESETUP_VAULT_PASS`) can hold a reference instead of the secret.
+`onesetup` resolves it when it runs (`run` / `test`) — the last path segment is the field:
+
+| Password manager | Reference | Needs |
+|---|---|---|
+| Proton Pass | `pass://<vault>/<item>/<field>` | `pass-cli`, logged in |
+| KeePassXC | `keepassxc://<group>/.../<entry>/<attribute>` | `keepassxc-cli`, `ONESETUP_KEEPASSXC_DB` (asks for the database password) |
+| Bitwarden | `bitwarden://<item>/<field>` | `bw`, unlocked (`export BW_SESSION="$(bw unlock --raw)"`). Field: `password`, `username`, `notes` or a custom field name |
+
+```bash
+export ONESETUP_SSH_PASS='pass://Development/GitHub SSH Key/Passphrase'
+```
+
+The same references can live in the config file under `secrets:` — any variable name, exported for the run.
+Only references are allowed there (no plain secrets), and a set environment variable wins:
+```yaml
+secrets:
+  ONESETUP_VAULT_PASS: "pass://Development/Ansible Vault - onesetup/Secret"
+  GITHUB_PAT_PUBLIC_READ: "keepassxc://Development/GitHub PAT/Password" # used by apps.install.manual (GitHub API)
 ```
 
 ### Profiles
@@ -174,7 +198,9 @@ Device-specific settings are environment variables only — everything else belo
 | `ONESETUP_PROFILE` | – | [Profile](#profiles) to apply |
 | `ONESETUP_HOSTNAME` | – | Hostname to set (HostName, LocalHostName & ComputerName). Unset: keep the current one |
 | `ONESETUP_SSH_KEY` | – | Private key to clone the dotfiles repository via SSH (else HTTPS) |
-| `ONESETUP_SSH_PASS` | – | Passphrase of that key |
+| `ONESETUP_SSH_PASS` | – | Passphrase of that key (or a [password manager reference](#password-manager-references)) |
+| `ONESETUP_VAULT_PASS` | – | Vault password (or a [password manager reference](#password-manager-references)). Unset: prompted |
+| `ONESETUP_KEEPASSXC_DB` | – | KeePassXC database for `keepassxc://` references |
 | `ONESETUP_INSTALL_DIR` | `$XDG_DATA_HOME/onesetup` | Where `onesetup-init` installs the playbook |
 | `ONESETUP_STATE_DIR` | `$XDG_STATE_HOME/onesetup` | Ansible collections & state |
 | `ONESETUP_BIN_DIR` | `/usr/local/bin` | Where the commands are installed (must be in `$PATH`) |
@@ -220,6 +246,7 @@ Checks:
 yamllint .
 ansible-lint
 ansible-playbook tests/config.yml   # config loading, profiles, module selection & dispatcher
+bash tests/secrets.sh               # password manager references (stub CLIs)
 ```
 
 ### Layout
@@ -259,7 +286,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 ```bash
 git clone git@github.com:onexbash/onesetup.git
 cd onesetup
-yamllint . && ansible-lint && ansible-playbook tests/config.yml
+yamllint . && ansible-lint && ansible-playbook tests/config.yml && bash tests/secrets.sh
 ```
 
 ---

@@ -272,6 +272,8 @@ function apply_config() {
   export ONESETUP_BIN_DIR="${ONESETUP_BIN_DIR:-/usr/local/bin}"
   export ONESETUP_SSH_KEY="${ONESETUP_SSH_KEY:-}"
   export ONESETUP_SSH_PASS="${ONESETUP_SSH_PASS:-}"
+  export ONESETUP_VAULT_PASS="${ONESETUP_VAULT_PASS:-}"
+  export ONESETUP_KEEPASSXC_DB="${ONESETUP_KEEPASSXC_DB:-}"
   export ONESETUP_REPO="${ONESETUP_REPO:-https://github.com/onexbash/onesetup.git}"
   export ONESETUP_BRANCH="${ONESETUP_BRANCH:-main}"
   export ONESETUP_DEV_DIR="${ONESETUP_DEV_DIR:-}"
@@ -280,9 +282,110 @@ function apply_config() {
   # Quoted values ("~/...") are not expanded by the shell
   ONESETUP_CONFIG="${ONESETUP_CONFIG/#\~/$HOME}"
   ONESETUP_SSH_KEY="${ONESETUP_SSH_KEY/#\~/$HOME}"
+  ONESETUP_KEEPASSXC_DB="${ONESETUP_KEEPASSXC_DB/#\~/$HOME}"
 
   set_target_dir "${ONESETUP_DEV_DIR:-$ONESETUP_INSTALL_DIR}"
   export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_STATE_DIR}/collections"
+}
+
+# --                 -- #
+# --     SECRETS     -- #
+# --                 -- #
+
+# [UTIL] Print a secret: password manager references are resolved, other values printed as they are
+# resolve_secret <value>
+#   pass://<vault>/<item>/<field>          Proton Pass  (pass-cli, logged in)
+#   keepassxc://<group/.../entry>/<attr>   KeePassXC    (keepassxc-cli, database: $ONESETUP_KEEPASSXC_DB)
+#   bitwarden://<item>/<field>             Bitwarden    (bw, unlocked: $BW_SESSION)
+function resolve_secret() {
+  local ref="$1" path item field
+  case "$ref" in
+  pass://* | keepassxc://* | bitwarden://*) ;;
+  *)
+    printf '%s' "$ref"
+    return 0
+    ;;
+  esac
+
+  # The last path segment is the field, everything before it the item
+  path="${ref#*://}"
+  field="${path##*/}"
+  item="${path%/*}"
+  if [[ "$path" != */* || -z "$field" || -z "$item" ]]; then
+    echo -e "${I_ERR}Invalid secret reference: ${ref} (expected <scheme>://<item>/<field>)" >&2
+    return 1
+  fi
+
+  case "$ref" in
+  pass://*)
+    [[ "$item" == */* ]] || {
+      echo -e "${I_ERR}Invalid Proton Pass reference: ${ref} (expected pass://<vault>/<item>/<field>)" >&2
+      return 1
+    }
+    command -v pass-cli &>/dev/null || {
+      echo -e "${I_ERR}pass-cli not found (needed for ${ref})" >&2
+      return 1
+    }
+    pass-cli item view --vault-name "${item%%/*}" --item-title "${item#*/}" --field "$field"
+    ;;
+  keepassxc://*)
+    [[ -f "$ONESETUP_KEEPASSXC_DB" ]] || {
+      echo -e "${I_ERR}Set ONESETUP_KEEPASSXC_DB to your KeePassXC database (needed for ${ref})" >&2
+      return 1
+    }
+    # The password prompt goes to the terminal, only the attribute value to stdout
+    printf '%b' "${I_ASK}KeePassXC password for ${ONESETUP_KEEPASSXC_DB}: " >&2
+    keepassxc-cli show --quiet --show-protected --attributes "$field" "$ONESETUP_KEEPASSXC_DB" "$item"
+    echo >&2
+    ;;
+  bitwarden://*)
+    command -v bw &>/dev/null || {
+      echo -e "${I_ERR}bw (Bitwarden CLI) not found (needed for ${ref})" >&2
+      return 1
+    }
+    # Login fields first, then custom fields with that name
+    bw get item "$item" | FIELD="$field" yq -p json -r '
+      (.login[strenv(FIELD)] // .[strenv(FIELD)] // (.fields[] | select(.name == strenv(FIELD)) | .value)) // ""'
+    ;;
+  esac
+}
+
+# [UTIL] Export secrets, with password manager references resolved: load_secrets [name...]
+# Secrets: ONESETUP_SSH_PASS, ONESETUP_VAULT_PASS & every variable under 'secrets:' in the config file
+# (only references there, never plain secrets). Environment variables win over the config file.
+# With names given, only these are loaded.
+function load_secrets() {
+  local names=("$@") config_names=() name value
+  local all=(ONESETUP_SSH_PASS ONESETUP_VAULT_PASS)
+
+  if [[ -f "$ONESETUP_CONFIG" ]] && yq -e '.secrets' "$ONESETUP_CONFIG" &>/dev/null; then
+    while IFS= read -r name; do
+      config_names+=("$name")
+    done < <(yq -r '.secrets | keys | .[]' "$ONESETUP_CONFIG")
+  fi
+  all+=("${config_names[@]}")
+  [[ ${#names[@]} -gt 0 ]] || names=("${all[@]}")
+
+  for name in "${names[@]}"; do
+    [[ "$name" =~ ^[A-Z_][A-Z0-9_]*$ ]] || {
+      echo -e "${I_ERR}Invalid variable name under 'secrets:' in ${ONESETUP_CONFIG}: ${name}"
+      exit 1
+    }
+    value="$(printenv "$name" || true)"
+    if [[ -z "$value" && " ${config_names[*]} " == *" ${name} "* ]]; then
+      value="$(NAME="$name" yq -r '.secrets[strenv(NAME)]' "$ONESETUP_CONFIG")"
+      [[ "$value" =~ ^(pass|keepassxc|bitwarden):// ]] || {
+        echo -e "${I_ERR}secrets.${name} in ${ONESETUP_CONFIG} must be a password manager reference (pass://, keepassxc://, bitwarden://), not a plain secret."
+        exit 1
+      }
+    fi
+    [[ -n "$value" ]] || continue
+    value="$(resolve_secret "$value")" && [[ -n "$value" ]] || {
+      echo -e "${I_ERR}Failed to resolve the secret for ${name} (missing or empty)"
+      exit 1
+    }
+    export "${name}=${value}"
+  done
 }
 
 # Call Main Function with Args

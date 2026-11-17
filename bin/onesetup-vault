@@ -196,7 +196,7 @@ Encrypt Options:
   The name is the key in the config file, e.g. 'ssh.identities.id_ed25519'.
   Config file: ${ONESETUP_CONFIG}
 
-Vault Password Options (default: prompted by ansible-vault):
+Vault Password Options (default: ONESETUP_VAULT_PASS, else prompted by ansible-vault):
   --vault-pass-file <path>        Read the vault password from a file
                                   (executable files are run as a script by ansible-vault)
   --vault-pass <password>         Use this vault password
@@ -216,6 +216,12 @@ function setup() {
     echo -e "${I_ERR}onesetup-vault needs mikefarah/yq (https://github.com/mikefarah/yq), found another 'yq' in PATH."
     exit 1
   }
+
+  # No vault password option given → ONESETUP_VAULT_PASS (env or config 'secrets:', may be a password manager reference)
+  if [[ -z "$ARG_VAULT_PASS" && -z "$ARG_VAULT_PASS_FILE" ]]; then
+    load_secrets ONESETUP_VAULT_PASS
+    ARG_VAULT_PASS="$ONESETUP_VAULT_PASS"
+  fi
 }
 
 # --                 -- #

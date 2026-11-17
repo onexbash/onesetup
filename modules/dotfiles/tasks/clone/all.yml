@@ -1,9 +1,13 @@
 ---
-- name: "Fail if no dotfiles repository is configured"
-  ansible.builtin.assert:
-    that: cfg.repo | length > 0
-    fail_msg: "Set 'dotfiles.repo' in {{ ONESETUP_CONFIG }} (or remove 'dotfiles' from 'modules')."
-    quiet: true
+- name: "Skip the dotfiles module when no repository is configured"
+  when: cfg.repo | length == 0
+  block:
+    - name: "Info: no dotfiles repository"
+      ansible.builtin.debug:
+        msg: "No 'dotfiles.repo' in {{ ONESETUP_CONFIG }}, skipping the dotfiles module."
+
+    - name: "Skip the rest of the dotfiles module"
+      ansible.builtin.meta: end_role
 
 # Set Remote Origin of Dotfiles Repository (SSH if possible, HTTPS as fallback)
 - name: "Set Dotfiles Repository URI and Git Environment"

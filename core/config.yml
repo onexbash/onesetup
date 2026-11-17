@@ -73,9 +73,9 @@
   ansible.builtin.debug:
     msg: >-
       Unknown key(s) in {{ ONESETUP_CONFIG }}: {{ _unknown_keys | join(', ') }}.
-      Known keys: modules, profiles, {{ onesetup_registry.keys() | join(', ') }}.
+      Known keys: modules, profiles, secrets, {{ onesetup_registry.keys() | join(', ') }}.
   vars:
-    _unknown_keys: "{{ onesetup_config.keys() | reject('in', ['modules', 'profiles'] + (onesetup_registry.keys() | list)) | list }}"
+    _unknown_keys: "{{ onesetup_config.keys() | reject('in', ['modules', 'profiles', 'secrets'] + (onesetup_registry.keys() | list)) | list }}"
   when: _unknown_keys | length > 0
 
 - name: "Show the run plan"
