@@ -1,0 +1,102 @@
+---
+# Tests for the config handling (core/config.yml & core/module.yml). Changes nothing on the system.
+# Run: ansible-playbook tests/config.yml
+- name: "Test: config file, profiles, module selection & dispatcher"
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ../core/vars.yml
+  vars:
+    ONESETUP_CONFIG: "{{ playbook_dir }}/fixtures/onesetup.yml"
+    ONESETUP_PROFILE: ""
+  tasks:
+    - name: "Plan from the config file"
+      ansible.builtin.include_tasks: ../core/config.yml
+
+    - name: "Assert: modules & submodules in registry order"
+      ansible.builtin.assert:
+        that:
+          - "onesetup_plan == {'apps': ['install', 'configure', 'autostart'], 'settings': ['dock'], 'custom': ['tasks']}"
+          - onesetup_plan.keys() | list == ['apps', 'settings', 'custom']
+
+    - name: "Plan with --skip apps.autostart,custom"
+      ansible.builtin.include_tasks: ../core/config.yml
+      vars:
+        onesetup_skip: "apps.autostart,custom"
+
+    - name: "Assert: skipped submodules are gone"
+      ansible.builtin.assert:
+        that: "onesetup_plan == {'apps': ['install', 'configure'], 'settings': ['dock']}"
+
+    - name: "Plan with --include ssh.config,fonts"
+      ansible.builtin.include_tasks: ../core/config.yml
+      vars:
+        onesetup_include: "ssh.config,fonts"
+
+    - name: "Assert: --include replaces the modules list"
+      ansible.builtin.assert:
+        that: "onesetup_plan == {'ssh': ['config'], 'fonts': ['nerdfonts']}"
+
+    - name: "Plan with profile 'work'"
+      ansible.builtin.include_tasks: ../core/config.yml
+      vars:
+        ONESETUP_PROFILE: work
+
+    - name: "Assert: profile lists extend the config"
+      ansible.builtin.assert:
+        that:
+          - onesetup_plan.ssh == ['config']
+          - onesetup_plan.apps == ['install', 'configure', 'autostart']
+          - onesetup_config.apps.install.brew.casks == ['microsoft-teams']
+          - onesetup_config.apps.install.brew.formulas == ['k9s']
+
+    - name: "Unknown module names fail"
+      block:
+        - name: "Plan with --skip app"
+          ansible.builtin.include_tasks: ../core/config.yml
+          vars:
+            onesetup_skip: "app"
+        - name: "Not reached"
+          ansible.builtin.fail:
+            msg: "An unknown module name was accepted"
+      rescue:
+        - name: "Assert: the error names the typo"
+          ansible.builtin.assert:
+            that: "'Unknown module(s): app.' in ansible_failed_result.msg"
+
+    - name: "Unknown profiles fail"
+      block:
+        - name: "Plan with profile 'nope'"
+          ansible.builtin.include_tasks: ../core/config.yml
+          vars:
+            ONESETUP_PROFILE: nope
+        - name: "Not reached"
+          ansible.builtin.fail:
+            msg: "An unknown profile was accepted"
+      rescue:
+        - name: "Assert: the error names the profile"
+          ansible.builtin.assert:
+            that: "'ONESETUP_PROFILE=nope' in ansible_failed_result.msg"
+
+    - name: "Plan from the config file again"
+      ansible.builtin.include_tasks: ../core/config.yml
+
+    - name: "Run the custom module through the dispatcher"
+      ansible.builtin.include_role:
+        name: custom
+
+    - name: "Assert: dispatcher merged the config & ran the submodule"
+      ansible.builtin.assert:
+        that:
+          - fixture_task_ran | default(false)
+          - cfg.tasks | length == 1
+
+    - name: "Merge rules: lists extend, values replace, exclude removes"
+      ansible.builtin.assert:
+        that:
+          - _merged.install.brew.formulas | reject('in', _merged.install.brew.exclude) | list
+            == apps_defaults.install.brew.formulas | reject('eq', 'git') | list + ['k9s']
+          - _merged.install.managers.osx == ['brew', 'mas']
+      vars:
+        apps_defaults: "{{ (lookup('ansible.builtin.file', playbook_dir ~ '/../modules/apps/defaults/main.yml') | from_yaml).apps_defaults }}"
+        _merged: "{{ apps_defaults | combine(onesetup_config.apps, recursive=true, list_merge='append_rp') }}"

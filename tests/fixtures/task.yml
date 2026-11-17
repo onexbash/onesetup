@@ -1,0 +1,4 @@
+---
+- name: "Fixture task (run by the custom module)"
+  ansible.builtin.set_fact:
+    fixture_task_ran: true
