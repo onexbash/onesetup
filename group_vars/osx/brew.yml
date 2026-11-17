@@ -80,6 +80,7 @@ brew_formulas:
   - coreutils # gnu utilities
   - gawk # awk (gnu version)
   - git # git (gnu version)
+  - worktrunk # Git Worktree Manager
   - gnu-sed # sed (gnu version)
   - gnu-tar # tar (gnu version)
   - gnupg # gpg (gnu version)

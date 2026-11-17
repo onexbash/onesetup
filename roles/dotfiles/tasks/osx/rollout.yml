@@ -2,9 +2,7 @@
 # --              -- #
 # --   DOTFILES   -- #
 # --              -- #
-# Clone via SSH if ONESETUP_REMOTE_SSH_KEY is set, otherwise via HTTPS.
-# The SSH key passphrase is read from the environment variable ONESETUP_REMOTE_SSH_PASS
-# It is only requested by ssh if the key is encrypted and not already loaded in a running agent
+# Set Remote Origin of Dotfiles Repository (SSH if possible, HTTPS as fallback)
 - name: "Set Dotfiles Repository URI and Git Environment"
   ansible.builtin.set_fact:
     dotfiles_use_ssh: "{{ _use_ssh }}"
@@ -12,8 +10,6 @@
       {{ (X_DOTFILES_URI | regex_replace('^https?://([^/]+)/(.+?)(\.git)?/?$', 'git@\1:\2.git'))
          if _use_ssh
          else (X_DOTFILES_URI | regex_replace('^(?:ssh://)?git@([^:/]+)[:/](.+?)(\.git)?/?$', 'https://\1/\2.git')) }}
-    # Only set for SSH: git also falls back to SSH_ASKPASS for HTTPS credential prompts,
-    # which would send the key passphrase to the server as a username.
     dotfiles_git_env: >-
       {{ {'SSH_ASKPASS': playbook_dir ~ '/files/ssh_askpass.sh', 'SSH_ASKPASS_REQUIRE': 'force'}
          if _use_ssh else {} }}
@@ -41,7 +37,7 @@
     - dotfiles_clone.failed | default(false)
     - "'Local modifications' not in (dotfiles_clone.msg | default(''))"
 
-# Detect local modifications in the dotfiles directory
+# Detect local changes
 - name: "Dotfiles: Detect Local Modifications"
   ansible.builtin.set_fact:
     dotfiles_local_changes: "{{ 'Local modifications' in (dotfiles_clone.msg | default('')) }}"
@@ -53,7 +49,7 @@
   register: dotfiles_overwrite_prompt
   when: dotfiles_local_changes | bool
 
-# Clone Dotfiles Repository and force overwrite local changes (after user confirmation)
+# Force Overwrite Dotfiles Repository (after user confirmation)
 - name: "Clone Dotfiles Repository (force overwrite)"
   ansible.builtin.git:
     repo: "{{ dotfiles_repo }}"
@@ -87,148 +83,112 @@
     - dotfiles_local_changes | bool
     - dotfiles_overwrite_prompt.user_input | lower != 'y'
 
-# Ensure parent directories of file-only dotfiles exist
-- name: "Ensure parent directories of file-only dotfiles exist"
-  ansible.builtin.file:
-    path: "{{ item }}"
-    mode: "0755"
-    state: "directory"
-  loop: "{{ dotfiles | map(attribute='dest') | map('dirname') | unique }}"
+# --              -- #
+# --   SYMLINKS   -- #
+# --              -- #
+# Inspect Sources in Dotfiles-Mapping
+- name: "Dotfiles: Inspect link sources"
+  ansible.builtin.stat:
+    path: "{{ _src }}"
+    get_checksum: false
+  vars: &dotfiles_mapping_paths
+    _src: >-
+      {{ ((item.src is abs) | ternary(item.src, ONESETUP_SYSTEM_DOTFILES_DIR ~ '/' ~ item.src))
+         | regex_replace('/+$', '') }}
+    _dest: "{{ item.dest | regex_replace('/+$', '') }}"
+  become: "{{ item.become | default(false) }}"
+  loop: "{{ dotfiles_mapping }}"
+  loop_control:
+    label: "{{ item.src }}"
+  register: dotfiles_src_stat
 
-# Symlink Dotfiles (atomic)
-- name: "Symlink: Dotfiles"
+# Inspect Destinations in Dotfiles-Mapping
+- name: "Dotfiles: Inspect link destinations"
+  ansible.builtin.stat:
+    path: "{{ _dest }}"
+    follow: false # inspect the link itself, also detects broken links
+    get_checksum: false
+  vars: *dotfiles_mapping_paths
+  become: "{{ item.become | default(false) }}"
+  loop: "{{ dotfiles_mapping }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  register: dotfiles_dest_stat
+
+# Validate the Symlink before creating it
+- name: "Dotfiles: Validate links"
+  ansible.builtin.assert:
+    that: _problems | length == 0
+    fail_msg: "{{ _problems }}"
+    quiet: true
+  vars:
+    _problems: >-
+      {%- set ns = namespace(out=[]) -%}
+      {%- for s, d in dotfiles_src_stat.results | zip(dotfiles_dest_stat.results) -%}
+        {%- if not s.stat.exists and s.item.src is not abs -%}
+          {%- set ns.out = ns.out + ['source missing in repo: ' ~ s.item.src] -%}
+        {%- elif s.stat.exists and d.stat.exists and not d.stat.islnk
+                 and d.stat.inode == s.stat.inode and d.stat.dev == s.stat.dev -%}
+          {%- set ns.out = ns.out + ['parent of ' ~ d.item.dest ~ ' links into the repo, remove that parent link first'] -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.out }}
+
+# Cleanup Destination (with Backup)
+- name: "Dotfiles: Back up real files/directories at link destinations"
   ansible.builtin.command:
     argv:
-      - sh
-      - -c
-      - |
-        [ "$(readlink "$2")" = "$1" ] && { echo ok; exit 0; }
-        i=0
-        while [ "$i" -lt 10 ]; do
-          rm -rf "$2"
-          ln -s "$1" "$2" 2>/dev/null
-          [ "$(readlink "$2")" = "$1" ] && { echo changed; exit 0; }
-          i=$((i + 1))
-        done
-        echo "could not replace $2: it keeps being recreated" >&2
-        exit 1
-      - sh
-      - "{{ item.src }}"
-      - "{{ item.dest }}"
-  loop: "{{ dotfiles }}"
-  register: dotfile_links
-  changed_when: dotfile_links.stdout | default('') == 'changed'
+      - mv
+      - "{{ item.stat.path }}"
+      - "{{ item.stat.path }}.backup-{{ now(fmt='%Y%m%d-%H%M%S') }}"
+  become: "{{ item.item.become | default(false) }}"
+  loop: "{{ dotfiles_dest_stat.results | selectattr('stat.exists') | rejectattr('stat.islnk') | list }}"
+  loop_control:
+    label: "{{ item.stat.path }}"
+  register: dotfiles_backups
+  changed_when: true
+
+# Create Parent Directory if missing
+- name: "Dotfiles: Ensure parent directories exist" # noqa: risky-file-permissions
+  ansible.builtin.file:
+    path: "{{ _dest | dirname }}"
+    state: directory
+  vars: *dotfiles_mapping_paths
+  become: "{{ item.become | default(false) }}"
+  loop: "{{ dotfiles_mapping }}"
+  loop_control:
+    label: "{{ _dest | dirname }}"
+
+# Symlink Dotfiles
+- name: "Dotfiles: Symlink"
+  ansible.builtin.file:
+    src: "{{ _src }}"
+    dest: "{{ _dest }}"
+    state: link
+    force: true # replace links that point elsewhere
+  vars: *dotfiles_mapping_paths
+  become: "{{ item.become | default(false) }}"
+  loop: "{{ dotfiles_mapping }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  register: dotfiles_link
   ignore_errors: true
 
-# # Cleanup: Dotfiles (dest)
-# - name: "Cleanup: Dotfiles"
-#   become: true
-#   ansible.builtin.file:
-#     path: "{{ item_dotfiles.dest }}"
-#     state: "absent"
-#     force: true
-#   loop: "{{ dotfiles }}"
-#   loop_control:
-#     loop_var: "item_dotfiles"
-# # Symlink: Dotfiles
-# - name: "Symlink: Dotfiles"
-#   ansible.builtin.file:
-#     src: "{{ item.src }}"
-#     dest: "{{ item.dest }}"
-#     state: "link"
-#     force: true
-#   loop: "{{ dotfiles }}"
-#   register: dotfile_links
-#   ignore_errors: true
+# Show a Report of Destination Backups
+- name: "Report: Backed up files/directories"
+  ansible.builtin.debug:
+    msg: "{{ dotfiles_backups.results | map(attribute='cmd') | map('last') | list }}"
+  when: dotfiles_backups.results | default([]) | length > 0
 
-# Report: Failed Symlinks
+# Show a Report of Failed Symlink Creations
 - name: "Report: Failed Symlinks"
   ansible.builtin.debug:
     msg: "Could not symlink: {{ failed_links | join(', ') }}"
   vars:
     failed_links: >-
-      {{ dotfile_links.results
+      {{ dotfiles_link.results
          | selectattr('failed', 'defined')
          | selectattr('failed')
          | map(attribute='item.dest')
          | list }}
   when: failed_links | length > 0
-
-# --                  -- #
-# --   SHELL CONFIG   -- #
-# --                  -- #
-# Cleanup: Shell Config Directory
-- name: "Cleanup: Shell Config Directory"
-  ansible.builtin.file:
-    path: "{{ shell_config.dest }}"
-    state: absent
-    force: true
-
-# Symlink: Shell Config Directory
-- name: "Symlink shell config directory"
-  ansible.builtin.file:
-    src: "{{ shell_config.src }}"
-    dest: "{{ shell_config.dest }}"
-    state: link
-    force: true
-
-# Find: User Shell Files
-- name: "Find: User Shell Files"
-  ansible.builtin.find:
-    paths: "{{ shell_home.src }}"
-    file_type: file
-    hidden: true # Important to include hidden files starting with '.'
-  register: user_shell_files
-
-# Symlink: User Shell Files
-- name: "Symlink: User Shell Files"
-  ansible.builtin.file:
-    src: "{{ item.path }}"
-    dest: "{{ shell_home.dest }}/{{ item.path | basename }}"
-    state: link
-    force: true
-  loop: "{{ user_shell_files.files }}"
-
-# Cleanup: ~/.claude
-- name: "Cleanup: ~/.claude"
-  ansible.builtin.file:
-    path: "{{ home }}/.claude"
-    state: absent
-    force: true
-
-# Symlink: ~/.config/claude to ~/.claude (because some parts of claude-code ignore the $CLAUDE_CONFIG_DIR env-var)
-- name: "Symlink: Claude Config Directory"
-  ansible.builtin.file:
-    src: "{{ xdg_config_home }}/claude"
-    dest: "{{ home }}/.claude"
-    state: link
-    force: true
-
-# -- SECRETS -- #
-- name: "Set path to shell secrets file"
-  ansible.builtin.set_fact:
-    shell_secrets_file: "{{ lookup('env', 'XDG_CONFIG_HOME') | default(ansible_env.HOME ~ '/.config', true) }}/shell/secrets.sh"
-
-- name: "Check that the token is safe inside single quotes"
-  ansible.builtin.assert:
-    that: >-
-      claude_code_oauth_token | trim is match("^[^'\s]+\Z")
-    quiet: true
-  no_log: true
-
-- name: "Ensure shell secrets file exists with restricted permissions"
-  ansible.builtin.file:
-    path: "{{ shell_secrets_file }}"
-    state: touch
-    mode: "0600"
-    access_time: preserve
-    modification_time: preserve
-
-- name: "Ensure CLAUDE_CODE_OAUTH_TOKEN is set in shell secrets"
-  ansible.builtin.lineinfile:
-    path: "{{ shell_secrets_file }}"
-    regexp: '^\s*export\s+CLAUDE_CODE_OAUTH_TOKEN='
-    line: "export CLAUDE_CODE_OAUTH_TOKEN='{{ claude_code_oauth_token | trim }}'"
-    mode: "0600"
-  no_log: true
-  diff: false
