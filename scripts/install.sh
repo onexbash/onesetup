@@ -5,13 +5,36 @@
 # --                             -- #
 # Installs the onesetup commands to ONESETUP_BIN_DIR. Run 'onesetup-init' afterwards.
 # Optional environment variables: ONESETUP_BIN_DIR, ONESETUP_REPO (GitHub HTTPS URL), ONESETUP_BRANCH
+# Options (piped: curl ... | bash -s -- --branch <branch>):
+#   --branch <branch>   branch to install the commands from (overrides ONESETUP_BRANCH, default: main)
 
 set -eo pipefail
 
 # -- Main Function -- #
 function main() {
   tty_styles
+  parse_args "$@"
   rollout_executables
+}
+
+# Parse Command Arguments
+function parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --branch)
+      if [[ -z "${2:-}" || "$2" == --* ]]; then
+        echo -e "${I_ERR}Option '--branch' requires a value." >&2
+        exit 1
+      fi
+      ONESETUP_BRANCH="$2"
+      shift 2
+      ;;
+    *)
+      echo -e "${I_ERR}Unknown option: $1 (usage: install.sh [--branch <branch>])" >&2
+      exit 1
+      ;;
+    esac
+  done
 }
 
 # Rollout Executables
@@ -66,7 +89,11 @@ function rollout_executables() {
     }
     echo -e "${I_OK}Installed: $bin_dir/$file"
   done
-  echo -e "${I_INFO}Next step: run 'onesetup-init'"
+  if [[ "$branch" == "main" ]]; then
+    echo -e "${I_INFO}Next step: run 'onesetup-init'"
+  else
+    echo -e "${I_INFO}Next step: run 'ONESETUP_BRANCH=${branch} onesetup-init' (installs the playbook from the same branch)"
+  fi
 }
 
 # [UTIL] Terminal Colors & Prompts (copy of onesetup-util, which is not installed yet)

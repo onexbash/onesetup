@@ -59,6 +59,12 @@ bash -c 'curl -fsSL "https://raw.githubusercontent.com/onexbash/onesetup/main/sc
 ```
 *Verify with `which onesetup`.*
 
+To install from another branch, pass `--branch` (and take `install.sh` from that branch too):
+```bash
+bash -c 'curl -fsSL "https://raw.githubusercontent.com/onexbash/onesetup/feat-refactoring/scripts/install.sh" | bash -s -- --branch feat-refactoring'
+ONESETUP_BRANCH=feat-refactoring onesetup-init   # playbook from the same branch
+```
+
 ### 3) Initialize
 `onesetup-init` installs the playbook to `$ONESETUP_INSTALL_DIR` and creates your config file from [onesetup.example.yml](./onesetup.example.yml).
 Run it again at any time to update onesetup — your config file is never touched.
