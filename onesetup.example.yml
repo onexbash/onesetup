@@ -1,0 +1,99 @@
+# -- ONESETUP CONFIG -- #
+# Your personal setup. 'onesetup-init' copied this file to $ONESETUP_CONFIG
+# (default: ~/.config/onesetup/onesetup.yml). Run 'onesetup' after changing it.
+#
+# How it works:
+#   - 'modules' decides what runs. A module runs all its parts, 'module.part' runs only that part.
+#   - Every module brings sensible defaults (modules/<module>/defaults/main.yml in the onesetup repo).
+#     What you write here is merged into them:
+#       lists are extended   → formulas: [k9s] installs k9s on top of the default formulas
+#       values are replaced  → login: /opt/homebrew/bin/zsh
+#       exclude: [...]       → removes default entries (where available)
+#   - Secrets: 'onesetup-vault encrypt --file <file> --target config' writes them here, encrypted.
+#   - Device-specific settings (hostname, SSH key for cloning, ...) are ONESETUP_* environment variables.
+#   - Paths may start with ~/
+---
+modules:
+  - shell # shell.env, shell.paths, shell.login, shell.gui_env
+  - fonts # fonts.nerdfonts
+  - apps # apps.install, apps.configure, apps.autostart
+  - settings # settings.defaults, settings.system, settings.dock, settings.finder, settings.keymaps, settings.wallpaper, settings.browser
+  # - dotfiles # dotfiles.clone, dotfiles.link (needs dotfiles.repo)
+  # - ssh # ssh.identities, ssh.config, ssh.known_hosts (overwrites ~/.ssh/known_hosts), ssh.authorized_keys
+  # - custom # custom.tasks (your own Ansible task files)
+
+# -- shell -- #
+# shell:
+#   login: /opt/homebrew/bin/zsh
+#   env:
+#     EDITOR: nvim
+#   paths:
+#     custom:
+#       entries: [~/.local/bin]
+#   gui_env:
+#     CLAUDE_CONFIG_DIR: ~/.config/claude
+
+# -- apps -- #
+# apps:
+#   install:
+#     brew:
+#       taps: [nikitabobko/tap]
+#       formulas: [k9s, podman]
+#       casks: [ghostty, firefox, nikitabobko/tap/aerospace]
+#       exclude: [lazygit]
+#     mas:
+#       - { id: 497799835, name: Xcode }
+#     manual:
+#       - name: Lite XL
+#         type: dmg
+#         url: "https://github.com/lite-xl/lite-xl/releases/download/v2.1.8/lite-xl-v2.1.8-addons-macos-{{ 'arm64' if arch == 'arm64' else 'x86_64' }}.dmg"
+#         creates: /Applications/Lite XL.app
+#       - name: rustup
+#         type: script
+#         script: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+#         creates: ~/.cargo/bin/rustup
+#   configure:
+#     gh_extensions: [yusukebe/gh-markdown-preview]
+#   autostart:
+#     - Ghostty
+#     - { name: AeroSpace, bundle_id: bobko.aerospace }
+
+# -- settings (macOS) -- #
+# settings:
+#   defaults:
+#     com.apple.dock:
+#       autohide: true
+#     NSGlobalDomain:
+#       AppleLanguages: [en, de]
+#   dock: [Ghostty, Firefox, /System/Applications/Mail.app]
+#   wallpaper: ~/.config/onesetup/files/wallpaper.jpg
+
+# -- dotfiles -- #
+# dotfiles:
+#   repo: https://github.com/<you>/dotfiles.git
+#   links:
+#     - { src: nvim, dest: ~/.config/nvim }
+#     - { src: zsh/.zshrc, dest: ~/.zshrc }
+
+# -- ssh -- #
+# ssh:
+#   identities:
+#     id_ed25519: !vault |
+#       $ANSIBLE_VAULT;1.2;AES256;onesetup
+#       ...
+#   authorized_keys:
+#     - { hosts: [my-macbook], key: "ssh-ed25519 AAAA... my-macbook" }
+
+# -- custom -- #
+# custom:
+#   tasks: [~/.config/onesetup/tasks/printer.yml]
+
+# -- profiles -- #
+# Extra settings for some machines: export ONESETUP_PROFILE=work to merge 'work' into everything above.
+# profiles:
+#   work:
+#     modules: [ssh]
+#     apps:
+#       install:
+#         brew:
+#           casks: [microsoft-teams]

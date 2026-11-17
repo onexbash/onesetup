@@ -1,0 +1,31 @@
+---
+# Install & upgrade GitHub CLI extensions (apps.configure.gh_extensions)
+- name: "Get list of installed gh extensions"
+  ansible.builtin.command: gh extension list
+  register: gh_extensions_list
+  changed_when: false
+  failed_when: false
+
+- name: "Install gh extensions if not already present"
+  ansible.builtin.command: "gh extension install {{ item }}"
+  loop: "{{ cfg.configure.gh_extensions }}"
+  when: item not in gh_extensions_list.stdout
+
+- name: "Upgrade gh extensions to the latest version"
+  ansible.builtin.command: "gh extension upgrade {{ item }}"
+  loop: "{{ cfg.configure.gh_extensions }}"
+  register: gh_upgrade_result
+  environment:
+    # Rewrite SSH GitHub URLs to HTTPS for this task only (no global git config change)
+    GIT_CONFIG_COUNT: "1"
+    GIT_CONFIG_KEY_0: "url.https://github.com/.insteadOf"
+    GIT_CONFIG_VALUE_0: "git@github.com:"
+    # Never block on interactive prompts; fail fast instead of hanging
+    GIT_TERMINAL_PROMPT: "0"
+    GIT_SSH_COMMAND: "ssh -o BatchMode=yes"
+  changed_when: >-
+    'upgraded' in (gh_upgrade_result.stdout ~ gh_upgrade_result.stderr) | lower
+    and 'up to date' not in (gh_upgrade_result.stdout ~ gh_upgrade_result.stderr) | lower
+  failed_when:
+    - gh_upgrade_result.rc != 0
+    - "'unable to retrieve latest version' not in gh_upgrade_result.stderr"

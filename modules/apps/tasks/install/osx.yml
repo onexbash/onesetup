@@ -1,0 +1,6 @@
+---
+- name: "Run package managers: {{ cfg.install.managers.osx | join(', ') }}"
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/install/{{ manager }}.yml"
+  loop: "{{ cfg.install.managers.osx | default([]) }}"
+  loop_control:
+    loop_var: manager

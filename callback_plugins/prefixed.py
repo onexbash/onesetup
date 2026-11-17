@@ -7,13 +7,13 @@ from ansible.plugins.callback.default import CallbackModule as DefaultCallback
 DOCUMENTATION = """
 name: prefixed
 type: stdout
-short_description: Default output, with task names prefixed by their pre-task file
+short_description: Default output, with task names prefixed by their core file
 extends_documentation_fragment:
   - default_callback
   - result_format_callback
 """
 
-MARKER = os.sep + "pre_tasks" + os.sep
+MARKER = os.sep + "core" + os.sep
 
 
 class CallbackModule(DefaultCallback):
@@ -27,7 +27,9 @@ class CallbackModule(DefaultCallback):
         if MARKER not in path:
             return None
         rel = os.path.splitext(path.split(MARKER, 1)[1])[0]  # osx/clt
-        return "PRE-TASK: " + rel.replace(os.sep, ".")  # PRE-TASK: osx.clt
+        if rel == "module":  # dispatcher tasks already carry the module name
+            return None
+        return "CORE: " + rel.replace(os.sep, ".")  # CORE: osx.clt
 
     def v2_playbook_on_task_start(self, task, is_conditional):
         prefix = self._prefix(task)

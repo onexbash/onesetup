@@ -1,0 +1,32 @@
+---
+# -- CORE: Ensure base directories exist with the right owner (follow: keeps symlinked dirs) -- #
+- name: "Ensure user directories exist"
+  become: true
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ user }}"
+    group: "{{ user_group }}"
+    follow: true
+  loop:
+    - { path: "{{ xdg_config_home }}" }
+    - { path: "{{ xdg_data_home }}" }
+    - { path: "{{ xdg_state_home }}" }
+    - { path: "{{ xdg_cache_home }}" }
+    - { path: "{{ ONESETUP_CONFIG | dirname }}" }
+    - { path: "{{ X_TARGET_DIR }}" }
+    - { path: "{{ ONESETUP_STATE_DIR }}" }
+    - { path: "{{ home }}/Library", mode: "0700" }
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: "Ensure bin directory exists: {{ ONESETUP_BIN_DIR }}"
+  become: true
+  ansible.builtin.file:
+    path: "{{ ONESETUP_BIN_DIR }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"
+    follow: true

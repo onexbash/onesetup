@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-printf '%s\n' "${ONESETUP_REMOTE_SSH_PASS}"
+printf '%s\n' "${ONESETUP_SSH_PASS}"

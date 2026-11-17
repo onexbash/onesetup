@@ -1,0 +1,110 @@
+---
+# --              -- #
+# --   SYMLINKS   -- #
+# --              -- #
+# Inspect Sources in Dotfiles-Mapping
+- name: "Dotfiles: Inspect link sources"
+  ansible.builtin.stat:
+    path: "{{ _src }}"
+    get_checksum: false
+  vars: &link_paths
+    _src: >-
+      {{ (((item.src | expanduser) is abs) | ternary(item.src | expanduser, (cfg.dir | expanduser) ~ '/' ~ item.src))
+         | regex_replace('/+$', '') }}
+    _dest: "{{ item.dest | expanduser | regex_replace('/+$', '') }}"
+  become: "{{ item.become | default(false) }}"
+  loop: "{{ cfg.links }}"
+  loop_control:
+    label: "{{ item.src }}"
+  register: dotfiles_src_stat
+
+# Inspect Destinations in Dotfiles-Mapping
+- name: "Dotfiles: Inspect link destinations"
+  ansible.builtin.stat:
+    path: "{{ _dest }}"
+    follow: false # inspect the link itself, also detects broken links
+    get_checksum: false
+  vars: *link_paths
+  become: "{{ item.become | default(false) }}"
+  loop: "{{ cfg.links }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  register: dotfiles_dest_stat
+
+# Validate the Symlink before creating it
+- name: "Dotfiles: Validate links"
+  ansible.builtin.assert:
+    that: _problems | length == 0
+    fail_msg: "{{ _problems }}"
+    quiet: true
+  vars:
+    _problems: >-
+      {%- set ns = namespace(out=[]) -%}
+      {%- for s, d in dotfiles_src_stat.results | zip(dotfiles_dest_stat.results) -%}
+        {%- if not s.stat.exists and s.item.src is not abs -%}
+          {%- set ns.out = ns.out + ['source missing in repo: ' ~ s.item.src] -%}
+        {%- elif s.stat.exists and d.stat.exists and not d.stat.islnk
+                 and d.stat.inode == s.stat.inode and d.stat.dev == s.stat.dev -%}
+          {%- set ns.out = ns.out + ['parent of ' ~ d.item.dest ~ ' links into the repo, remove that parent link first'] -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ ns.out }}
+
+# Cleanup Destination (with Backup)
+- name: "Dotfiles: Back up real files/directories at link destinations"
+  ansible.builtin.command:
+    argv:
+      - mv
+      - "{{ item.stat.path }}"
+      - "{{ item.stat.path }}.backup-{{ now(fmt='%Y%m%d-%H%M%S') }}"
+  become: "{{ item.item.become | default(false) }}"
+  loop: "{{ dotfiles_dest_stat.results | selectattr('stat.exists') | rejectattr('stat.islnk') | list }}"
+  loop_control:
+    label: "{{ item.stat.path }}"
+  register: dotfiles_backups
+  changed_when: true
+
+# Create Parent Directory if missing
+- name: "Dotfiles: Ensure parent directories exist" # noqa: risky-file-permissions
+  ansible.builtin.file:
+    path: "{{ _dest | dirname }}"
+    state: directory
+  vars: *link_paths
+  become: "{{ item.become | default(false) }}"
+  loop: "{{ cfg.links }}"
+  loop_control:
+    label: "{{ _dest | dirname }}"
+
+# Symlink Dotfiles
+- name: "Dotfiles: Symlink"
+  ansible.builtin.file:
+    src: "{{ _src }}"
+    dest: "{{ _dest }}"
+    state: link
+    force: true # replace links that point elsewhere
+  vars: *link_paths
+  become: "{{ item.become | default(false) }}"
+  loop: "{{ cfg.links }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  register: dotfiles_link
+  ignore_errors: true
+
+# Show a Report of Destination Backups
+- name: "Report: Backed up files/directories"
+  ansible.builtin.debug:
+    msg: "{{ dotfiles_backups.results | map(attribute='cmd') | map('last') | list }}"
+  when: dotfiles_backups.results | default([]) | length > 0
+
+# Show a Report of Failed Symlink Creations
+- name: "Report: Failed Symlinks"
+  ansible.builtin.debug:
+    msg: "Could not symlink: {{ failed_links | join(', ') }}"
+  vars:
+    failed_links: >-
+      {{ dotfiles_link.results
+         | selectattr('failed', 'defined')
+         | selectattr('failed')
+         | map(attribute='item.dest')
+         | list }}
+  when: failed_links | length > 0

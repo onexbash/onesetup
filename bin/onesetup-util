@@ -43,11 +43,14 @@ function tty_styles() {
   export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # loading
 }
 
-# [UTIL] Set Script Modes TODO: refactor this
+# [UTIL] Set Script Modes (ONESETUP_DEBUG: 0-4, 4 also traces these scripts)
 function set_modes() {
   set -eo pipefail
-  TOGGLE_SCRIPT_DEBUG_MODE="${TOGGLE_SCRIPT_DEBUG_MODE:-0}"
-  if [[ "$TOGGLE_SCRIPT_DEBUG_MODE" -eq 1 ]]; then
+  [[ "${ONESETUP_DEBUG:-0}" =~ ^[0-4]$ ]] || {
+    echo -e "${I_ERR}ONESETUP_DEBUG must be a number from 0 to 4 (got: '${ONESETUP_DEBUG}')"
+    exit 1
+  }
+  if [[ "${ONESETUP_DEBUG:-0}" -eq 4 ]]; then
     set -x
     echo -e "${I_OK}Running Script in Debug Mode"
   fi
@@ -99,9 +102,8 @@ function install_linux_pkg() {
 }
 
 # [UTIL] Install a package with the platform's package manager: install_pkg <pkg> [os]
-# (os defaults to ONESETUP_SYSTEM_OS, or the detected OS before the config is applied)
 function install_pkg() {
-  local pkg="$1" os="${2:-${ONESETUP_SYSTEM_OS:-$(detect_os)}}"
+  local pkg="$1" os="${2:-$(detect_os)}"
   case "$os" in
   osx) brew install "$pkg" ;;
   linux) install_linux_pkg "$pkg" ;;
@@ -250,161 +252,39 @@ function use_dev_dir() {
     echo -e "${I_ERR}Development directory not found: ${C_CYAN}$1${C_RESET}"
     exit 1
   }
-  ONESETUP_PROJECT_DEV_DIR="$(cd -P "$1" && pwd)"
-  export ONESETUP_PROJECT_DEV_DIR
-  set_target_dir "$ONESETUP_PROJECT_DEV_DIR"
+  ONESETUP_DEV_DIR="$(cd -P "$1" && pwd)"
+  export ONESETUP_DEV_DIR
+  set_target_dir "$ONESETUP_DEV_DIR"
 }
 
 # --                -- #
 # --     CONFIG     -- #
 # --                -- #
 
-# [UTIL] Build a Git Remote URI from Provider, Connection & Username: _build_remote_uri <repo>
-function _build_remote_uri() {
-  local repo="$1" host
-  case "$ONESETUP_REMOTE_PROVIDER" in
-  github) host="github.com" ;;
-  gitlab) host="gitlab.com" ;;
-  bitbucket) host="bitbucket.org" ;;
-  codeberg) host="codeberg.org" ;;
-  *.*) host="$ONESETUP_REMOTE_PROVIDER" ;; # Custom host, e.g. git.example.com
-  *)
-    echo -e "${I_ERR}Unsupported remote provider: $ONESETUP_REMOTE_PROVIDER" >&2
-    return 1
-    ;;
-  esac
-  case "$ONESETUP_REMOTE_CONNECTION" in
-  https) echo "https://${host}/${ONESETUP_REMOTE_USERNAME}/${repo}.git" ;;
-  ssh) echo "git@${host}:${ONESETUP_REMOTE_USERNAME}/${repo}.git" ;;
-  *)
-    echo -e "${I_ERR}Unsupported remote connection: $ONESETUP_REMOTE_CONNECTION" >&2
-    return 1
-    ;;
-  esac
-}
-
-# [UTIL] Apply the user configuration by reading the values from config.yml & environment variables
-# NOTE: env-var > config-key > default
+# [UTIL] Export the device-specific settings (environment variables only, see README: Environment Variables)
+# Everything else is configured in the config file ($ONESETUP_CONFIG) and read by the playbook.
 function apply_config() {
-  local config_file detected_os uri
-  detected_os="$(detect_os)"
+  export ONESETUP_CONFIG="${ONESETUP_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/onesetup/onesetup.yml}"
+  export ONESETUP_PROFILE="${ONESETUP_PROFILE:-}"
+  export ONESETUP_HOSTNAME="${ONESETUP_HOSTNAME:-}"
+  export ONESETUP_INSTALL_DIR="${ONESETUP_INSTALL_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/onesetup}"
+  export ONESETUP_STATE_DIR="${ONESETUP_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/onesetup}"
+  export ONESETUP_BIN_DIR="${ONESETUP_BIN_DIR:-/usr/local/bin}"
+  export ONESETUP_SSH_KEY="${ONESETUP_SSH_KEY:-}"
+  export ONESETUP_SSH_PASS="${ONESETUP_SSH_PASS:-}"
+  export ONESETUP_REPO="${ONESETUP_REPO:-https://github.com/onexbash/onesetup.git}"
+  export ONESETUP_BRANCH="${ONESETUP_BRANCH:-main}"
+  export ONESETUP_DEV_DIR="${ONESETUP_DEV_DIR:-}"
+  export ONESETUP_DEBUG="${ONESETUP_DEBUG:-0}"
 
-  # Resolve & export a value from Env-Var or Config-Key
-  # Returns 1 if neither provided a value, so the caller can export the default lazily
-  _resolve_value() {
-    local _name="$1" _key="$2" _val
-    # 1. Environment variable already set (non-empty): keep & export it
-    if [[ -n "${!_name:-}" ]]; then
-      export "${_name?}"
-      return 0
-    fi
-    # 2. Config key ('-r' prints raw strings with both yq variants: mikefarah/yq & python-yq)
-    if [[ -n "$_key" && -f "$config_file" ]]; then
-      _val="$(yq -r "$_key" "$config_file" 2>/dev/null || true)"
-      if [[ -n "$_val" && "$_val" != "null" ]]; then
-        _val="${_val/#\~/$HOME}"              # ~/...
-        _val="${_val/#\$\{HOME\}/$HOME}"      # ${HOME}/...
-        _val="${_val/#\$HOME/$HOME}"          # $HOME/...
-        printf -v "$_name" '%s' "$_val"
-        export "${_name?}"
-        return 0
-      fi
-    fi
-    return 1
-  }
+  # Quoted values ("~/...") are not expanded by the shell
+  ONESETUP_CONFIG="${ONESETUP_CONFIG/#\~/$HOME}"
+  ONESETUP_SSH_KEY="${ONESETUP_SSH_KEY/#\~/$HOME}"
 
-  # Config-Dir must be known before the config file can be read (Env-Var > Default)
-  export ONESETUP_SYSTEM_CONFIG_DIR="${ONESETUP_SYSTEM_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/onesetup}"
-  config_file="${ONESETUP_SYSTEM_CONFIG_DIR}/config.yml"
-
-  # Ensure yq is present to parse config file (based on the real host OS)
-  if ! command -v "yq" &>/dev/null; then
-    install_pkg "yq" "$detected_os" || {
-      echo -e "${I_ERR}Installation failed: yq"
-      return 1
-    }
-    echo -e "${I_OK}Installation succeeded: yq"
-  fi
-
-  # -- [Remote] -- #
-  _resolve_value ONESETUP_REMOTE_PROVIDER '.remote.provider' || export ONESETUP_REMOTE_PROVIDER="github"
-  _resolve_value ONESETUP_REMOTE_USERNAME '.remote.username' || export ONESETUP_REMOTE_USERNAME="onexbash"
-  _resolve_value ONESETUP_REMOTE_CONNECTION '.remote.connection' || export ONESETUP_REMOTE_CONNECTION="https"
-  _resolve_value ONESETUP_REMOTE_PROJECT_REPO '.remote.project_repo' || export ONESETUP_REMOTE_PROJECT_REPO="onesetup"
-  _resolve_value ONESETUP_REMOTE_DOTFILES_REPO '.remote.dotfiles_repo' || export ONESETUP_REMOTE_DOTFILES_REPO="dotfiles"
-  _resolve_value ONESETUP_REMOTE_SSH_KEY '.remote.ssh_key' || export ONESETUP_REMOTE_SSH_KEY=""
-  _resolve_value ONESETUP_REMOTE_SSH_PASS '.remote.ssh_pass' || export ONESETUP_REMOTE_SSH_PASS=""
-
-  # -- [System] OS & CPU Architecture -- #
-  _resolve_value ONESETUP_SYSTEM_OS '.system.os' || export ONESETUP_SYSTEM_OS="$detected_os"
-  if ! _resolve_value ONESETUP_SYSTEM_ARCH '.system.arch'; then
-    if [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" || "$(uname -m)" == "aarch64" ]]; then
-      export ONESETUP_SYSTEM_ARCH="arm64"
-    else
-      export ONESETUP_SYSTEM_ARCH="x86"
-    fi
-  fi
-
-  # -- [System] Hostname, Username & Group of Default User & Admin/Root User -- #
-  # shellcheck disable=SC2155,SC2016 # best-effort defaults; $_ belongs to PowerShell, not bash
-  case "$ONESETUP_SYSTEM_OS" in
-  osx | linux)
-    _resolve_value ONESETUP_SYSTEM_HOSTNAME '.system.hostname' ||
-      export ONESETUP_SYSTEM_HOSTNAME="$(scutil --get HostName 2>/dev/null || scutil --get LocalHostName 2>/dev/null || hostname -s)"
-    _resolve_value ONESETUP_SYSTEM_USERNAME '.system.username' || export ONESETUP_SYSTEM_USERNAME="$USER"
-    _resolve_value ONESETUP_SYSTEM_ROOT_USER '.system.root_user' || export ONESETUP_SYSTEM_ROOT_USER="$(id -nu 0)"
-    _resolve_value ONESETUP_SYSTEM_USER_GROUP '.system.user_group' || export ONESETUP_SYSTEM_USER_GROUP="$(id -ng)"
-    _resolve_value ONESETUP_SYSTEM_ROOT_GROUP '.system.root_group' || export ONESETUP_SYSTEM_ROOT_GROUP="$(id -ng 0)"
-    _resolve_value ONESETUP_SYSTEM_SHELL '.system.shell' || export ONESETUP_SYSTEM_SHELL="$SHELL"
-    ;;
-  windows)
-    _resolve_value ONESETUP_SYSTEM_HOSTNAME '.system.hostname' ||
-      export ONESETUP_SYSTEM_HOSTNAME="${COMPUTERNAME:-$(hostname 2>/dev/null | tr -d '\r')}"
-    _resolve_value ONESETUP_SYSTEM_USERNAME '.system.username' ||
-      export ONESETUP_SYSTEM_USERNAME="${USERNAME:-$(whoami | sed 's/.*\\//')}"
-    _resolve_value ONESETUP_SYSTEM_ROOT_USER '.system.root_user' ||
-      export ONESETUP_SYSTEM_ROOT_USER="$(powershell.exe -NoProfile -Command '(Get-LocalUser -ErrorAction SilentlyContinue | Where-Object { $_.SID -like "*-500" }).Name' | tr -d '\r')"
-    _resolve_value ONESETUP_SYSTEM_USER_GROUP '.system.user_group' ||
-      export ONESETUP_SYSTEM_USER_GROUP="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-545" }).Name' | tr -d '\r')"
-    _resolve_value ONESETUP_SYSTEM_ROOT_GROUP '.system.root_group' ||
-      export ONESETUP_SYSTEM_ROOT_GROUP="$(powershell.exe -NoProfile -Command '(Get-LocalGroup | Where-Object { $_.SID -like "*-544" }).Name' | tr -d '\r')"
-    _resolve_value ONESETUP_SYSTEM_SHELL '.system.shell' ||
-      export ONESETUP_SYSTEM_SHELL="$(powershell.exe -NoProfile -Command '$c = Get-Command pwsh.exe -ErrorAction SilentlyContinue; if (-not $c) { $c = Get-Command powershell.exe }; $c.Source' | tr -d '\r')"
-    ;;
-  *)
-    echo -e "${I_ERR}Unsupported Operating System: $ONESETUP_SYSTEM_OS"
-    return 1
-    ;;
-  esac
-
-  # -- [System] Directory Locations -- #
-  _resolve_value ONESETUP_SYSTEM_INSTALL_DIR '.system.install_dir' || export ONESETUP_SYSTEM_INSTALL_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/onesetup"
-  _resolve_value ONESETUP_SYSTEM_STORAGE_DIR '.system.storage_dir' || export ONESETUP_SYSTEM_STORAGE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/onesetup"
-  _resolve_value ONESETUP_SYSTEM_DOTFILES_DIR '.system.dotfiles_dir' || export ONESETUP_SYSTEM_DOTFILES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles"
-  _resolve_value ONESETUP_SYSTEM_BIN_DIR '.system.bin_dir' || export ONESETUP_SYSTEM_BIN_DIR="/usr/local/bin"
-  _resolve_value ONESETUP_SYSTEM_TMP_DIR '.system.tmp_dir' || export ONESETUP_SYSTEM_TMP_DIR="/tmp"
-
-  # -- [Project] -- #
-  # Development Directory where the Ansible Playbook is executed (used instead of the installation directory when set)
-  _resolve_value ONESETUP_PROJECT_DEV_DIR '.project.dev_dir' || export ONESETUP_PROJECT_DEV_DIR=""
-  _resolve_value ONESETUP_PROJECT_DEBUG '.project.debug' || export ONESETUP_PROJECT_DEBUG="0"
-
-  unset -f _resolve_value
-
-  # Ensure Config Directory exists with right permissions
-  ensure_directory "$ONESETUP_SYSTEM_CONFIG_DIR" "755" "${ONESETUP_SYSTEM_USERNAME}:${ONESETUP_SYSTEM_USER_GROUP}"
-
-  # -- Dynamic Environment Variables (constructed from the values above) -- #
-  # (assign first, then export: 'export VAR="$(cmd)" || ...' would never see cmd's failure)
-  uri="$(_build_remote_uri "$ONESETUP_REMOTE_PROJECT_REPO")" || return 1
-  export X_ONESETUP_URI="$uri"
-  uri="$(_build_remote_uri "$ONESETUP_REMOTE_DOTFILES_REPO")" || return 1
-  export X_DOTFILES_URI="$uri"
-
-  # -- Target Dir & Ansible Variables -- #
-  set_target_dir "${ONESETUP_PROJECT_DEV_DIR:-$ONESETUP_SYSTEM_INSTALL_DIR}"
-  export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_SYSTEM_STORAGE_DIR}/collections"
+  set_target_dir "${ONESETUP_DEV_DIR:-$ONESETUP_INSTALL_DIR}"
+  export ANSIBLE_COLLECTIONS_PATH="${ONESETUP_STATE_DIR}/collections"
 }
 
 # Call Main Function with Args
 main "$@"
+

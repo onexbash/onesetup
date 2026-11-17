@@ -1,0 +1,10 @@
+---
+- name: "Manual installations"
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/install/_manual.yml"
+  loop: "{{ cfg.install.manual }}"
+  loop_control:
+    loop_var: app
+    label: "{{ app.name }}"
+  when:
+    - (app.os | default(os)) == os
+    - (app.arch | default(arch)) == arch

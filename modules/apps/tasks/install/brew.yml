@@ -1,0 +1,122 @@
+---
+# --                      -- #
+# --    HOMEBREW TASKS    -- #
+# --        [block]       -- #
+# --                      -- #
+- name: "Homebrew | Tasks"
+  vars:
+    _brew: "{{ cfg.install.brew }}"
+    _taps: "{{ _brew.taps | reject('in', _brew.exclude) | list }}"
+    _formulas: "{{ _brew.formulas | reject('in', _brew.exclude) | list }}"
+    _casks: "{{ _brew.casks | reject('in', _brew.exclude) | list }}"
+  block:
+    # -- TAPS -- #
+    # Tap Repositories (apps.install.brew.taps)
+    - name: "Tap repositories"
+      community.general.homebrew_tap:
+        name: "{{ item_tap }}"
+        path: "/usr/local/bin:/opt/homebrew/bin"
+        state: present
+      loop: "{{ _taps }}"
+      loop_control:
+        loop_var: item_tap
+      ignore_errors: true
+      register: log_tap
+
+    # Check current Trust Store state
+    - name: "Check: Homebrew Trust Store file"
+      ansible.builtin.stat:
+        path: "{{ xdg_config_home }}/homebrew/trust.json"
+      register: trust_file
+
+    # Load Homebrew Trust Store contents
+    - name: "Load: Homebrew Trust Store contents"
+      ansible.builtin.set_fact:
+        trust_store_data: "{{ (lookup('file', trust_file.stat.path) | from_json).trustedtaps | default([]) | map('lower') | list }}"
+      when: trust_file.stat.exists
+
+    # Check if all Taps are already trusted
+    - name: "Check if all Taps are already trusted"
+      ansible.builtin.set_fact:
+        taps_fully_trusted: "{{ trust_file.stat.exists and (_taps | map('lower') | list | difference(trust_store_data | default([]))) | length == 0 }}"
+
+    # Cleanup Trust Store if incomplete
+    - name: "Cleanup: Homebrew Trust Store"
+      become: true
+      ansible.builtin.file:
+        path: "{{ xdg_config_home }}/homebrew"
+        state: absent
+      when: not taps_fully_trusted
+
+    # Trust Taps if incomplete trust-store
+    - name: "Trust: Homebrew Taps"
+      ansible.builtin.command:
+        cmd: "brew trust --tap {{ item_tap }}"
+      loop: "{{ _taps }}"
+      loop_control:
+        loop_var: item_tap
+      ignore_errors: true
+      register: tap_trust
+      changed_when: tap_trust.rc == 0
+      failed_when:
+        - tap_trust.rc != 0
+        - "'already trusted' not in tap_trust.stderr"
+      when: not taps_fully_trusted
+
+    # -- FORMULAS -- #
+    - name: "Install: Formulas"
+      community.general.homebrew:
+        name: "{{ item_formulae }}"
+        path: "/usr/local/bin:/opt/homebrew/bin"
+        state: latest
+        force_formula: true # avoids conflicts where a package has both cask and formulae
+        update_homebrew: false # should be disabled and handled in a pre_task
+        upgrade_all: false # should be disabled and handled in a post_task
+        install_options:
+          - quiet # reduce output
+      loop: "{{ _formulas }}"
+      loop_control:
+        loop_var: item_formulae
+      ignore_errors: true # failed tasks should not exit the playbook (to ensure that one broken package doesn't break everything)
+      register: log_formulae # register output for debugging
+
+    # Link keg-only formulas (apps.install.brew.link)
+    - name: "Link: keg-only formulas"
+      ansible.builtin.command:
+        argv: [brew, link, --force, "{{ item }}"]
+      loop: "{{ _brew.link }}"
+      register: _brew_link
+      changed_when: "'Already linked' not in _brew_link.stderr"
+
+    # -- CASKS -- #
+    - name: "Install: Casks"
+      community.general.homebrew_cask:
+        name: "{{ item_cask }}"
+        path: "/usr/local/bin:/opt/homebrew/bin"
+        state: latest
+        accept_external_apps: true
+        greedy: true
+        install_options:
+          # - no-quarantine # disable the MacOS quarantine option as it sometimes marks apps as damaged that are perfectly fine.
+          - quiet # reduce output
+        sudo_password: "{{ ansible_become_password | default(omit) }}"
+        update_homebrew: false # should be disabled(!) updates of the Homebrew package manager itself are handled by a pre_task
+        upgrade_all: false # should be disabled(!) upgrades of all brew packages are handled by a post_task (formulas, casks & taps)
+      loop: "{{ _casks }}"
+      loop_control:
+        loop_var: item_cask
+      ignore_errors: true # failed tasks should not exit the playbook (to ensure that one broken package doesn't break everything)
+      register: log_cask # register output for debugging
+      no_log: true # prevents leaking become password to the logs
+
+    # -- HEALTH CHECK -- #
+    - name: "Health Check: Run brew doctor"
+      ansible.builtin.command:
+        cmd: "brew doctor"
+      register: log_brew_doctor
+      changed_when: false # read-only check, never changes anything
+      failed_when: false # brew doctor exits non-zero on warnings, which shouldn't fail the play
+
+    - name: "Print: Health Check Results"
+      ansible.builtin.debug:
+        msg: "{{ (log_brew_doctor.stdout_lines + log_brew_doctor.stderr_lines) | default(['brew doctor produced no output']) }}"

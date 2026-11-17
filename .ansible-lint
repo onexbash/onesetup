@@ -1,8 +1,13 @@
 ---
+# Submodule task files (e.g. modules/settings/tasks/defaults/) are tasks, not role defaults
+kinds:
+  - tasks: "**/modules/*/tasks/**/*.yml"
+
 # Ignore Rules
 skip_list:
   - no-changed-when
   - var-naming[no-role-prefix]
+  - var-naming[pattern] # ONESETUP_* facts keep the names of their environment variables
   - name[template]
   - yaml[commas]
   - yaml[indentation]

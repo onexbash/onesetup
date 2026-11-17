@@ -1,0 +1,24 @@
+---
+- name: "Wallpaper"
+  when: cfg.wallpaper | length > 0
+  vars:
+    wallpaper_dest: "{{ home }}/Pictures/{{ cfg.wallpaper | basename }}"
+  block:
+    - name: "Wallpaper | Copy to pictures directory"
+      ansible.builtin.copy:
+        src: "{{ cfg.wallpaper | expanduser }}"
+        dest: "{{ wallpaper_dest }}"
+        mode: "0644"
+
+    - name: "Wallpaper | Apply to all desktops"
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/osascript
+          - -e
+          - |
+            tell application "System Events"
+              repeat with d in desktops
+                set picture of d to "{{ wallpaper_dest }}"
+              end repeat
+            end tell
+      changed_when: true

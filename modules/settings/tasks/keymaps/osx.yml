@@ -1,0 +1,23 @@
+---
+# System shortcuts, e.g. 64 (Spotlight)
+- name: "Keymaps | Set system shortcut {{ item.key }}"
+  ansible.builtin.command:
+    argv: [defaults, write, com.apple.symbolichotkeys, AppleSymbolicHotKeys, -dict-add, "{{ item.key }}", "{{ item.value }}"]
+  loop: "{{ cfg.keymaps.hotkeys | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  changed_when: false
+
+# Modifier key remapping of one keyboard (written per host)
+- name: "Keymaps | Remap modifier keys"
+  ansible.builtin.shell: |
+    before=$(defaults -currentHost read -g "$KEY" 2>/dev/null)
+    defaults -currentHost write -g "$KEY" "$MAPPING"
+    after=$(defaults -currentHost read -g "$KEY")
+    [ "$before" != "$after" ] && echo changed || true
+  environment:
+    KEY: "{{ cfg.keymaps.modifier_mapping.key }}"
+    MAPPING: "{{ cfg.keymaps.modifier_mapping.mapping }}"
+  register: kbd
+  changed_when: "'changed' in kbd.stdout"
+  when: cfg.keymaps.modifier_mapping | length > 0

@@ -7,8 +7,8 @@
 
 # -- GLOBALS -- #
 SUBCMD=""        # run | test | help | "" (empty → interactive prompt)
-ARG_INCLUDE=""   # --include <tags>
-ARG_SKIP=""      # --skip <tags>
+ARG_INCLUDE=""   # --include <module[.submodule],...>
+ARG_SKIP=""      # --skip <module[.submodule],...>
 ARG_DEV_DIR=""   # --dev-dir <path>
 ARG_DIFF="false" # --diff (test only)
 
@@ -123,6 +123,11 @@ function validate_args() {
     echo -e "${I_ERR}Use either '--include' or '--skip', not both."
     exit 1
   fi
+  # Module names are validated by the playbook; only keep the value safe to pass on here
+  if [[ ! "${ARG_INCLUDE}${ARG_SKIP}" =~ ^[a-z0-9_.,\ ]*$ ]]; then
+    echo -e "${I_ERR}Invalid module list: '${ARG_INCLUDE}${ARG_SKIP}' (example: --skip apps.autostart,settings)"
+    exit 1
+  fi
 }
 
 # Print Command Usage Help
@@ -137,10 +142,14 @@ Commands:
   (none)                      Choose a command interactively
 
 Options:
-  --include <tag1,tag2>       Only run these roles/tags
-  --skip <tag1,tag2>          Skip these roles/tags
+  --include <module,...>      Only run these modules (e.g. apps,settings.dock)
+  --skip <module,...>         Skip these modules (e.g. apps.autostart)
   --dev-dir <path>            Use a local project directory instead of the installed one
   --diff                      Show content diffs (only with 'test')
+
+Configuration:
+  Config file:                ${ONESETUP_CONFIG}
+  Device settings:            ONESETUP_* environment variables (see README)
 EOF
 }
 
@@ -181,6 +190,16 @@ function run_playbook() {
     echo -e "${I_ERR}No readable Playbook Entrypoint found at: ${C_CYAN}${playbook}${C_RESET}"
     exit 1
   }
+  [[ -f "$ONESETUP_CONFIG" && -r "$ONESETUP_CONFIG" ]] || {
+    echo -e "${I_ERR}No readable config file found at: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
+    echo -e "${I_INFO}Run 'onesetup-init' to create it, or point ONESETUP_CONFIG to your config file."
+    exit 1
+  }
+
+  # ONESETUP_DEBUG=<n> → -v repeated n times
+  if [[ "$ONESETUP_DEBUG" -gt 0 ]]; then
+    args+=("-$(printf 'v%.0s' $(seq "$ONESETUP_DEBUG"))")
+  fi
 
   # 'test' → dry run (+ optional diffs)
   if [[ "$SUBCMD" == "test" ]]; then
@@ -190,14 +209,11 @@ function run_playbook() {
     fi
   fi
 
-  # Tag filters
-  if [[ -n "$ARG_INCLUDE" ]]; then
-    args+=("--tags" "${ARG_INCLUDE},untagged")
-  elif [[ -n "$ARG_SKIP" ]]; then
-    args+=("--skip-tags" "$ARG_SKIP")
-  fi
+  # Module filters (applied to the 'modules' list of the config file)
+  args+=("-e" "onesetup_include=${ARG_INCLUDE// /}" "-e" "onesetup_skip=${ARG_SKIP// /}")
 
   echo -e "${I_OK}onesetup ==> Using Ansible Playbook from: ${C_CYAN}${X_TARGET_DIR}${C_RESET}"
+  echo -e "${I_INFO}onesetup ==> Config file: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}${ONESETUP_PROFILE:+ (profile: ${ONESETUP_PROFILE})}"
   echo -e "${I_INFO}onesetup ==> Ansible Config file: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}"
   echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
   echo -e "${I_INFO}onesetup ==> Mode: ${C_CYAN}${SUBCMD}${C_RESET}"

@@ -1,0 +1,26 @@
+---
+# A LaunchAgent runs 'launchctl setenv' for every variable at login, so GUI apps see them
+- name: "Ensure LaunchAgents directory exists"
+  ansible.builtin.file:
+    path: "{{ home }}/Library/LaunchAgents"
+    state: directory
+    mode: "0755"
+
+- name: "Rollout LaunchAgent for GUI environment variables"
+  ansible.builtin.template:
+    src: gui_env.plist.j2
+    dest: "{{ home }}/Library/LaunchAgents/com.onesetup.environment.plist"
+    mode: "0644"
+  when: cfg.gui_env | length > 0
+
+- name: "Remove LaunchAgent when no GUI environment variables are set"
+  ansible.builtin.file:
+    path: "{{ home }}/Library/LaunchAgents/com.onesetup.environment.plist"
+    state: absent
+  when: cfg.gui_env | length == 0
+
+# shortcut: removes the agent of the pre-module version (replaced by the one above), delete once all machines ran it
+- name: "Remove old Claude-Code environment LaunchAgent"
+  ansible.builtin.file:
+    path: "{{ home }}/Library/LaunchAgents/com.onesetup.environment.claude-code.plist"
+    state: absent

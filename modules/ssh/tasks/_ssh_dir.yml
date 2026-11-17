@@ -1,0 +1,13 @@
+---
+# Ensure ~/.ssh (and ~/.ssh/agent for agent sockets, OpenSSH >= 10.1) exist with correct permissions
+- name: "Ensure ~/.ssh directories exist"
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0700"
+    owner: "{{ user }}"
+    group: "{{ user_group }}"
+  loop:
+    - "{{ home }}/.ssh"
+    - "{{ home }}/.ssh/agent"

@@ -1,0 +1,14 @@
+---
+# -- MODULE: dotfiles -- #
+# Defaults, merged with the 'dotfiles:' section of your config file.
+dotfiles_defaults:
+  # Your dotfiles repository (HTTPS or SSH URL). With ONESETUP_SSH_KEY set, it is cloned via SSH.
+  repo: ""
+  branch: main
+  # Where the repository is cloned to
+  dir: "{{ xdg_data_home }}/dotfiles"
+
+  # Symlinks: src (relative to the repository or absolute) → dest. Existing files at dest are backed up.
+  # Optional per link: become: true (for system paths like /etc)
+  # Example: [{ src: nvim, dest: ~/.config/nvim }]
+  links: []

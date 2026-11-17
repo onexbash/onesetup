@@ -1,0 +1,30 @@
+---
+# Only hosts listed in ssh.authorized_keys get the file; others keep theirs (never written empty: would lock you out)
+- name: "Rollout ~/.ssh/authorized_keys"
+  vars:
+    _authorized_keys: >-
+      {{ cfg.authorized_keys
+         | selectattr('hosts', 'contains', ansible_facts['hostname'] | lower)
+         | map(attribute='key')
+         | list }}
+  block:
+    - name: "Info: no authorized keys for {{ ansible_facts['hostname'] }}"
+      ansible.builtin.debug:
+        msg: "No entry in ssh.authorized_keys for host '{{ ansible_facts['hostname'] | lower }}', leaving ~/.ssh/authorized_keys as it is."
+      when: _authorized_keys | length == 0
+
+    - name: "Ensure ~/.ssh"
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/_ssh_dir.yml"
+      when: _authorized_keys | length > 0
+
+    # Write authorized_keys from template (overwrites manual changes)
+    - name: "Create ~/.ssh/authorized_keys based on template"
+      become: true
+      ansible.builtin.template:
+        src: authorized_keys.j2
+        dest: "{{ home }}/.ssh/authorized_keys"
+        mode: "0600"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
+        validate: "/usr/bin/ssh-keygen -l -f %s" # fails on malformed keys before the file is replaced
+      when: _authorized_keys | length > 0

@@ -1,0 +1,70 @@
+---
+# -- MODULE: apps -- #
+# Defaults, merged with the 'apps:' section of your config file.
+apps_defaults:
+  # -- apps.install -- #
+  install:
+    # Package managers per operating system, run in this order
+    managers:
+      osx: [brew, mas]
+
+    # Homebrew (https://brew.sh)
+    brew:
+      taps: []
+      formulas:
+        # GNU versions of the BSD tools on macOS
+        - coreutils
+        - gawk
+        - gnu-sed
+        - gnu-tar
+        - grep
+        # Developer basics
+        - git
+        - gh
+        - jq
+        - ripgrep
+        - fd
+        - fzf
+        - bat
+        - eza
+        - zoxide
+        - tree
+        - wget
+        - lazygit
+        - git-delta
+        - neovim
+        - mise # Dev tool & runtime manager
+        - tlrc # Cheatsheets (tldr)
+      casks: []
+      # Keg-only formulas to link into the PATH (brew link --force), e.g. libpq
+      link: []
+      # Default taps/formulas/casks to skip
+      exclude: []
+
+    # Mac App Store apps (you must be signed in to the App Store). Example: [{ id: 497799835, name: Xcode }]
+    mas: []
+
+    # Apps that no package manager has. Installed when 'creates' does not exist yet (always when it is not set).
+    #   name:    display name
+    #   type:    dmg | pkg | zip | script   (dmg & zip may contain an .app or a .pkg)
+    #   url:     download URL ({{ arch }} → arm64 | x86)
+    #   github:  owner/repo + asset: regex → latest release asset instead of url
+    #   script:  shell command (type: script)
+    #   creates: path that exists once the app is installed
+    #   os/arch: only install on this operating system (osx | linux) / CPU architecture (arm64 | x86)
+    manual: []
+
+  # -- apps.configure -- #
+  configure:
+    # GitHub CLI extensions
+    gh_extensions: []
+    # Firefox profile with your files (user.js, bookmarks.html, chrome/userChrome.css & userContent.css)
+    firefox:
+      profile: "" # profile name, empty: skip
+      files: "" # directory with your files
+      create: true # create the profile if it does not exist
+      binary: /Applications/Firefox.app/Contents/MacOS/firefox
+
+  # -- apps.autostart -- #
+  # Apps started at login (macOS). name: app name | bundle_id (optional) | hidden / background: true (optional)
+  autostart: []

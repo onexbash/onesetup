@@ -1,0 +1,35 @@
+---
+# Remove path_helper invocation from /etc/zprofile & /etc/profile (PATH is built from /etc/paths.d only)
+- name: "Remove path_helper invocation from /etc/zprofile & /etc/profile"
+  become: true
+  ansible.builtin.replace:
+    path: "{{ item }}"
+    regexp: "(?m)^if \\[ -x /usr/libexec/path_helper \\]; then\\n\\teval `/usr/libexec/path_helper -s`\\nfi\\n?"
+    replace: ""
+  loop:
+    - /etc/profile
+    - /etc/zprofile
+
+# Ensure /etc/paths is empty (we only use /etc/paths.d/)
+- name: "Ensure /etc/paths is empty"
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/paths
+    content: ""
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"
+    mode: "0644"
+    backup: true # Keeps a copy of Apple's original file
+
+# Write PATH Entries to /etc/paths.d/[priority]-[name]
+- name: "Write PATH entries to /etc/paths.d/"
+  become: true
+  ansible.builtin.copy:
+    dest: "/etc/paths.d/{{ '%02d' | format(item.value.priority | int) }}-{{ item.key }}"
+    content: "{{ (item.value.entries | map('expanduser') | join('\n') ~ '\n') if item.value.entries else '' }}"
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"
+    mode: "0644"
+  loop: "{{ cfg.paths | dict2items }}"
+  loop_control:
+    label: "{{ '%02d' | format(item.value.priority | int) }}-{{ item.key }}"

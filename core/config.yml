@@ -1,0 +1,83 @@
+---
+# -- CORE: Config File -- #
+# Loads the config file, applies the profile ($ONESETUP_PROFILE) and builds the run plan:
+#   onesetup_config  the user's config (profile already merged in)
+#   onesetup_plan    {module: [submodules]} to run, in registry order (see onesetup_registry in main.yml)
+# CLI filters (--include / --skip) arrive as the extra vars onesetup_include / onesetup_skip.
+
+- name: "Load config file: {{ ONESETUP_CONFIG }}"
+  ansible.builtin.include_vars:
+    file: "{{ ONESETUP_CONFIG }}"
+    name: onesetup_user
+
+- name: "Fail on unknown profile"
+  ansible.builtin.assert:
+    that: ONESETUP_PROFILE in (onesetup_user.profiles | default({}))
+    fail_msg: >-
+      ONESETUP_PROFILE={{ ONESETUP_PROFILE }} has no entry under 'profiles' in {{ ONESETUP_CONFIG }}
+      (defined: {{ (onesetup_user.profiles | default({})).keys() | list | join(', ') or 'none' }}).
+    quiet: true
+  when: ONESETUP_PROFILE | length > 0
+
+# Profiles use the same rules as the defaults: lists are extended, values are replaced
+- name: "Apply profile"
+  ansible.builtin.set_fact:
+    onesetup_config: >-
+      {{ onesetup_user | combine(
+           (onesetup_user.profiles | default({}))[ONESETUP_PROFILE] | default({}),
+           recursive=true, list_merge='append_rp') }}
+
+- name: "Select modules"
+  vars:
+    # Every valid entry → the submodules it stands for ('apps' → all apps.*, 'apps.install' → itself)
+    _expansions: >-
+      {%- set ns = namespace(out={}) -%}
+      {%- for mod, subs in onesetup_registry.items() -%}
+        {%- set full = subs | map('regex_replace', '^', mod ~ '.') | list -%}
+        {%- set ns.out = ns.out | combine({mod: full}) -%}
+        {%- for sub in full -%}
+          {%- set ns.out = ns.out | combine({sub: [sub]}) -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ ns.out }}
+    _include: "{{ (onesetup_include | default('')).split(',') | select | list }}"
+    _requested: "{{ _include if _include else (onesetup_config.modules | default([], true)) }}"
+    _skipped: "{{ (onesetup_skip | default('')).split(',') | select | list }}"
+    _unknown: "{{ (_requested + _skipped) | reject('in', _expansions) | list }}"
+  block:
+    - name: "Fail on unknown module names"
+      ansible.builtin.assert:
+        that: _unknown | length == 0
+        fail_msg: >-
+          Unknown module(s): {{ _unknown | join(', ') }}.
+          Available: {{ onesetup_registry | dict2items | map(attribute='key') | zip(onesetup_registry.values() | map('join', ', ')) | map('join', ' (') | map('regex_replace', '$', ')') | join(', ') }}
+        quiet: true
+
+    - name: "Build the run plan"
+      ansible.builtin.set_fact:
+        onesetup_plan: >-
+          {%- set ns = namespace(out={}) -%}
+          {%- for mod, subs in onesetup_registry.items() -%}
+            {%- set chosen = subs | map('regex_replace', '^', mod ~ '.') | select('in', _selected) | map('regex_replace', '^' ~ mod ~ '[.]', '') | list -%}
+            {%- if chosen -%}
+              {%- set ns.out = ns.out | combine({mod: chosen}) -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ ns.out }}
+      vars:
+        _selected: >-
+          {{ _requested | map('extract', _expansions) | flatten
+             | difference(_skipped | map('extract', _expansions) | flatten) }}
+
+- name: "Warn about unknown keys in the config file"
+  ansible.builtin.debug:
+    msg: >-
+      Unknown key(s) in {{ ONESETUP_CONFIG }}: {{ _unknown_keys | join(', ') }}.
+      Known keys: modules, profiles, {{ onesetup_registry.keys() | join(', ') }}.
+  vars:
+    _unknown_keys: "{{ onesetup_config.keys() | reject('in', ['modules', 'profiles'] + (onesetup_registry.keys() | list)) | list }}"
+  when: _unknown_keys | length > 0
+
+- name: "Show the run plan"
+  ansible.builtin.debug:
+    msg: "{{ onesetup_plan if onesetup_plan else 'No modules selected (see modules: in ' ~ ONESETUP_CONFIG ~ ')' }}"

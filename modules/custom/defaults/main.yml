@@ -1,0 +1,8 @@
+---
+# -- MODULE: custom -- #
+# For everything the other modules don't cover: your own Ansible task files, run last.
+custom_defaults:
+  # Paths to task files (plain Ansible task lists), run in this order.
+  # They can use 'os', 'arch', 'user', 'home', 'xdg_config_home', ... and 'become: true' for sudo.
+  # Example: [~/.config/onesetup/tasks/printer.yml]
+  tasks: []

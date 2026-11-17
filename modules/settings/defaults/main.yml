@@ -1,0 +1,78 @@
+---
+# -- MODULE: settings (macOS) -- #
+# Defaults, merged with the 'settings:' section of your config file.
+settings_defaults:
+  # -- settings.defaults -- #
+  # macOS preferences ('defaults write'): <domain>: { <key>: <value> }. Look keys up on https://macos-defaults.com
+  # The type follows the YAML value (true → bool, 2 → int, 1.5 → float, text → string, list → array).
+  # Explicit form for special cases: <key>: { type: float, value: 40, host: currentHost }
+  # Domains starting with '/' are written with sudo. A value of null skips a default from this list.
+  defaults:
+    NSGlobalDomain:
+      AppleShowAllExtensions: true # Finder: show file extensions
+      NSDocumentSaveNewDocumentsToCloud: false # Save new documents locally, not to iCloud
+      NSAutomaticWindowAnimationsEnabled: false # No window opening animation
+      ApplePressAndHoldEnabled: false # Key repeat instead of the accent menu when holding a key
+      KeyRepeat: 2 # Fast key repeat rate
+      InitialKeyRepeat: 15 # Short delay until key repeat
+    /Library/Preferences/com.apple.SoftwareUpdate:
+      AutomaticCheckEnabled: 1 # Automatic software update checks
+    /Library/Preferences/com.apple.alf:
+      globalstate: 1 # Firewall on
+    com.apple.commerce:
+      AutoUpdate: true # App Store: automatic updates
+      AutoUpdateRestartRequired: true # App Store: install updates that need a restart
+    com.apple.finder:
+      QuitMenuItem: true # Finder: show 'Quit' menu item
+      ShowPathbar: true
+      ShowStatusBar: true
+      AppleShowAllFiles: true # Show hidden files
+      _FXShowPosixPathInTitle: true # Full path in the window title
+      _FXSortFoldersFirst: true
+      FXEnableExtensionChangeWarning: false
+      FXPreferredViewStyle: Nlsv # list: Nlsv | column: clmv | gallery: glyv | icon: icnv
+      FXDefaultSearchScope: SCcf # SCcf: current folder | SCsp: previous scope | SCev: entire volume
+      NewWindowTarget: PfHm # New windows open the home folder
+      NewWindowTargetPath: "file://{{ home }}/"
+    com.apple.dock:
+      show-recents: false # No recent apps in the Dock
+      mru-spaces: false # Don't rearrange spaces based on recent use
+    com.apple.screencapture:
+      disable-shadow: true
+      type: png
+    com.apple.TimeMachine:
+      DoNotOfferNewDisksForBackup: true
+    com.apple.Terminal:
+      SecureKeyboardEntry: true
+
+  # -- settings.system -- #
+  # Settings that are not plain 'defaults'. null / empty: leave as it is.
+  system:
+    startup_sound: null # true | false
+    restart_on_freeze: null # true | false
+    screen_lock_delay: null # seconds until the password is required after the screen saver starts
+    power: {} # pmset values per power source, e.g. { charger: { displaysleep: 60, sleep: 0 }, battery: { displaysleep: 10, sleep: 20 } }
+    cursor: {} # pointer colors (RGBA, 0-1), e.g. { fill: [0.65, 0.89, 0.63, 1], outline: [0.07, 0.07, 0.11, 1] }
+
+  # -- settings.dock -- #
+  # Dock apps in this order (replaces the current Dock). App names (→ /Applications/<name>.app) or paths.
+  # Empty: leave the Dock as it is.
+  dock: []
+
+  # -- settings.finder -- #
+  finder:
+    favorite_tags: [] # Tag names shown in the Finder sidebar
+
+  # -- settings.keymaps -- #
+  keymaps:
+    # System shortcuts (com.apple.symbolichotkeys): <id>: <plist dict>, e.g. 64 = Spotlight
+    hotkeys: {}
+    # Modifier key remapping of one keyboard: { key: com.apple.keyboard.modifiermapping.<id>, mapping: <plist array> }
+    # Find the key with: defaults -currentHost read -g | grep modifiermapping
+    modifier_mapping: {}
+
+  # -- settings.wallpaper -- #
+  wallpaper: "" # path to an image, applied to all desktops
+
+  # -- settings.browser -- #
+  browser: "" # default browser, name as listed by the 'defaultbrowser' command

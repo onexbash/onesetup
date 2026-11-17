@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Managed by onesetup (shell.gui_env) – manual changes are overwritten -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.onesetup.environment</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>-c</string>
+    <string>{% for name, value in cfg.gui_env.items() %}launchctl setenv {{ name }} {{ value | expanduser | quote | e }}{{ '; ' if not loop.last }}{% endfor %}</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>

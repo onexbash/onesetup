@@ -1,0 +1,17 @@
+---
+- name: "Ensure ~/.ssh"
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/_ssh_dir.yml"
+
+# Decrypt & rollout key files (vault-encrypted, see: ssh.identities in your config file)
+- name: "Decrypt & rollout SSH keys"
+  become: true
+  ansible.builtin.copy:
+    content: "{{ item.value | trim }}\n" # exactly one trailing newline (required by OpenSSH)
+    dest: "{{ home }}/.ssh/{{ item.key | regex_replace('_pub$', '.pub') }}"
+    mode: "{{ '0644' if item.key.endswith('_pub') else '0600' }}"
+    owner: "{{ user }}"
+    group: "{{ user_group }}"
+  loop: "{{ cfg.identities | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  no_log: true # Prevents secret leaking

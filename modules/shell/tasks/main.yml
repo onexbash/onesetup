@@ -1,0 +1,3 @@
+---
+- name: "Run module"
+  ansible.builtin.include_tasks: "{{ role_path }}/../../core/module.yml"

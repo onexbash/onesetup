@@ -1,0 +1,8 @@
+---
+- name: "GitHub CLI extensions"
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/configure/_gh.yml"
+  when: cfg.configure.gh_extensions | length > 0
+
+- name: "Firefox profile"
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/configure/_firefox.yml"
+  when: cfg.configure.firefox.profile | length > 0

@@ -1,0 +1,7 @@
+---
+# Mac App Store apps (needs the 'mas' CLI, installed by the core, and an App Store login)
+- name: "Mac App Store | Install apps"
+  community.general.mas:
+    id: "{{ cfg.install.mas | map(attribute='id') | list }}"
+    state: present
+  when: cfg.install.mas | length > 0

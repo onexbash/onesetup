@@ -1,0 +1,63 @@
+---
+# Ensure allowed login shells exist in /etc/shells (incl. the configured login shell)
+- name: "Ensure login shells exist in /etc/shells"
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    line: "{{ item }}"
+    create: false
+  loop: "{{ (cfg.shells + ([cfg.login] if cfg.login else [])) | unique }}"
+
+- name: "Set login shell"
+  when: cfg.login | length > 0
+  block:
+    - name: "Ensure the login shell exists: {{ cfg.login }}"
+      ansible.builtin.stat:
+        path: "{{ cfg.login }}"
+        follow: true
+      register: _login_shell
+      failed_when: not (_login_shell.stat.exists and _login_shell.stat.executable)
+
+    # Read current login shells (user + root) to keep the tasks idempotent
+    - name: "Read current login shells"
+      ansible.builtin.command:
+        argv: [dscl, ., -read, "/Users/{{ item }}", UserShell]
+      loop: ["{{ user }}", "{{ root_user }}"]
+      register: _current_shells
+      changed_when: false
+      check_mode: false
+
+    # Set the login shell in multiple ways (only if not already set)
+    - name: "Set login shell for {{ user }} & {{ root_user }}"
+      when: _current_shells.results | rejectattr('stdout', 'search', (cfg.login | regex_escape) ~ '$') | list | length > 0
+      become: true
+      block:
+        - name: "Set login shell via chsh: {{ root_user }}"
+          ansible.builtin.command:
+            argv: [chsh, -s, "{{ cfg.login }}", "{{ root_user }}"]
+          changed_when: true
+
+        - name: "Set login shell via chsh: {{ user }}"
+          ansible.builtin.command:
+            argv: [chsh, -s, "{{ cfg.login }}", "{{ user }}"]
+          changed_when: true
+
+        # dscl (directory record path is /Users/<username>, not $HOME)
+        - name: "Set login shell via dscl: {{ user }}"
+          ansible.builtin.command:
+            argv: [dscl, ., -create, "/Users/{{ user }}", UserShell, "{{ cfg.login }}"]
+          changed_when: true
+
+        - name: "Set login shell via user module: {{ user }}"
+          ansible.builtin.user:
+            name: "{{ user }}"
+            shell: "{{ cfg.login }}"
+
+    - name: "Verify login shells"
+      ansible.builtin.command:
+        argv: [dscl, ., -read, "/Users/{{ item }}", UserShell]
+      loop: ["{{ user }}", "{{ root_user }}"]
+      register: _verify_shells
+      changed_when: false
+      check_mode: false
+      failed_when: _verify_shells.stdout is not search((cfg.login | regex_escape) ~ '$')
