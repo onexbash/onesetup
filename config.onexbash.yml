@@ -11,7 +11,7 @@ modules:
   - settings
   - custom
 shell:
-  login: /bin/bash
+  login: /opt/homebrew/bin/zsh
   env:
     EDITOR: nvim
 
