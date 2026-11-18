@@ -67,4 +67,6 @@ apps_defaults:
 
   # -- apps.autostart -- #
   # Apps started at login (macOS). name: app name | bundle_id (optional) | hidden / background: true (optional)
+  # Once set in your config file, onesetup deletes its agents of apps not listed (autostart: [] removes all).
+  # Not set: existing agents are left untouched.
   autostart: []

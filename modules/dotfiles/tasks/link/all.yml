@@ -13,7 +13,7 @@
          | regex_replace('/+$', '') }}
     _dest: "{{ item.dest | expanduser | regex_replace('/+$', '') }}"
   become: "{{ item.become | default(false) }}"
-  loop: "{{ cfg.links }}"
+  loop: "{{ cfg.mapping }}"
   loop_control:
     label: "{{ item.src }}"
   register: dotfiles_src_stat
@@ -26,7 +26,7 @@
     get_checksum: false
   vars: *link_paths
   become: "{{ item.become | default(false) }}"
-  loop: "{{ cfg.links }}"
+  loop: "{{ cfg.mapping }}"
   loop_control:
     label: "{{ item.dest }}"
   register: dotfiles_dest_stat
@@ -71,7 +71,7 @@
     get_checksum: false
   vars: *link_paths
   become: "{{ item.become | default(false) }}"
-  loop: "{{ cfg.links }}"
+  loop: "{{ cfg.mapping }}"
   loop_control:
     label: "{{ _dest | dirname }}"
   register: dotfiles_parent_stat
@@ -101,7 +101,7 @@
     force: true # replace links that point elsewhere
   vars: *link_paths
   become: "{{ item.become | default(false) }}"
-  loop: "{{ cfg.links }}"
+  loop: "{{ cfg.mapping }}"
   loop_control:
     label: "{{ item.dest }}"
   register: dotfiles_link

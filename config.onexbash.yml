@@ -1,0 +1,112 @@
+# -- ONESETUP CONFIG -- #
+# This is my personal config file for onesetup, that you can use for reference
+
+---
+modules:
+  - shell
+  - ssh
+  - dotfiles
+  - fonts
+  - apps
+  - settings
+  - custom
+shell:
+  login: /bin/bash
+  env:
+    EDITOR: nvim
+
+dotfiles:
+  repo: https://github.com/onexbash/dotfiles.git # cloned via SSH if ONESETUP_SSH_KEY is set
+  mapping:
+    # -- Shell Config Files -> ~/ -- #
+    - { src: shell/home/.zshrc, dest: ~/.zshrc }
+    - { src: shell/home/.zshenv, dest: ~/.zshenv }
+    - { src: shell/home/.zprofile, dest: ~/.zprofile }
+    - { src: shell/home/.zlogout, dest: ~/.zlogout }
+    - { src: shell/home/.bashrc, dest: ~/.bashrc }
+    - { src: shell/home/.bash_profile, dest: ~/.bash_profile }
+    - { src: shell/home/.bash_logout, dest: ~/.bash_logout }
+    - { src: shell/home/.profile, dest: ~/.profile }
+    # -- Config Directory -> ~/.config -- #
+    - { src: shell/config, dest: ~/.config/shell }
+    - { src: aerospace, dest: ~/.config/aerospace }
+    - { src: atuin, dest: ~/.config/atuin }
+    - { src: eza, dest: ~/.config/eza }
+    - { src: scripts, dest: ~/.config/scripts }
+    - { src: ghostty, dest: ~/.config/ghostty }
+    - { src: kitty, dest: ~/.config/kitty }
+    - { src: wezterm, dest: ~/.config/wezterm }
+    - { src: zellij, dest: ~/.config/zellij }
+    - { src: tuios, dest: ~/.config/tuios }
+    - { src: git, dest: ~/.config/git }
+    - { src: lazygit, dest: ~/.config/lazygit }
+    - { src: nvim, dest: ~/.config/nvim }
+    - { src: powershell, dest: ~/.config/powershell }
+    - { src: starship, dest: ~/.config/starship }
+    - { src: vim, dest: ~/.config/vim }
+    - { src: gh, dest: ~/.config/gh }
+    - { src: zed, dest: ~/.config/zed }
+    - { src: litexl, dest: ~/.config/lite-xl }
+    - { src: ascii-arts, dest: ~/.config/ascii-arts }
+    - { src: fastfetch, dest: ~/.config/fastfetch }
+    - { src: borders, dest: ~/.config/borders } # JankyBorders
+    - { src: gck, dest: ~/.config/gck } # git-credential-keepassxc
+    - { src: mise, dest: ~/.config/mise }
+    - { src: uv, dest: ~/.config/uv }
+    - { src: glow, dest: ~/.config/glow }
+    - { src: anthropic, dest: ~/.config/anthropic }
+
+    # -- Sub-Dirs & Files inside the Config Dir -> ~/.config/[subdir]/<file> -- #
+    # Claude
+    - { src: claude/agents, dest: ~/.config/claude/agents }
+    - { src: claude/CLAUDE.md, dest: ~/.config/claude/CLAUDE.md }
+    - {
+        src: claude/policy-limits.json,
+        dest: ~/.config/claude/policy-limits.json,
+      }
+    - {
+        src: claude/ponytail-statusline.sh,
+        dest: ~/.config/claude/ponytail-statusline.sh,
+      }
+    - {
+        src: claude/remote-settings.json,
+        dest: ~/.config/claude/remote-settings.json,
+      }
+    - { src: claude/settings.json, dest: ~/.config/claude/settings.json }
+    - { src: claude/themes, dest: ~/.config/claude/themes }
+    # Herdr
+    - { src: herdr/config.toml, dest: ~/.config/herdr/config.toml }
+    # Rustup
+    - { src: rustup/settings.toml, dest: ~/.config/rustup/settings.toml }
+    # Azure
+    - { src: azure/config, dest: ~/.config/azure/config }
+    # Containers
+    - {
+        src: containers/containers.conf,
+        dest: ~/.config/containers/containers.conf,
+      }
+    # Peazip
+    - { src: peazip/conf.txt, dest: ~/.config/peazip/conf.txt }
+    # -- Aliases -- #
+    - { src: ~/.config/claude, dest: ~/.claude }
+
+apps:
+  autostart:
+    # Utilities
+    - { name: AeroSpace, bundle_id: bobko.aerospace }
+    - { name: Thaw, bundle_id: com.stonerl.Thaw }
+    - { name: SuperCmd, bundle_id: com.supercmd.app }
+    - { name: DockDoor, bundle_id: com.ethanbills.DockDoor }
+    - { name: Capso, bundle_id: com.awesomemacapps.capso }
+    # GUI Apps
+    - { name: Ghostty, bundle_id: com.mitchellh.ghostty }
+    - {
+        name: Firefox Developer Edition,
+        bundle_id: org.mozilla.firefoxdeveloperedition,
+      }
+    - { name: Spotify, bundle_id: com.spotify.client }
+    - { name: KeePassXC, bundle_id: org.keepassxc.keepassxc }
+    - { name: Proton Pass, bundle_id: me.proton.pass.electron }
+    - { name: Proton Mail, bundle_id: ch.protonmail.desktop }
+    - { name: Microsoft Teams, bundle_id: com.microsoft.teams2 }
+    - { name: Microsoft Outlook, bundle_id: com.microsoft.Outlook }
