@@ -3,15 +3,17 @@
 - name: "Remove path_helper invocation from /etc/zprofile & /etc/profile"
   become: true
   ansible.builtin.replace:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     regexp: "(?m)^if \\[ -x /usr/libexec/path_helper \\]; then\\n\\teval `/usr/libexec/path_helper -s`\\nfi\\n?"
     replace: ""
     owner: "{{ root_user }}"
     group: "{{ root_group }}"
-    mode: "0644" # world-readable: sourced by every user's shell
+    mode: "{{ item.mode }}" # world-readable: sourced by every user's shell
   loop:
-    - /etc/profile
-    - /etc/zprofile
+    - { path: /etc/profile, mode: "0644" }
+    - { path: /etc/zprofile, mode: "0444" } # macOS default
+  loop_control:
+    label: "{{ item.path }}"
 
 # Ensure /etc/paths is empty (we only use /etc/paths.d/)
 - name: "Ensure /etc/paths is empty"

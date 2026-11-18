@@ -3,7 +3,7 @@
 - name: "Ensure user directories exist"
   become: true
   ansible.builtin.file:
-    path: "{{ item.path }}"
+    path: "{{ item }}"
     state: directory
     mode: "0700"
     owner: "{{ user }}"
