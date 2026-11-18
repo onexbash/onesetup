@@ -48,7 +48,7 @@
           - onesetup_plan.ssh == ['config']
           - onesetup_plan.apps == ['install', 'configure', 'autostart']
           - onesetup_config.apps.install.brew.casks == ['microsoft-teams']
-          - onesetup_config.apps.install.brew.formulas == ['k9s']
+          - onesetup_config.apps.install.brew.formulas == ['git', 'k9s']
 
     - name: "Unknown module names fail"
       block:
@@ -94,19 +94,21 @@
     - name: "Merge rules: lists extend, values replace, exclude removes"
       ansible.builtin.assert:
         that:
-          - _merged.install.brew.formulas | reject('in', _merged.install.brew.exclude) | list
-            == apps_defaults.install.brew.formulas | reject('eq', 'git') | list + ['k9s']
-          - _merged.install.managers.osx == ['brew', 'mas']
+          - apps_defaults.install.managers.osx == [] # nothing installed by default
+          - apps_defaults.install.brew.formulas == []
+          - _merged.install.brew.formulas == ['git', 'k9s']
+          - _merged.install.brew.formulas | reject('in', _merged.install.brew.exclude) | list == ['k9s']
+          - _merged.install.managers.osx == ['brew']
       vars:
         apps_defaults: "{{ (lookup('ansible.builtin.file', playbook_dir ~ '/../modules/apps/defaults/main.yml') | from_yaml).apps_defaults }}"
         _merged: "{{ apps_defaults | combine(onesetup_config.apps, recursive=true, list_merge='append_rp') }}"
 
-    - name: "Plan from onesetup.default.yml"
+    - name: "Plan from config.default.yml"
       ansible.builtin.include_tasks: ../core/config.yml
       vars:
-        ONESETUP_CONFIG: "{{ playbook_dir }}/../onesetup.default.yml"
+        ONESETUP_CONFIG: "{{ playbook_dir }}/../config.default.yml"
 
     - name: "Assert: the default config runs every module completely"
       ansible.builtin.assert:
         that: onesetup_plan == onesetup_registry
-        fail_msg: "onesetup.default.yml is missing modules: {{ onesetup_registry.keys() | difference(onesetup_plan.keys()) }}"
+        fail_msg: "config.default.yml is missing modules: {{ onesetup_registry.keys() | difference(onesetup_plan.keys()) }}"

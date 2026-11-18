@@ -265,7 +265,7 @@ function use_dev_dir() {
 # [UTIL] Export the device-specific settings (environment variables only, see README: Environment Variables)
 # Everything else is configured in the config file ($ONESETUP_CONFIG) and read by the playbook.
 function apply_config() {
-  export ONESETUP_CONFIG="${ONESETUP_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/onesetup/onesetup.yml}"
+  export ONESETUP_CONFIG="${ONESETUP_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/onesetup/config.yml}"
   export ONESETUP_PROFILE="${ONESETUP_PROFILE:-}"
   export ONESETUP_HOSTNAME="${ONESETUP_HOSTNAME:-}"
   export ONESETUP_INSTALL_DIR="${ONESETUP_INSTALL_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/onesetup}"

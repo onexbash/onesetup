@@ -8,7 +8,8 @@ dotfiles_defaults:
   # Where the repository is cloned to
   dir: "{{ xdg_data_home }}/dotfiles"
 
-  # Symlinks: src (relative to the repository or absolute) → dest. Existing files at dest are backed up.
+  # Symlinks: src (relative to the repository or absolute) → dest. Existing files at dest are moved to
+  # $ONESETUP_STATE_DIR/backups/<timestamp>/<original path> (default: ~/.local/state/onesetup/backups).
   # Optional per link: become: true (for system paths like /etc)
   # Example: [{ src: nvim, dest: ~/.config/nvim }]
   mapping: []

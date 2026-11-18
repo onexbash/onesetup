@@ -3,42 +3,23 @@
 # Defaults, merged with the 'apps:' section of your config file.
 apps_defaults:
   # -- apps.install -- #
+  # Nothing is installed by default: set the package managers and their packages in your config file
+  # (config.default.yml in the onesetup repo has a set of common developer packages).
   install:
-    # Package managers per operating system, run in this order
+    # Package managers per operating system, run in this order (available on macOS: brew, mas).
+    # Empty by default, so your list decides (lists are extended when merged, entries can't be removed).
+    # Example: { osx: [brew, mas] }
     managers:
-      osx: [brew, mas]
+      osx: []
 
     # Homebrew (https://brew.sh)
     brew:
       taps: []
-      formulas:
-        # GNU versions of the BSD tools on macOS
-        - coreutils
-        - gawk
-        - gnu-sed
-        - gnu-tar
-        - grep
-        # Developer basics
-        - git
-        - gh
-        - jq
-        - ripgrep
-        - fd
-        - fzf
-        - bat
-        - eza
-        - zoxide
-        - tree
-        - wget
-        - lazygit
-        - git-delta
-        - neovim
-        - mise # Dev tool & runtime manager
-        - tlrc # Cheatsheets (tldr)
+      formulas: []
       casks: []
       # Keg-only formulas to link into the PATH (brew link --force), e.g. libpq
       link: []
-      # Default taps/formulas/casks to skip
+      # Taps/formulas/casks to skip, e.g. to drop an entry of the main config in a profile
       exclude: []
 
     # Mac App Store apps (you must be signed in to the App Store). Example: [{ id: 497799835, name: Xcode }]

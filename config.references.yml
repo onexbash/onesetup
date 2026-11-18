@@ -1,14 +1,15 @@
-# -- ONESETUP CONFIG -- #
-# Your personal setup. 'onesetup-init' copied this file to $ONESETUP_CONFIG
-# (default: ~/.config/onesetup/onesetup.yml). Run 'onesetup' after changing it.
+# -- ONESETUP CONFIG REFERENCE -- #
+# The common options of your config file ($ONESETUP_CONFIG, default: ~/.config/onesetup/config.yml),
+# which 'onesetup-init' creates from config.default.yml. Copy what you need into it.
 #
 # How it works:
 #   - 'modules' decides what runs. A module runs all its parts, 'module.part' runs only that part.
-#   - Every module brings sensible defaults (modules/<module>/defaults/main.yml in the onesetup repo).
+#   - Every module brings defaults (modules/<module>/defaults/main.yml in the onesetup repo).
 #     What you write here is merged into them:
-#       lists are extended   → formulas: [k9s] installs k9s on top of the default formulas
+#       lists are extended   → fonts.nerdfonts.fonts: [...] adds fonts to the default Nerd Fonts
 #       values are replaced  → login: /opt/homebrew/bin/zsh
-#       exclude: [...]       → removes default entries (where available)
+#       exclude: [...]       → removes entries (brew, fonts), e.g. a default font or, in a profile, a formula
+#   - apps installs nothing by default: set the package managers and packages under apps.install.
 #   - Secrets: 'onesetup-vault encrypt --file <file> --target config' writes them here, encrypted.
 #   - Device-specific settings (hostname, SSH key for cloning, ...) are ONESETUP_* environment variables.
 #   - Paths may start with ~/
@@ -36,11 +37,13 @@ modules:
 # -- apps -- #
 # apps:
 #   install:
+#     managers:
+#       osx: [brew, mas] # run in this order, none by default
 #     brew:
 #       taps: [nikitabobko/tap]
-#       formulas: [k9s, podman]
+#       formulas: [git, k9s, podman]
 #       casks: [ghostty, firefox, nikitabobko/tap/aerospace]
-#       exclude: [lazygit]
+#       link: [libpq] # keg-only formulas to link into the PATH
 #     mas:
 #       - { id: 497799835, name: Xcode }
 #     manual:

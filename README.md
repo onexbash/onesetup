@@ -66,15 +66,15 @@ ONESETUP_BRANCH=feat-refactoring onesetup-init   # playbook from the same branch
 ```
 
 ### 3) Initialize
-`onesetup-init` installs the playbook to `$ONESETUP_INSTALL_DIR` and creates your config file from [onesetup.example.yml](./onesetup.example.yml).
+`onesetup-init` installs the playbook to `$ONESETUP_INSTALL_DIR` and creates your config file from [config.default.yml](./config.default.yml) (a starter config with common developer packages).
 Run it again at any time to update onesetup — your config file is never touched.
 ```bash
 onesetup-init
 ```
 
 ### 4) Customize *(optional)*
-Edit your config file (`~/.config/onesetup/onesetup.yml`): choose the [modules](#modules) and add your apps, dotfiles, settings, ...
-Without changes you get the base setup.
+Edit your config file (`~/.config/onesetup/config.yml`): choose the [modules](#modules) and add your apps, dotfiles, settings, ...
+Replace the example `dotfiles` and `apps.autostart` entries with your own before the first run.
 
 ### 5) Encrypt your secrets *(optional)*
 ```bash
@@ -97,7 +97,7 @@ onesetup
 
 ## 🔧 Configuration
 
-Everything you customize lives in **one file**: `$ONESETUP_CONFIG` (default: `~/.config/onesetup/onesetup.yml`).
+Everything you customize lives in **one file**: `$ONESETUP_CONFIG` (default: `~/.config/onesetup/config.yml`).
 It only contains *your* changes — the defaults stay in this repository, so updates never conflict with your config.
 Keep the file in your dotfiles repository to use the same setup on every machine.
 
@@ -106,18 +106,19 @@ modules: [shell, apps, settings.dock]
 
 apps:
   install:
+    managers:
+      osx: [brew]              # package managers to run (brew, mas); none by default
     brew:
-      formulas: [k9s]          # installed on top of the default formulas
+      formulas: [git, k9s]     # nothing is installed by default
       casks: [ghostty, firefox]
-      exclude: [lazygit]       # skip a default formula
   autostart: [Ghostty]
 
 settings:
   dock: [Ghostty, Firefox]
 ```
 
-[onesetup.example.yml](./onesetup.example.yml) shows the common options; each module's `defaults/main.yml` documents all of them.
-To run every module with its defaults only, use [onesetup.default.yml](./onesetup.default.yml): `ONESETUP_CONFIG=<install dir>/onesetup.default.yml onesetup`.
+[config.default.yml](./config.default.yml) is the starter config `onesetup-init` creates, [config.references.yml](./config.references.yml) shows the other common options, and each module's `defaults/main.yml` documents all of them.
+[config.onexbash.yml](./config.onexbash.yml) is a complete personal config for reference.
 
 ### Modules
 
@@ -128,9 +129,9 @@ They always run in the order of this table.
 |---|---|---|---|
 | `shell` | `env`, `paths`, `login`, `gui_env` | Global environment variables, `$PATH` (`/etc/paths.d`), login shell, environment variables for GUI apps | [defaults](./modules/shell/defaults/main.yml) |
 | `ssh` | `identities`, `config`, `known_hosts`, `authorized_keys` | Rolls out your (encrypted) SSH keys & config, `known_hosts` (overwritten) and `authorized_keys` | [defaults](./modules/ssh/defaults/main.yml) |
-| `dotfiles` | `clone`, `link` | Clones your dotfiles repository and symlinks the files into place (existing files are backed up) | [defaults](./modules/dotfiles/defaults/main.yml) |
+| `dotfiles` | `clone`, `link` | Clones your dotfiles repository and symlinks the files into place (existing files are moved to `$ONESETUP_STATE_DIR/backups/<timestamp>/`) | [defaults](./modules/dotfiles/defaults/main.yml) |
 | `fonts` | `nerdfonts` | Installs Nerd Fonts | [defaults](./modules/fonts/defaults/main.yml) |
-| `apps` | `install`, `configure`, `autostart` | Package managers per OS (Homebrew, Mac App Store), manual installs (dmg, pkg, zip, script), gh extensions, Firefox profile, apps started at login | [defaults](./modules/apps/defaults/main.yml) |
+| `apps` | `install`, `configure`, `autostart` | Package managers per OS (Homebrew, Mac App Store) with your package lists (nothing by default), manual installs (dmg, pkg, zip, script), gh extensions, Firefox profile, apps started at login | [defaults](./modules/apps/defaults/main.yml) |
 | `settings` | `defaults`, `system`, `dock`, `finder`, `keymaps`, `wallpaper`, `browser` | macOS preferences (any `defaults write`), power & startup settings, Dock apps, Finder tags, shortcuts, wallpaper, default browser | [defaults](./modules/settings/defaults/main.yml) |
 | `custom` | `tasks` | Runs your own Ansible task files — for everything the modules don't cover | [defaults](./modules/custom/defaults/main.yml) |
 
@@ -144,7 +145,7 @@ Your config is merged into the module defaults with three rules:
 |---|---|
 | a list (`formulas: [k9s]`) | **added** to the default list |
 | a value (`login: /opt/homebrew/bin/zsh`) | **replaces** the default |
-| `exclude: [...]` *(brew, fonts)* | **removes** default entries |
+| `exclude: [...]` *(brew, fonts)* | **removes** entries (e.g. in a profile) |
 
 For `settings.defaults`, set a key to `null` to skip a default. Paths may start with `~/`.
 Typos are reported: unknown modules stop the run, unknown keys print a warning.
@@ -200,7 +201,7 @@ Device-specific settings are environment variables only — everything else belo
 
 | Variable | Default | Description |
 |---|---|---|
-| `ONESETUP_CONFIG` | `$XDG_CONFIG_HOME/onesetup/onesetup.yml` | Your config file |
+| `ONESETUP_CONFIG` | `$XDG_CONFIG_HOME/onesetup/config.yml` | Your config file |
 | `ONESETUP_PROFILE` | – | [Profile](#profiles) to apply |
 | `ONESETUP_HOSTNAME` | – | Hostname to set (HostName, LocalHostName & ComputerName). Unset: keep the current one |
 | `ONESETUP_SSH_KEY` | – | Private key to clone the dotfiles repository via SSH (else HTTPS) |
@@ -208,7 +209,7 @@ Device-specific settings are environment variables only — everything else belo
 | `ONESETUP_VAULT_PASS` | – | Vault password (or a [password manager reference](#password-manager-references)). Unset: prompted |
 | `ONESETUP_KEEPASSXC_DB` | – | KeePassXC database for `keepassxc://` references |
 | `ONESETUP_INSTALL_DIR` | `$XDG_DATA_HOME/onesetup` | Where `onesetup-init` installs the playbook |
-| `ONESETUP_STATE_DIR` | `$XDG_STATE_HOME/onesetup` | Ansible collections & state |
+| `ONESETUP_STATE_DIR` | `$XDG_STATE_HOME/onesetup` | Ansible collections, dotfiles backups & state |
 | `ONESETUP_BIN_DIR` | `/usr/local/bin` | Where the commands are installed (must be in `$PATH`) |
 | `ONESETUP_REPO` | `https://github.com/onexbash/onesetup.git` | Repository `onesetup-init` installs from |
 | `ONESETUP_BRANCH` | `main` | Branch `onesetup-init` installs from |

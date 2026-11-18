@@ -1,5 +1,13 @@
 ---
-- name: "Run package managers: {{ cfg.install.managers.osx | join(', ') }}"
+- name: "Fail on unknown package managers"
+  ansible.builtin.assert:
+    that: _unknown | length == 0
+    fail_msg: "Unknown package manager(s) in apps.install.managers.osx: {{ _unknown | join(', ') }} (available: brew, mas)"
+    quiet: true
+  vars:
+    _unknown: "{{ cfg.install.managers.osx | default([]) | reject('in', ['brew', 'mas']) | list }}"
+
+- name: "Run package managers: {{ cfg.install.managers.osx | default([]) | join(', ') or 'none' }}"
   ansible.builtin.include_tasks: "{{ role_path }}/tasks/install/{{ manager }}.yml"
   loop: "{{ cfg.install.managers.osx | default([]) }}"
   loop_control:
