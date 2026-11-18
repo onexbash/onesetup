@@ -1,7 +1,10 @@
 ---
-# One LaunchAgent per app in apps.autostart; agents of removed apps are deleted
+# One LaunchAgent per app in apps.autostart; agents of removed apps are deleted.
+# Without an 'apps.autostart' key in the config file, existing agents are left untouched
+# (an empty default must not wipe agents from an earlier run or another config).
 - name: "Autostart"
   vars:
+    autostart_managed: "{{ (onesetup_config.apps | default({}, true)).autostart is defined }}"
     autostart_domain: com.onesetup.autostart
     # Entries can be a plain app name or { name, bundle_id, hidden, background }
     autostart_apps: >-
@@ -39,11 +42,22 @@
         patterns: "{{ autostart_domain }}.*.plist"
       register: autostart_found
 
+    - name: "Info: apps.autostart not set, keeping existing LaunchAgent files"
+      ansible.builtin.debug:
+        msg: >-
+          No 'apps.autostart' in {{ ONESETUP_CONFIG }}, leaving {{ autostart_found.files | length }}
+          existing {{ autostart_domain }}.* LaunchAgent(s) untouched. Set 'autostart: []' to remove them.
+      when:
+        - not autostart_managed | bool
+        - autostart_found.files | length > 0
+
     - name: "Remove LaunchAgent files of apps no longer in apps.autostart"
       ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
-      when: (item.path | basename) not in autostart_expected_files
+      when:
+        - autostart_managed | bool
+        - (item.path | basename) not in autostart_expected_files
       loop: "{{ autostart_found.files }}"
       loop_control:
         label: "{{ item.path | basename }}"

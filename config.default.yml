@@ -1,0 +1,49 @@
+# -- ONESETUP DEFAULT CONFIG -- #
+# Runs every module with its defaults only (no customization).
+# Use it with: ONESETUP_CONFIG=<path to this file> onesetup
+# Note: ssh.known_hosts overwrites ~/.ssh/known_hosts with the default hosts (GitHub, Azure DevOps).
+---
+modules:
+  - shell
+  - ssh
+  - dotfiles
+  - fonts
+  - apps
+  - settings
+  - custom
+shell:
+  login: /bin/bash
+  env:
+    EDITOR: nvim
+
+dotfiles:
+  repo: https://github.com/onexbash/dotfiles.git # cloned via SSH if ONESETUP_SSH_KEY is set
+  # Dotfiles are symlinked from the dotfiles-dir to the expected location,
+  # e.g: `~/.local/share/dotfiles/aerospace` -> `~/.config/aerospace`
+  # src:  relative to the dotfiles repo
+  # dest: absolute path to the expected location
+
+  # !! The Entries below are just examples and have to represent actual files in your Dotfiles Repository !!
+  mapping:
+    # -- Shell Config Files -> ~/ -- #
+    - { src: shell/home/.zshrc, dest: ~/.zshrc }
+    - { src: shell/home/.bashrc, dest: ~/.bashrc }
+    - { src: shell/home/.profile, dest: ~/.profile }
+    # -- Config Directory -> ~/.config -- #
+    - { src: git, dest: ~/.config/git }
+    - { src: nvim, dest: ~/.config/nvim }
+
+    # -- Sub-Dirs & Files inside the Config Dir -> ~/.config/[subdir]/<file> -- #
+    # Claude
+    - { src: claude/agents, dest: ~/.config/claude/agents }
+    - { src: claude/CLAUDE.md, dest: ~/.config/claude/CLAUDE.md }
+    - { src: claude/settings.json, dest: ~/.config/claude/settings.json }
+    - { src: claude/themes, dest: ~/.config/claude/themes }
+    # Azure
+    - { src: azure/config, dest: ~/.config/azure/config }
+    # -- Aliases -- #
+    - { src: ~/.config/claude, dest: ~/.claude }
+
+apps:
+  autostart:
+    - { name: KeePassXC, bundle_id: org.keepassxc.keepassxc }

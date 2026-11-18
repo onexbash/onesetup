@@ -71,7 +71,7 @@ modules:
 # -- dotfiles -- #
 # dotfiles:
 #   repo: https://github.com/<you>/dotfiles.git
-#   links:
+#   mapping:
 #     - { src: nvim, dest: ~/.config/nvim }
 #     - { src: zsh/.zshrc, dest: ~/.zshrc }
 
