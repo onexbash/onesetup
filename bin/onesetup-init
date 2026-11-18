@@ -139,14 +139,14 @@ function install_collections() {
   }
 }
 
-# Copy onesetup.example.yml to ONESETUP_CONFIG if there is no config file yet
+# Copy config.default.yml to ONESETUP_CONFIG if there is no config file yet
 function create_config() {
   if [[ -e "$ONESETUP_CONFIG" ]]; then
     echo -e "${I_OK}Config file found: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
     return 0
   fi
   # 600: the config file can hold vault-encrypted secrets
-  install -m 600 "${ONESETUP_INSTALL_DIR}/onesetup.example.yml" "$ONESETUP_CONFIG" || {
+  install -m 600 "${ONESETUP_INSTALL_DIR}/config.default.yml" "$ONESETUP_CONFIG" || {
     echo -e "${I_ERR}Failed to create the config file: ${ONESETUP_CONFIG}"
     exit 1
   }

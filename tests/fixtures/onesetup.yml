@@ -7,8 +7,10 @@ modules:
 
 apps:
   install:
+    managers:
+      osx: [brew]
     brew:
-      formulas: [k9s]
+      formulas: [git, k9s]
       exclude: [git]
 
 custom:

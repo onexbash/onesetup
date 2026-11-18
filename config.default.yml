@@ -1,6 +1,7 @@
 # -- ONESETUP DEFAULT CONFIG -- #
-# Runs every module with its defaults only (no customization).
-# Use it with: ONESETUP_CONFIG=<path to this file> onesetup
+# Starter config: 'onesetup-init' copies it to $ONESETUP_CONFIG (default: ~/.config/onesetup/config.yml).
+# Runs every module and installs a set of common developer packages. Adjust it to your needs,
+# config.references.yml shows the other options. Run 'onesetup' after changing it.
 # Note: ssh.known_hosts overwrites ~/.ssh/known_hosts with the default hosts (GitHub, Azure DevOps).
 ---
 modules:
@@ -45,5 +46,36 @@ dotfiles:
     - { src: ~/.config/claude, dest: ~/.claude }
 
 apps:
+  install:
+    # Package managers, run in this order (macOS: brew, mas)
+    managers:
+      osx: [brew]
+    brew:
+      taps: []
+      formulas:
+        # GNU versions of the BSD tools on macOS
+        - coreutils
+        - gawk
+        - gnu-sed
+        - gnu-tar
+        - grep
+        # Developer basics
+        - git
+        - gh
+        - jq
+        - ripgrep
+        - fd
+        - fzf
+        - bat
+        - eza
+        - zoxide
+        - tree
+        - wget
+        - lazygit
+        - git-delta
+        - neovim
+        - mise # Dev tool & runtime manager
+        - tlrc # Cheatsheets (tldr)
+      casks: []
   autostart:
     - { name: KeePassXC, bundle_id: org.keepassxc.keepassxc }

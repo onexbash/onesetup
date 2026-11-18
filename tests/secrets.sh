@@ -26,7 +26,7 @@ chmod +x "$tmp/bin/"*
 export PATH="$tmp/bin:$PATH"
 touch "$tmp/db.kdbx"
 export ONESETUP_KEEPASSXC_DB="$tmp/db.kdbx"
-export ONESETUP_CONFIG="$tmp/onesetup.yml"
+export ONESETUP_CONFIG="$tmp/config.yml"
 
 # shellcheck source=/dev/null
 source "$repo/bin/onesetup-util"

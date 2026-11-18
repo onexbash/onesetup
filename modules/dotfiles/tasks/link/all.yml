@@ -51,18 +51,42 @@
       {{ ns.out }}
 
 # Cleanup Destination (with Backup)
+# Real files/directories at a destination move to <state dir>/backups/<timestamp>/<original absolute path>,
+# e.g. ~/.zshrc → ~/.local/state/onesetup/backups/20261118-153000/Users/me/.zshrc
 - name: "Dotfiles: Back up real files/directories at link destinations"
-  ansible.builtin.command:
-    argv:
-      - mv
-      - "{{ item.stat.path }}"
-      - "{{ item.stat.path }}.backup-{{ now(fmt='%Y%m%d-%H%M%S') }}"
-  become: "{{ item.item.become | default(false) }}"
-  loop: "{{ dotfiles_dest_stat.results | selectattr('stat.exists') | rejectattr('stat.islnk') | list }}"
-  loop_control:
-    label: "{{ item.stat.path }}"
-  register: dotfiles_backups
-  changed_when: true
+  vars:
+    _to_back_up: "{{ dotfiles_dest_stat.results | selectattr('stat.exists') | rejectattr('stat.islnk') | list }}"
+  when: _to_back_up | length > 0
+  block:
+    - name: "Dotfiles: Set backup directory"
+      ansible.builtin.set_fact:
+        dotfiles_backup_dir: "{{ ONESETUP_STATE_DIR }}/backups/{{ now(fmt='%Y%m%d-%H%M%S') }}"
+
+    # Created as the user (also for become links), so the whole backup tree stays readable by the user
+    - name: "Dotfiles: Ensure backup directories exist"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0700"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
+      loop: >-
+        {{ [ONESETUP_STATE_DIR ~ '/backups', dotfiles_backup_dir]
+           + (_to_back_up | map(attribute='stat.path') | map('dirname')
+              | map('regex_replace', '^', dotfiles_backup_dir) | unique | list) }}
+
+    - name: "Dotfiles: Move real files/directories to the backup directory"
+      ansible.builtin.command:
+        argv:
+          - mv
+          - "{{ item.stat.path }}"
+          - "{{ dotfiles_backup_dir }}{{ item.stat.path }}"
+      become: "{{ item.item.become | default(false) }}"
+      loop: "{{ _to_back_up }}"
+      loop_control:
+        label: "{{ item.stat.path }}"
+      register: dotfiles_backups
+      changed_when: true
 
 # Inspect Parent Directories (with the link's become, so root-only paths are seen correctly)
 - name: "Dotfiles: Inspect link parent directories"
