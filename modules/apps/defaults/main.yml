@@ -4,7 +4,7 @@
 apps_defaults:
   # -- apps.install -- #
   # Nothing is installed by default: set the package managers and their packages in your config file
-  # (config.default.yml in the onesetup repo has a set of common developer packages).
+  # (config.base.yml in the onesetup repo has a few essentials, config.default.yml every package onesetup knows).
   install:
     # Package managers per operating system, run in this order (available on macOS: brew, mas).
     # Empty by default, so your list decides (lists are extended when merged, entries can't be removed).
