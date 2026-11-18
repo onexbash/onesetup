@@ -33,7 +33,9 @@
       ansible.builtin.file:
         path: "{{ clt_marker }}"
         state: touch
-        mode: "0644"
+        mode: "0600"
+        owner: "{{ root_user }}"
+        group: "{{ root_group }}"
 
     - name: "xcode-clt | find latest label"
       ansible.builtin.shell: |

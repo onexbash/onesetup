@@ -8,7 +8,7 @@
   ansible.builtin.copy:
     content: "{{ item.value | trim }}\n" # exactly one trailing newline (required by OpenSSH)
     dest: "{{ home }}/.ssh/{{ item.key | regex_replace('_pub$', '.pub') }}"
-    mode: "{{ '0644' if item.key.endswith('_pub') else '0600' }}"
+    mode: "0600"
     owner: "{{ user }}"
     group: "{{ user_group }}"
   loop: "{{ cfg.identities | dict2items }}"

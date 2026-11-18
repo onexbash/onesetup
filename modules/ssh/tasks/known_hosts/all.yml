@@ -8,7 +8,7 @@
   ansible.builtin.template:
     src: known_hosts.j2
     dest: "{{ home }}/.ssh/known_hosts"
-    mode: "0644"
+    mode: "0600"
     owner: "{{ user }}"
     group: "{{ user_group }}"
     validate: "/usr/bin/ssh-keygen -l -f %s" # fails on malformed keys before the file is replaced

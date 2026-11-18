@@ -65,7 +65,9 @@
         url: "{{ _manual_asset.browser_download_url }}"
         dest: "{{ _manual_tmp.path }}/{{ _manual_asset.name }}"
         checksum: "{{ _manual_asset.digest | default(omit, true) }}" # GitHub "sha256:<hash>" digest
-        mode: "0644"
+        mode: "0600"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
 
     - name: "{{ app.name }} | Extract zip"
       ansible.builtin.unarchive:

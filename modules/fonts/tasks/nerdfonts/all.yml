@@ -10,7 +10,9 @@
       ansible.builtin.file:
         path: "{{ nerdfonts_dest_dir }}"
         state: directory
-        mode: "0755"
+        mode: "0700"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
 
     # Check if already installed (one file per style, any extension)
     - name: "Check installed files"
@@ -28,7 +30,9 @@
         src: "{{ nerdfonts_base_url }}/{{ item.item.name }}.zip"
         dest: "{{ nerdfonts_dest_dir }}"
         remote_src: true
-        mode: "0644"
+        mode: "0600"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
         include: "{{ item.item.styles | map('regex_replace', '^(.*)$', '*-\\1.*') | list }}"
       loop: "{{ nerdfonts_check.results }}"
       loop_control:

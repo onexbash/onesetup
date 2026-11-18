@@ -3,24 +3,34 @@
 - name: "Ensure user directories exist"
   become: true
   ansible.builtin.file:
-    path: "{{ item.path }}"
+    path: "{{ item }}"
     state: directory
-    mode: "{{ item.mode | default('0755') }}"
+    mode: "0700"
     owner: "{{ user }}"
     group: "{{ user_group }}"
     follow: true
   loop:
-    - { path: "{{ xdg_config_home }}" }
-    - { path: "{{ xdg_data_home }}" }
-    - { path: "{{ xdg_state_home }}" }
-    - { path: "{{ xdg_cache_home }}" }
-    - { path: "{{ ONESETUP_CONFIG | dirname }}" }
-    - { path: "{{ X_TARGET_DIR }}" }
-    - { path: "{{ ONESETUP_STATE_DIR }}" }
-    - { path: "{{ home }}/Library", mode: "0700" }
-  loop_control:
-    label: "{{ item.path }}"
+    - "{{ xdg_config_home }}"
+    - "{{ xdg_data_home }}"
+    - "{{ xdg_state_home }}"
+    - "{{ xdg_cache_home }}"
+    - "{{ ONESETUP_CONFIG | dirname }}"
+    - "{{ X_TARGET_DIR }}"
+    - "{{ ONESETUP_STATE_DIR }}"
+    - "{{ home }}/Library"
 
+# The config file can hold vault-encrypted secrets
+- name: "Ensure config file permissions: {{ ONESETUP_CONFIG }}"
+  become: true
+  ansible.builtin.file:
+    path: "{{ ONESETUP_CONFIG }}"
+    state: file
+    mode: "0600"
+    owner: "{{ user }}"
+    group: "{{ user_group }}"
+    follow: true
+
+# Exception: 0755 so every user can run the onesetup commands in it
 - name: "Ensure bin directory exists: {{ ONESETUP_BIN_DIR }}"
   become: true
   ansible.builtin.file:

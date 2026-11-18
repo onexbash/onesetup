@@ -91,9 +91,9 @@ function ensure_directories() {
   local user_owner
   user_owner="$(id -un):$(id -gn)"
 
-  ensure_directory "$(dirname "$ONESETUP_CONFIG")" "755" "$user_owner" false
-  ensure_directory "$ONESETUP_INSTALL_DIR" "755" "$user_owner" true
-  ensure_directory "$ONESETUP_STATE_DIR" "755" "$user_owner" true
+  ensure_directory "$(dirname "$ONESETUP_CONFIG")" "700" "$user_owner" false
+  ensure_directory "$ONESETUP_INSTALL_DIR" "700" "$user_owner" true
+  ensure_directory "$ONESETUP_STATE_DIR" "700" "$user_owner" true
 }
 
 # Copy all executables from <install_dir>/bin to the bin dir
@@ -145,7 +145,8 @@ function create_config() {
     echo -e "${I_OK}Config file found: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
     return 0
   fi
-  install -m 644 "${ONESETUP_INSTALL_DIR}/onesetup.example.yml" "$ONESETUP_CONFIG" || {
+  # 600: the config file can hold vault-encrypted secrets
+  install -m 600 "${ONESETUP_INSTALL_DIR}/onesetup.example.yml" "$ONESETUP_CONFIG" || {
     echo -e "${I_ERR}Failed to create the config file: ${ONESETUP_CONFIG}"
     exit 1
   }
