@@ -1,0 +1,37 @@
+# -- ONESETUP BASE CONFIG -- #
+# Starter config: 'onesetup-init' copies it to $ONESETUP_CONFIG (default: ~/.config/onesetup/config.yml).
+# Applies only the essentials most people want: shell environment & PATH, Nerd Fonts, a small set of
+# command line tools and sensible macOS settings. It leaves your login shell, SSH files, dotfiles,
+# Dock and login items alone.
+# config.default.yml lists everything onesetup can apply, config.references.yml the other options.
+# Run 'onesetup' after changing it.
+---
+modules:
+  - shell
+  - fonts
+  - apps
+  - settings
+
+apps:
+  install:
+    # Package managers, run in this order (macOS: brew, mas)
+    managers:
+      osx: [brew]
+    brew:
+      formulas:
+        # GNU versions of the BSD tools on macOS (shell.paths puts coreutils & grep first in $PATH)
+        - coreutils
+        - gawk
+        - gnu-sed
+        - gnu-tar
+        - grep
+        # Command line basics
+        - git
+        - jq
+        - ripgrep
+        - fd
+        - fzf
+        - tree
+        - wget
+        - tlrc # Cheatsheets (tldr)
+        - mise # Dev tool & runtime manager

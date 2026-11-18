@@ -112,3 +112,28 @@
       ansible.builtin.assert:
         that: onesetup_plan == onesetup_registry
         fail_msg: "config.default.yml is missing modules: {{ onesetup_registry.keys() | difference(onesetup_plan.keys()) }}"
+
+    - name: "Plan from config.base.yml"
+      ansible.builtin.include_tasks: ../core/config.yml
+      vars:
+        ONESETUP_CONFIG: "{{ playbook_dir }}/../config.base.yml"
+
+    - name: "Assert: the base config runs only the essential modules"
+      ansible.builtin.assert:
+        that:
+          - onesetup_plan.keys() | list == ['shell', 'fonts', 'apps', 'settings']
+          - onesetup_config.apps.autostart is not defined # keeps the user's login items
+
+    - name: "Plan from config.onexbash.yml"
+      ansible.builtin.include_tasks: ../core/config.yml
+      vars:
+        ONESETUP_CONFIG: "{{ playbook_dir }}/../config.onexbash.yml"
+
+    - name: "Assert: the config templates only use known keys"
+      ansible.builtin.assert:
+        that: _unknown | length == 0
+        fail_msg: "Unknown top-level keys in {{ item }}: {{ _unknown }}"
+      vars:
+        _cfg: "{{ lookup('ansible.builtin.file', playbook_dir ~ '/../' ~ item) | from_yaml }}"
+        _unknown: "{{ _cfg.keys() | reject('in', ['modules', 'profiles', 'secrets'] + (onesetup_registry.keys() | list)) | list }}"
+      loop: [config.base.yml, config.default.yml, config.onexbash.yml]

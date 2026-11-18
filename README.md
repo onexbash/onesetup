@@ -66,7 +66,7 @@ ONESETUP_BRANCH=feat-refactoring onesetup-init   # playbook from the same branch
 ```
 
 ### 3) Initialize
-`onesetup-init` installs the playbook to `$ONESETUP_INSTALL_DIR` and creates your config file from [config.default.yml](./config.default.yml) (a starter config with common developer packages).
+`onesetup-init` installs the playbook to `$ONESETUP_INSTALL_DIR` and creates your config file from [config.base.yml](./config.base.yml) (the essentials: shell environment, Nerd Fonts, a few command line tools, macOS settings).
 Run it again at any time to update onesetup — your config file is never touched.
 ```bash
 onesetup-init
@@ -117,8 +117,14 @@ settings:
   dock: [Ghostty, Firefox]
 ```
 
-[config.default.yml](./config.default.yml) is the starter config `onesetup-init` creates, [config.references.yml](./config.references.yml) shows the other common options, and each module's `defaults/main.yml` documents all of them.
-[config.onexbash.yml](./config.onexbash.yml) is a complete personal config for reference.
+| Template | Purpose |
+|---|---|
+| [config.base.yml](./config.base.yml) | The starter config `onesetup-init` creates: only the essentials most people want |
+| [config.default.yml](./config.default.yml) | Everything onesetup can apply: all modules, every app & autostart item — copy what you need |
+| [config.references.yml](./config.references.yml) | The other common options, documented |
+| [config.onexbash.yml](./config.onexbash.yml) | A complete personal config for reference |
+
+Each module's `defaults/main.yml` documents all options.
 
 ### Modules
 

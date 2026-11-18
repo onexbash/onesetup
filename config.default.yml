@@ -1,8 +1,11 @@
 # -- ONESETUP DEFAULT CONFIG -- #
-# Starter config: 'onesetup-init' copies it to $ONESETUP_CONFIG (default: ~/.config/onesetup/config.yml).
-# Runs every module and installs a set of common developer packages. Adjust it to your needs,
-# config.references.yml shows the other options. Run 'onesetup' after changing it.
+# Everything onesetup can apply: all modules, every app it knows and every autostart item.
+# Use it as a catalog: copy what you need into your config file ($ONESETUP_CONFIG, default:
+# ~/.config/onesetup/config.yml). 'onesetup-init' starts you with config.base.yml (the essentials),
+# config.references.yml shows the other options.
 # Note: ssh.known_hosts overwrites ~/.ssh/known_hosts with the default hosts (GitHub, Azure DevOps).
+# Not listed because they are installed anyway: bash, zsh, openssh & mas (core prerequisites),
+# dockutil & defaultbrowser (settings module) and dependencies of the packages below.
 ---
 modules:
   - shell
@@ -51,31 +54,169 @@ apps:
     managers:
       osx: [brew]
     brew:
-      taps: []
+      taps:
+        - felixkratz/formulae # borders, sketchybar
+        - gaurav-gosain/tap # tuios-plot
+        - lzhgus/tap # capso
+        - nikitabobko/tap # aerospace
+        - supercmdlabs/supercmd # supercmd
+        - teamookla/speedtest # speedtest
       formulas:
         # GNU versions of the BSD tools on macOS
+        - bc
         - coreutils
         - gawk
         - gnu-sed
         - gnu-tar
         - grep
-        # Developer basics
-        - git
-        - gh
-        - jq
-        - ripgrep
-        - fd
-        - fzf
-        - bat
-        - eza
-        - zoxide
-        - tree
-        - wget
-        - lazygit
-        - git-delta
-        - neovim
-        - mise # Dev tool & runtime manager
+        # Shell
+        - atuin # Shell history
+        - carapace # Completions
+        - starship # Prompt
+        - zoxide # Smarter cd
+        - zsh-autocomplete
+        - zsh-autosuggestions
+        - zsh-fast-syntax-highlighting
+        # Terminal multiplexers
+        - herdr
+        - tuios
+        - zellij
+        # CLI tools
+        - ast-grep # Structural code search
+        - bat # cat with syntax highlighting
+        - catimg # Images in the terminal
+        - cheat # Cheatsheets
+        - clipboard # Clipboard manager (cb)
+        - ekphos
+        - exiftool
+        - eza # ls replacement
+        - fastfetch # System info
+        - fd # find replacement
+        - fzf # Fuzzy finder
+        - glow # Markdown renderer
+        - gum # Shell script UI components
+        - jq # JSON processor
+        - ouch # (De)compression
+        - pastel # Colors
+        - ripgrep # grep replacement
+        - scc # Code counter
+        - sk # Fuzzy finder (skim)
         - tlrc # Cheatsheets (tldr)
-      casks: []
+        - tree
+        - utftex # LaTeX → Unicode
+        - yq # YAML processor
+        # Editors
+        - luarocks # Lua packages (neovim plugins)
+        - neovim
+        - tree-sitter-cli
+        - vim
+        # Git
+        - gh # GitHub CLI
+        - git
+        - git-crypt
+        - git-delta # Diff pager
+        - git-filter-repo
+        - lazygit
+        - worktrunk # Git worktrees
+        # Development
+        - javacc # Java parser generator (brings openjdk)
+        - kubernetes-cli
+        - mise # Dev tool & runtime manager
+        - ollama # Local LLMs
+        - podman-compose # Containers (brings podman)
+        - postgresql@18
+        - swift
+        # Network
+        - cloudflared # Cloudflare Tunnel
+        - gping # ping with a graph
+        - iproute2mac # ip command
+        - netcat
+        - teamookla/speedtest/speedtest
+        - wget
+        # Security & secrets
+        - gnupg
+        - infisical # Secrets manager CLI
+        - pinentry-mac # GPG passphrase dialog
+        - proton-pass-cli
+        # Media & fonts
+        - ffmpegthumbnailer # Video thumbnails (brings ffmpeg)
+        - fontforge
+        - imagemagick
+        # macOS utilities
+        - cliclick # Mouse & keyboard from the command line
+        - felixkratz/formulae/borders # JankyBorders: window borders
+        - felixkratz/formulae/sketchybar # Status bar
+      casks:
+        # Window management & system utilities
+        - appcleaner
+        - cameracontroller
+        - dockdoor # Window previews in the Dock
+        - karabiner-elements # Keyboard remapping
+        - lzhgus/tap/capso # Screenshots
+        - nikitabobko/tap/aerospace # Tiling window manager
+        - supercmdlabs/supercmd/supercmd # Launcher
+        - thaw # Menu bar manager
+        # Terminals
+        - gaurav-gosain/tap/tuios-plot
+        - ghostty
+        - kitty
+        - wezterm
+        # Development
+        - azure-cli
+        - claude
+        - claude-code@latest
+        - drawio
+        - git-credential-manager
+        - insomnia # API client
+        - intellij-idea-oss
+        - sublime-text
+        - utm # Virtual machines
+        - vscodium
+        - zed
+        # Browsers
+        - firefox@developer-edition
+        - tor-browser
+        # Passwords & Proton
+        - keepassxc
+        - proton-drive
+        - proton-mail
+        - proton-mail-bridge
+        - proton-meet
+        - proton-pass
+        - protonvpn
+        # Communication
+        - discord
+        - microsoft-teams
+        - session
+        - whatsapp
+        # Productivity
+        - deepl
+        - obsidian
+        - stirling-pdf
+        # Design & media
+        - canva
+        - figma
+        - gimp
+        - mediahuman-youtube-downloader
+        - obs
+        - shotcut
+        - spotify
+        - youtube-to-mp3
   autostart:
+    # Utilities
+    - { name: AeroSpace, bundle_id: bobko.aerospace }
+    - { name: Thaw, bundle_id: com.stonerl.Thaw }
+    - { name: SuperCmd, bundle_id: com.supercmd.app }
+    - { name: DockDoor, bundle_id: com.ethanbills.DockDoor }
+    - { name: Capso, bundle_id: com.awesomemacapps.capso }
+    # GUI Apps
+    - { name: Ghostty, bundle_id: com.mitchellh.ghostty }
+    - {
+        name: Firefox Developer Edition,
+        bundle_id: org.mozilla.firefoxdeveloperedition,
+      }
+    - { name: Spotify, bundle_id: com.spotify.client }
     - { name: KeePassXC, bundle_id: org.keepassxc.keepassxc }
+    - { name: Proton Pass, bundle_id: me.proton.pass.electron }
+    - { name: Proton Mail, bundle_id: ch.protonmail.desktop }
+    - { name: Microsoft Teams, bundle_id: com.microsoft.teams2 }

@@ -1,6 +1,4 @@
-# -- ONESETUP CONFIG -- #
-# This is my personal config file for onesetup, that you can use for reference
-
+# -- ONESETUP CONFIG - onexbash -- #
 ---
 modules:
   - shell
@@ -17,80 +15,185 @@ shell:
 
 dotfiles:
   repo: https://github.com/onexbash/dotfiles.git # cloned via SSH if ONESETUP_SSH_KEY is set
+  # -- Dotfiles Mapping -- #
   mapping:
     # -- Shell Config Files -> ~/ -- #
     - { src: shell/home/.zshrc, dest: ~/.zshrc }
-    - { src: shell/home/.zshenv, dest: ~/.zshenv }
-    - { src: shell/home/.zprofile, dest: ~/.zprofile }
-    - { src: shell/home/.zlogout, dest: ~/.zlogout }
     - { src: shell/home/.bashrc, dest: ~/.bashrc }
-    - { src: shell/home/.bash_profile, dest: ~/.bash_profile }
-    - { src: shell/home/.bash_logout, dest: ~/.bash_logout }
     - { src: shell/home/.profile, dest: ~/.profile }
     # -- Config Directory -> ~/.config -- #
-    - { src: shell/config, dest: ~/.config/shell }
-    - { src: aerospace, dest: ~/.config/aerospace }
-    - { src: atuin, dest: ~/.config/atuin }
-    - { src: eza, dest: ~/.config/eza }
-    - { src: scripts, dest: ~/.config/scripts }
-    - { src: ghostty, dest: ~/.config/ghostty }
-    - { src: kitty, dest: ~/.config/kitty }
-    - { src: wezterm, dest: ~/.config/wezterm }
-    - { src: zellij, dest: ~/.config/zellij }
-    - { src: tuios, dest: ~/.config/tuios }
     - { src: git, dest: ~/.config/git }
-    - { src: lazygit, dest: ~/.config/lazygit }
     - { src: nvim, dest: ~/.config/nvim }
-    - { src: powershell, dest: ~/.config/powershell }
-    - { src: starship, dest: ~/.config/starship }
-    - { src: vim, dest: ~/.config/vim }
-    - { src: gh, dest: ~/.config/gh }
-    - { src: zed, dest: ~/.config/zed }
-    - { src: litexl, dest: ~/.config/lite-xl }
-    - { src: ascii-arts, dest: ~/.config/ascii-arts }
-    - { src: fastfetch, dest: ~/.config/fastfetch }
-    - { src: borders, dest: ~/.config/borders } # JankyBorders
-    - { src: gck, dest: ~/.config/gck } # git-credential-keepassxc
-    - { src: mise, dest: ~/.config/mise }
-    - { src: uv, dest: ~/.config/uv }
-    - { src: glow, dest: ~/.config/glow }
-    - { src: anthropic, dest: ~/.config/anthropic }
 
     # -- Sub-Dirs & Files inside the Config Dir -> ~/.config/[subdir]/<file> -- #
     # Claude
     - { src: claude/agents, dest: ~/.config/claude/agents }
     - { src: claude/CLAUDE.md, dest: ~/.config/claude/CLAUDE.md }
-    - {
-        src: claude/policy-limits.json,
-        dest: ~/.config/claude/policy-limits.json,
-      }
-    - {
-        src: claude/ponytail-statusline.sh,
-        dest: ~/.config/claude/ponytail-statusline.sh,
-      }
-    - {
-        src: claude/remote-settings.json,
-        dest: ~/.config/claude/remote-settings.json,
-      }
     - { src: claude/settings.json, dest: ~/.config/claude/settings.json }
     - { src: claude/themes, dest: ~/.config/claude/themes }
-    # Herdr
-    - { src: herdr/config.toml, dest: ~/.config/herdr/config.toml }
-    # Rustup
-    - { src: rustup/settings.toml, dest: ~/.config/rustup/settings.toml }
     # Azure
     - { src: azure/config, dest: ~/.config/azure/config }
-    # Containers
-    - {
-        src: containers/containers.conf,
-        dest: ~/.config/containers/containers.conf,
-      }
-    # Peazip
-    - { src: peazip/conf.txt, dest: ~/.config/peazip/conf.txt }
     # -- Aliases -- #
     - { src: ~/.config/claude, dest: ~/.claude }
 
 apps:
+  install:
+    # Package managers, run in this order (MacOS: brew, mas)
+    managers:
+      osx: [brew]
+    brew:
+      taps:
+        - felixkratz/formulae # borders, sketchybar
+        - gaurav-gosain/tap # tuios-plot
+        - lzhgus/tap # capso
+        - nikitabobko/tap # aerospace
+        - supercmdlabs/supercmd # supercmd
+        - teamookla/speedtest # speedtest
+      formulas:
+        # GNU versions of the BSD tools on MacOS
+        - bc
+        - coreutils
+        - gawk
+        - gnu-sed
+        - gnu-tar
+        - grep
+        # Shell
+        - atuin # Shell history
+        - carapace # Completions
+        - starship # Prompt
+        - zoxide # Smarter cd
+        - zsh
+        - bash
+        - mas # App Store CLI Interface
+        - defaultbrowser
+        - dockutil
+        - openssh
+        - curl
+        - zsh-autocomplete
+        - zsh-autosuggestions
+        - zsh-fast-syntax-highlighting
+        # Terminal multiplexers
+        - herdr
+        - tuios
+        # CLI tools
+        - ast-grep # Structural code search
+        - bat # cat with syntax highlighting
+        - catimg # Images in the terminal
+        - cheat # Cheatsheets
+        - clipboard # Clipboard manager
+        - ekphos
+        - exiftool
+        - eza # ls replacement
+        - fastfetch # System info
+        - fd # find replacement
+        - fzf # Fuzzy finder
+        - glow # Markdown renderer
+        - gum # Shell script UI components
+        - jq # JSON processor
+        - ouch # (De)compression
+        - pastel # Colors
+        - ripgrep # grep replacement
+        - scc # Code counter
+        - sk # Fuzzy finder (skim)
+        - tlrc # Cheatsheets (tldr)
+        - tree
+        - utftex # LaTeX → Unicode
+        - yq # YAML processor
+        # Editors
+        - luarocks # Lua packages (neovim plugins)
+        - neovim
+        - tree-sitter-cli
+        - vim
+        # Git
+        - gh # GitHub CLI
+        - git
+        - git-crypt
+        - git-delta # Diff pager
+        - git-filter-repo
+        - lazygit
+        - worktrunk # Git worktrees
+        # Development
+        - kubernetes-cli
+        - mise # Dev tool & runtime manager
+        - ollama # Local LLMs
+        - podman-compose # Containers (brings podman)
+        - postgresql@18
+        # Network
+        - cloudflared # Cloudflare Tunnel
+        - gping # ping with a graph
+        - iproute2mac # IP command
+        - netcat
+        - teamookla/speedtest/speedtest
+        - wget
+        # Security & secrets
+        - gnupg
+        - infisical # Secrets manager CLI
+        - pinentry-mac # GPG passphrase dialog
+        - proton-pass-cli
+        # Media & fonts
+        - ffmpegthumbnailer # Video thumbnails (brings ffmpeg)
+        - fontforge
+        - imagemagick
+        # MacOS utilities
+        - cliclick # Mouse & keyboard from the command line
+        - felixkratz/formulae/borders # JankyBorders: window borders
+        - felixkratz/formulae/sketchybar # Status bar
+      casks:
+        # Window management & system utilities
+        - appcleaner
+        - cameracontroller
+        - dockdoor # Window previews in the Dock
+        - karabiner-elements # Keyboard remapping
+        - lzhgus/tap/capso # Screenshots
+        - nikitabobko/tap/aerospace # Tiling window manager
+        - supercmdlabs/supercmd/supercmd # Launcher
+        - thaw # Menu bar manager
+        # Terminals
+        - gaurav-gosain/tap/tuios-plot
+        - ghostty
+        - kitty
+        - wezterm
+        # Development
+        - azure-cli
+        - claude
+        - claude-code@latest
+        - drawio
+        - git-credential-manager
+        - insomnia # API client
+        - intellij-idea-oss
+        - sublime-text
+        - utm # Virtual machines
+        - vscodium
+        - zed
+        # Browsers
+        - firefox@developer-edition
+        - tor-browser
+        # Passwords & Proton
+        - keepassxc
+        - proton-drive
+        - proton-mail
+        - proton-mail-bridge
+        - proton-meet
+        - proton-pass
+        - protonvpn
+        # Communication
+        - discord
+        - microsoft-teams
+        - session
+        - whatsapp
+        # Productivity
+        - deepl
+        - obsidian
+        - stirling-pdf
+        # Design & media
+        - canva
+        - figma
+        - gimp
+        - mediahuman-youtube-downloader
+        - obs
+        - shotcut
+        - spotify
+        - youtube-to-mp3
   autostart:
     # Utilities
     - { name: AeroSpace, bundle_id: bobko.aerospace }
@@ -109,4 +212,3 @@ apps:
     - { name: Proton Pass, bundle_id: me.proton.pass.electron }
     - { name: Proton Mail, bundle_id: ch.protonmail.desktop }
     - { name: Microsoft Teams, bundle_id: com.microsoft.teams2 }
-    - { name: Microsoft Outlook, bundle_id: com.microsoft.Outlook }
