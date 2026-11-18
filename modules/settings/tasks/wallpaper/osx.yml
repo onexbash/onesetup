@@ -8,7 +8,9 @@
       ansible.builtin.copy:
         src: "{{ cfg.wallpaper | expanduser }}"
         dest: "{{ wallpaper_dest }}"
-        mode: "0644"
+        mode: "0600"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
 
     - name: "Wallpaper | Apply to all desktops"
       ansible.builtin.command:

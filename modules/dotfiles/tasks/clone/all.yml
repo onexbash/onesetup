@@ -44,6 +44,15 @@
     - dotfiles_clone.failed | default(false)
     - "'Local modifications' not in (dotfiles_clone.msg | default(''))"
 
+# git creates the clone with the default umask
+- name: "Ensure dotfiles directory permissions"
+  ansible.builtin.file:
+    path: "{{ cfg.dir | expanduser }}"
+    state: directory
+    mode: "0700"
+    owner: "{{ user }}"
+    group: "{{ user_group }}"
+
 # Detect local changes
 - name: "Dotfiles: Detect Local Modifications"
   ansible.builtin.set_fact:

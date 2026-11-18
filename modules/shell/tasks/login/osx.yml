@@ -6,6 +6,9 @@
     path: /etc/shells
     line: "{{ item }}"
     create: false
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"
+    mode: "0644" # world-readable: every user's login checks it
   loop: "{{ (cfg.shells + ([cfg.login] if cfg.login else [])) | unique }}"
 
 - name: "Set login shell"

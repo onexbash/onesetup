@@ -4,13 +4,17 @@
   ansible.builtin.file:
     path: "{{ home }}/Library/LaunchAgents"
     state: directory
-    mode: "0755"
+    mode: "0700"
+    owner: "{{ user }}"
+    group: "{{ user_group }}"
 
 - name: "Rollout LaunchAgent for GUI environment variables"
   ansible.builtin.template:
     src: gui_env.plist.j2
     dest: "{{ home }}/Library/LaunchAgents/com.onesetup.environment.plist"
-    mode: "0644"
+    mode: "0600"
+    owner: "{{ user }}"
+    group: "{{ user_group }}"
   when: cfg.gui_env | length > 0
 
 - name: "Remove LaunchAgent when no GUI environment variables are set"

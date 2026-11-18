@@ -64,16 +64,21 @@
   register: dotfiles_backups
   changed_when: true
 
-# Create Parent Directory if missing
-- name: "Dotfiles: Ensure parent directories exist" # noqa: risky-file-permissions
+# Create Parent Directory if missing (existing ones, e.g. $HOME or /etc, keep their permissions)
+# System paths (become: true) get 0755 root, so other users & services can still read them
+- name: "Dotfiles: Ensure parent directories exist"
   ansible.builtin.file:
     path: "{{ _dest | dirname }}"
     state: directory
+    mode: "{{ '0755' if item.become | default(false) else '0700' }}"
+    owner: "{{ root_user if item.become | default(false) else user }}"
+    group: "{{ root_group if item.become | default(false) else user_group }}"
   vars: *link_paths
   become: "{{ item.become | default(false) }}"
   loop: "{{ cfg.links }}"
   loop_control:
     label: "{{ _dest | dirname }}"
+  when: _dest | dirname is not exists
 
 # Symlink Dotfiles
 - name: "Dotfiles: Symlink"

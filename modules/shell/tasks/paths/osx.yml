@@ -6,6 +6,9 @@
     path: "{{ item }}"
     regexp: "(?m)^if \\[ -x /usr/libexec/path_helper \\]; then\\n\\teval `/usr/libexec/path_helper -s`\\nfi\\n?"
     replace: ""
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"
+    mode: "0644" # world-readable: sourced by every user's shell
   loop:
     - /etc/profile
     - /etc/zprofile

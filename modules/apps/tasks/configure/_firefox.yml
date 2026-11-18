@@ -57,13 +57,17 @@
       ansible.builtin.file:
         path: "{{ firefox_profile_path }}/chrome"
         state: directory
-        mode: "0755"
+        mode: "0700"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
 
     - name: "Copy userChrome.css and userContent.css"
       ansible.builtin.copy:
         src: "{{ _ff.files | expanduser }}/chrome/{{ item }}"
         dest: "{{ firefox_profile_path }}/chrome/{{ item }}"
-        mode: "0644"
+        mode: "0600"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
       loop:
         - userChrome.css
         - userContent.css
@@ -72,7 +76,9 @@
       ansible.builtin.copy:
         src: "{{ _ff.files | expanduser }}/bookmarks.html"
         dest: "{{ firefox_profile_path }}/bookmarks.html"
-        mode: "0644"
+        mode: "0600"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
 
     # user.js is rendered as a template so it can contain Ansible variables
     # (e.g. The absolute path to bookmarks.html).
@@ -80,4 +86,6 @@
       ansible.builtin.template:
         src: "{{ _ff.files | expanduser }}/user.js"
         dest: "{{ firefox_profile_path }}/user.js"
-        mode: "0644"
+        mode: "0600"
+        owner: "{{ user }}"
+        group: "{{ user_group }}"
