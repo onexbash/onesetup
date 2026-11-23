@@ -38,7 +38,7 @@ function main() {
       exit 0
       ;;
     "")
-      echo -e "${I_WARN}Operation cancelled."
+      log_warn "Operation cancelled."
       exit 0
       ;;
     esac
@@ -46,7 +46,7 @@ function main() {
   if [[ -z "$ACTION" ]]; then
     ACTION="$(prompt_action)"
     if [[ -z "$ACTION" ]]; then
-      echo -e "${I_WARN}Operation cancelled."
+      log_warn "Operation cancelled."
       exit 0
     fi
   fi
@@ -90,7 +90,7 @@ function parse_args() {
   "" | --*) ;; # no subcommand → interactive prompt (global & vault options still allowed)
   *)
     print_help >&2
-    echo -e "${I_ERR}Unknown command: $1"
+    log_err "Unknown command: $1"
     exit 1
     ;;
   esac
@@ -100,7 +100,7 @@ function parse_args() {
     case "$1" in
     --string | --file)
       if [[ -n "$ACTION" ]]; then
-        echo -e "${I_ERR}Cannot specify both '--string' and '--file'."
+        log_err "Cannot specify both '--string' and '--file'."
         exit 1
       fi
       ACTION="${1#--}"
@@ -111,7 +111,7 @@ function parse_args() {
       case "$2" in
       clipboard | config) ARG_TARGET="$2" ;;
       *) {
-        echo -e "${I_ERR}Invalid value for '--target': '$2' (allowed: clipboard, config)"
+        log_err "Invalid value for '--target': '$2' (allowed: clipboard, config)"
         exit 1
       } ;;
       esac
@@ -132,7 +132,7 @@ function parse_args() {
       return 0
       ;;
     --*)
-      echo -e "${I_ERR}Unknown option: $1"
+      log_err "Unknown option: $1"
       exit 1
       ;;
     *)
@@ -144,17 +144,17 @@ function parse_args() {
 
   # Encrypt options require the 'encrypt' command
   if [[ -z "$SUBCMD" && (-n "$ACTION" || -n "$ARG_TARGET" || ${#positional[@]} -gt 0) ]]; then
-    echo -e "${I_ERR}Options '--string', '--file' & '--target' require the 'encrypt' command."
+    log_err "Options '--string', '--file' & '--target' require the 'encrypt' command."
     exit 1
   fi
 
   # Vault password: only one source, and the file must be readable
   if [[ -n "$ARG_VAULT_PASS" && -n "$ARG_VAULT_PASS_FILE" ]]; then
-    echo -e "${I_ERR}Cannot specify both '--vault-pass' and '--vault-pass-file'."
+    log_err "Cannot specify both '--vault-pass' and '--vault-pass-file'."
     exit 1
   fi
   if [[ -n "$ARG_VAULT_PASS_FILE" ]] && [[ -d "$ARG_VAULT_PASS_FILE" || ! -r "$ARG_VAULT_PASS_FILE" ]]; then
-    echo -e "${I_ERR}Vault password file not found or not readable: ${ARG_VAULT_PASS_FILE}"
+    log_err "Vault password file not found or not readable: ${ARG_VAULT_PASS_FILE}"
     exit 1
   fi
 
@@ -162,7 +162,7 @@ function parse_args() {
   case "$ACTION" in
   file)
     [[ ${#positional[@]} -le 2 ]] || {
-      echo -e "${I_ERR}Too many arguments for '--file' (usage: --file [path] [name])."
+      log_err "Too many arguments for '--file' (usage: --file [path] [name])."
       exit 1
     }
     ARG_FILE="${positional[0]:-}"
@@ -170,7 +170,7 @@ function parse_args() {
     ;;
   *)
     [[ ${#positional[@]} -eq 0 ]] || {
-      echo -e "${I_ERR}Unexpected argument: ${positional[0]}"
+      log_err "Unexpected argument: ${positional[0]}"
       exit 1
     }
     ;;
@@ -213,7 +213,7 @@ function setup() {
   install_deps "ansible" "gum" "yq"
   # The python 'yq' wrapper cannot write the '!vault' tag
   yq --version 2>/dev/null | grep -q "mikefarah" || {
-    echo -e "${I_ERR}onesetup-vault needs mikefarah/yq (https://github.com/mikefarah/yq), found another 'yq' in PATH."
+    log_err "onesetup-vault needs mikefarah/yq (https://github.com/mikefarah/yq), found another 'yq' in PATH."
     exit 1
   }
 
@@ -259,11 +259,11 @@ function prompt_output_target() {
 # Validate a name / config key path: validate_varname <name>
 function validate_varname() {
   [[ -n "$1" ]] || {
-    echo -e "${I_ERR}Name cannot be empty."
+    log_err "Name cannot be empty."
     exit 1
   }
   if [[ ! "$1" =~ ^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$ ]]; then
-    echo -e "${I_ERR}Invalid name: '$1' (allowed: letters, numbers & underscores, nested keys separated by dots)"
+    log_err "Invalid name: '$1' (allowed: letters, numbers & underscores, nested keys separated by dots)"
     exit 1
   fi
 }
@@ -281,18 +281,18 @@ function resolve_output_target() {
   fi
 
   if [[ -z "$ARG_TARGET" ]]; then
-    echo -e "${I_WARN}No target selected. Aborting."
+    log_warn "No target selected. Aborting."
     exit 0
   fi
 
   if [[ "$ARG_TARGET" == "config" ]]; then
     [[ -f "$ONESETUP_CONFIG" ]] || {
-      echo -e "${I_ERR}Config file not found: ${ONESETUP_CONFIG} (run 'onesetup-init' first)"
+      log_err "Config file not found: ${ONESETUP_CONFIG} (run 'onesetup-init' first)"
       exit 1
     }
     # 'yq -e' exits non-zero when the key is missing or null
     if yq -e ".${varname}" "$ONESETUP_CONFIG" &>/dev/null; then
-      echo -e "${I_ERR}Key [ ${C_PURPLE}${varname}${C_RESET} ] already exists in [ ${C_PURPLE}${ONESETUP_CONFIG}${C_RESET} ]. Please choose a different name."
+      log_err "Key [ ${C_PURPLE}${varname}${C_RESET} ] already exists in [ ${C_PURPLE}${ONESETUP_CONFIG}${C_RESET} ]. Please choose a different name."
       exit 1
     fi
   fi
@@ -309,120 +309,3 @@ function vault_encrypt() {
   fi
 
   if [[ -n "$ARG_VAULT_PASS" ]]; then
-    # Hand the password over through a pipe (/dev/fd/N): no temp file, not in ansible-vault's argv
-    ansible-vault "${args[@]}" --vault-id "onesetup@"<(printf '%s\n' "$ARG_VAULT_PASS")
-  elif [[ -n "$ARG_VAULT_PASS_FILE" ]]; then
-    ansible-vault "${args[@]}" --vault-id "onesetup@${ARG_VAULT_PASS_FILE}"
-  else
-    ansible-vault "${args[@]}" --vault-id "onesetup@prompt"
-  fi
-}
-
-# Write the encrypted variable to ARG_TARGET: write_output <encrypted> <varname>
-function write_output() {
-  local encrypted="$1" varname="$2"
-
-  case "$ARG_TARGET" in
-  clipboard)
-    printf '%s\n' "$encrypted" | copy_to_clipboard
-    echo -e "${I_OK}Encrypted Ansible Variable [ ${C_PURPLE}${varname}${C_RESET} ] copied to clipboard"
-    ;;
-  config)
-    # Drop the '!vault |' header & indentation, then write it as a tagged literal block (keeps comments)
-    VAULT_VALUE="$(printf '%s\n' "$encrypted" | sed -e '1s/^!vault |$//' -e 's/^ *//' -e '/^$/d')" \
-      yq -i ".${varname} = strenv(VAULT_VALUE) | .${varname} tag = \"!vault\" | .${varname} style = \"literal\"" "$ONESETUP_CONFIG" || {
-      echo -e "${I_ERR}Failed to write [ ${varname} ] to ${ONESETUP_CONFIG}"
-      exit 1
-    }
-    echo -e "${I_OK}Encrypted value written to [ ${C_PURPLE}${varname}${C_RESET} ] in [ ${C_PURPLE}${ONESETUP_CONFIG}${C_RESET} ]"
-    ;;
-  esac
-}
-
-# Action 'string': encrypt a prompted secret
-function encrypt_string() {
-  local secret="" varname="" encrypted
-
-  # 'read' returns 1 on EOF – '|| true' lets the empty-check below report it instead of 'set -e'
-  printf '%b' "${I_ASK}Secret to Encrypt (hidden): "
-  read -rs secret || true
-  echo
-  [[ -n "$secret" ]] || {
-    echo -e "${I_ERR}Secret cannot be empty."
-    exit 1
-  }
-
-  printf '%b' "${I_ASK}Name (e.g. ssh.config): "
-  read -r varname || true
-  validate_varname "$varname"
-
-  resolve_output_target "$varname"
-  encrypted="$(printf '%s' "$secret" | vault_encrypt "$varname")" || {
-    echo -e "${I_ERR}Encryption failed."
-    exit 1
-  }
-  write_output "$encrypted" "$varname"
-}
-
-# Action 'file': encrypt a file's content (exact content, incl. trailing newlines)
-function encrypt_file() {
-  local filepath="$ARG_FILE" varname="$ARG_VARNAME" default_name encrypted rows
-
-  # Pick a file if no path was given
-  if [[ -z "$filepath" ]]; then
-    # Fit the picker into the terminal (leave room for header & prompt)
-    rows="$(stty size </dev/tty 2>/dev/null | cut -d' ' -f1)"
-    rows="${rows:-24}"
-    ((rows > 8)) || rows=8
-    filepath="$(
-      find . -maxdepth 3 -type f -not -path '*/.git/*' 2>/dev/null |
-        sed 's|^\./||' | sort |
-        gum filter \
-          --header "Choose file to encrypt:" \
-          --header.foreground "$GUM_COLOR" \
-          --indicator.foreground "$GUM_COLOR" \
-          --match.foreground "$GUM_COLOR" \
-          --placeholder "Type to search..." \
-          --height "$((rows - 4))" || true
-    )"
-    if [[ -z "$filepath" ]]; then
-      echo -e "${I_WARN}No file selected. Aborting."
-      exit 0
-    fi
-  fi
-
-  [[ -f "$filepath" && -r "$filepath" ]] || {
-    echo -e "${I_ERR}File not found or not readable: ${filepath}"
-    exit 1
-  }
-
-  # Variable name: argument > prompt (prefilled from the file name) > file name
-  if [[ -z "$varname" ]]; then
-    default_name="$(basename "$filepath")"
-    default_name="${default_name//[^a-zA-Z0-9_]/_}"
-    if [[ -t 0 ]]; then
-      varname="$(
-        gum input \
-          --cursor.foreground "$GUM_COLOR" \
-          --header.foreground "$GUM_COLOR" \
-          --prompt.foreground "$GUM_COLOR" \
-          --value "$default_name" \
-          --header "Adjust name, e.g. ssh.identities.${default_name} (or press Enter to keep it):" \
-          --placeholder "$default_name" \
-          --width 50 || true
-      )"
-    fi
-    varname="${varname:-$default_name}"
-  fi
-  validate_varname "$varname"
-
-  resolve_output_target "$varname"
-  encrypted="$(vault_encrypt "$varname" <"$filepath")" || {
-    echo -e "${I_ERR}Encryption failed."
-    exit 1
-  }
-  write_output "$encrypted" "$varname"
-}
-
-# Call Main Function with args
-main "$@"

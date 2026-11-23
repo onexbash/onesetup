@@ -54,7 +54,7 @@ function sync_repository() {
   # Remove installation directory if it is not a git repository (broken/corrupted)
   if [[ -d "$install_dir" ]] && ! git -C "$install_dir" rev-parse --git-dir &>/dev/null; then
     rm -rf "${install_dir:?}"
-    echo -e "${I_INFO}There was a broken installation at ${install_dir}. Deletion complete."
+    log_info "There was a broken installation at ${install_dir}. Deletion complete."
   fi
 
   if [[ -d "$install_dir" ]]; then
@@ -64,26 +64,26 @@ function sync_repository() {
 
     if [[ -z "$remote_sha" ]]; then
       # Remote unreachable → keep the working installation instead of deleting it
-      echo -e "${I_WARN}Failed to verify remote commit hash (${repo_uri}). Keeping existing installation."
+      log_warn "Failed to verify remote commit hash (${repo_uri}). Keeping existing installation."
       return 0
     elif [[ "$local_sha" == "$remote_sha" ]]; then
-      echo -e "${I_OK}The installation directory is up-to-date with the remote (${repo_uri})."
-      echo -e "${I_SKIP}Skipping installation..."
+      log_ok "The installation directory is up-to-date with the remote (${repo_uri})."
+      log_skip "Skipping installation..."
       return 0
     fi
 
-    echo -e "${I_WARN}Installation directory is outdated."
-    echo -e "${I_INFO}Updating to latest version..."
+    log_warn "Installation directory is outdated."
+    log_info "Updating to latest version..."
     rm -rf "${install_dir:?}"
   else
-    echo -e "${I_INFO}No installation found for 'onesetup'. Installing to ${install_dir}..."
+    log_info "No installation found for 'onesetup'. Installing to ${install_dir}..."
   fi
 
   git clone --depth 1 --single-branch --branch "$ONESETUP_BRANCH" "$repo_uri" "$install_dir" || {
-    echo -e "${I_ERR}Failed to clone ${repo_uri} (branch: ${ONESETUP_BRANCH}) into ${install_dir}"
+    log_err "Failed to clone ${repo_uri} (branch: ${ONESETUP_BRANCH}) into ${install_dir}"
     exit 1
   }
-  echo -e "${I_OK}Installation complete!"
+  log_ok "Installation complete!"
 }
 
 # Ensure directory presence, permissions & ownership
@@ -108,12 +108,12 @@ function rollout_executables() {
   0) ;;
   2) {
     # is_writable already reported the missing directory
-    echo -e "${I_INFO}Please create it or export ONESETUP_BIN_DIR=<dir>, then re-run onesetup-init."
+    log_info "Please create it or export ONESETUP_BIN_DIR=<dir>, then re-run onesetup-init."
     exit 1
   } ;;
   *) {
-    echo -e "${I_ERR}The Bin-Directory you've set is not writable, which is mostly caused by macOS System Integrity Protection. Please export ONESETUP_BIN_DIR=<dir> with a Directory that is writable with sudo rights."
-    echo -e "${I_INFO}Please re-run onesetup-init after."
+    log_err "The Bin-Directory you've set is not writable, which is mostly caused by macOS System Integrity Protection. Please export ONESETUP_BIN_DIR=<dir> with a Directory that is writable with sudo rights."
+    log_info "Please re-run onesetup-init after."
     exit 1
   } ;;
   esac
@@ -122,10 +122,10 @@ function rollout_executables() {
     [[ -f "$file" ]] || continue
     filename="$(basename "$file")"
     sudo install -m 755 -o "$root_user" -g "$root_group" "$file" "${bin_dir}/${filename}" || {
-      echo -e "${I_ERR}Failed to roll-out executable ${C_RED}${filename}${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"
+      log_err "Failed to roll-out executable ${C_RED}${filename}${C_RESET} to ${C_RED}${bin_dir}${C_RESET}"
       exit 1
     }
-    echo -e "${I_OK}${C_GREEN}${filename}${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}"
+    log_ok "${C_GREEN}${filename}${C_RESET} copied to ${C_GREEN}${bin_dir}${C_RESET}"
   done
 }
 
@@ -134,7 +134,7 @@ function install_collections() {
   ansible-galaxy collection install \
     --requirements-file "${ONESETUP_INSTALL_DIR}/requirements.yml" \
     --no-cache --upgrade || {
-    echo -e "${I_ERR}Failed to install Ansible collections."
+    log_err "Failed to install Ansible collections."
     exit 1
   }
 }
@@ -142,16 +142,16 @@ function install_collections() {
 # Copy config.base.yml to ONESETUP_CONFIG if there is no config file yet
 function create_config() {
   if [[ -e "$ONESETUP_CONFIG" ]]; then
-    echo -e "${I_OK}Config file found: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
+    log_ok "Config file found: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
     return 0
   fi
   # 600: the config file can hold vault-encrypted secrets
   install -m 600 "${ONESETUP_INSTALL_DIR}/config.base.yml" "$ONESETUP_CONFIG" || {
-    echo -e "${I_ERR}Failed to create the config file: ${ONESETUP_CONFIG}"
+    log_err "Failed to create the config file: ${ONESETUP_CONFIG}"
     exit 1
   }
-  echo -e "${I_OK}Config file created: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
-  echo -e "${I_INFO}Adjust it to your needs, then run 'onesetup'."
+  log_ok "Config file created: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
+  log_info "Adjust it to your needs, then run 'onesetup'."
 }
 
 # Call Main Function with args
