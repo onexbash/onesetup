@@ -7,10 +7,10 @@
 
 # Main Function (Calls Functions that should always be called)
 function main() {
-  tty_styles || echo -e "${I_WARN:-[ERR] }Failed to Call tty_styles()"
-  set_modes || echo -e "${I_WARN:-[ERR] }Failed to Call set_modes()"
-  init_brew || echo -e "${I_WARN:-[ERR] }Failed to Call init_brew()"
-  apply_config || echo -e "${I_WARN:-[ERR] }Failed to Call apply_config()"
+  tty_styles || log_warn "Failed to call tty_styles()"
+  set_modes || log_warn "Failed to call set_modes()"
+  init_brew || log_warn "Failed to call init_brew()"
+  apply_config || log_warn "Failed to call apply_config()"
 }
 
 # --                    -- #
@@ -18,41 +18,82 @@ function main() {
 # --                    -- #
 
 # [UTIL] Terminal Colors & Prompts
-function tty_styles() {
-  # Terminal Colors
-  export C_BLACK='\033[1;30m'
-  export C_RED='\033[1;31m'
-  export C_GREEN='\033[1;32m'
-  export C_YELLOW='\033[1;33m'
-  export C_BLUE='\033[1;34m'
-  export C_PURPLE='\033[1;35m'
-  export C_CYAN='\033[1;36m'
-  export C_WHITE='\033[1;37m'
-  export C_GRAY='\033[1;34m'
-  export C_RESET='\033[0m'
-  # Accent color for gum prompts (ANSI 6 = cyan), overridable via env
+tty_styles() {
+  # Colors only when stdout and stderr are terminals and NO_COLOR is not set
+  if [[ -t 1 && -t 2 && -z ${NO_COLOR-} ]]; then
+    C_RED=$'\033[1;31m' C_GREEN=$'\033[1;32m' C_YELLOW=$'\033[1;33m'
+    C_BLUE=$'\033[1;34m' C_PURPLE=$'\033[1;35m' C_CYAN=$'\033[1;36m'
+    C_WHITE=$'\033[1;37m' C_GRAY=$'\033[0;90m' C_RESET=$'\033[0m'
+  else
+    C_RED="" C_GREEN="" C_YELLOW="" C_BLUE="" C_PURPLE="" C_CYAN="" C_WHITE="" C_GRAY="" C_RESET=""
+  fi
+  # Styled Output Variables
+  I_MSG="${C_PURPLE}" # Output Variable without Prefix for Standard Messages
+  I_SKIP="${C_GRAY}[${C_CYAN} SKIP ${C_GRAY}]${C_RESET} "
+  I_WARN="${C_GRAY}[${C_YELLOW} WARN ${C_GRAY}]${C_RESET} "
+  I_OK="${C_GRAY}[${C_GREEN} OK ${C_GRAY}]${C_RESET} "
+  I_INFO="${C_GRAY}[${C_PURPLE} INFO ${C_GRAY}]${C_RESET} "
+  I_ERR="${C_GRAY}[${C_RED} ERROR ${C_GRAY}]${C_RESET} "
+  # Styled Input Variables
+  I_INPUT="${C_GRAY}[${C_BLUE}  ${C_GRAY}]${C_RESET} "
+  I_ASK="${C_GRAY}[${C_BLUE} ? ${C_GRAY}]${C_RESET} "
+  I_YN="${C_GRAY}[${C_BLUE} y/n ${C_GRAY}]${C_RESET} "
+  # Gum
   export GUM_COLOR="${GUM_COLOR:-6}"
-  # Info Prompts
-  export I_SKIP="${C_BLACK}[${C_CYAN} SKIPPING ${C_BLACK}] ${C_RESET}"   # skipping
-  export I_WARN="${C_BLACK}[${C_YELLOW} WARNING ${C_BLACK}] ${C_RESET}"  # warning
-  export I_OK="${C_BLACK}[${C_GREEN}  OK  ${C_BLACK}] ${C_RESET}"        # ok
-  export I_INFO="${C_BLACK}[${C_PURPLE} INFO ${C_BLACK}] ${C_RESET}"     # info
-  export I_ERR="${C_BLACK}[${C_RED} ERROR ${C_BLACK}] ${C_RESET}"        # error
-  export I_YN="${C_BLACK}[${C_BLUE} y/n ${C_BLACK}] ${C_RESET}"          # ask user for yes/no
-  export I_ASK="${C_BLACK}[${C_BLUE} ? ${C_BLACK}] ${C_RESET}"           # ask user for anything
-  export I_LOAD="${C_BLACK}[${C_BLUE} LOADING .. ${C_BLACK}] ${C_RESET}" # loading
 }
+
+# Shared Log Wrapper for Log Functions below
+_log() {
+  local style=$1
+  shift
+  printf '%s%s%s\n' "$style" "$*" "$C_RESET"
+}
+
+# Shared Input Wrapper for Prompts with user-input below
+# _input [-s] <style> <var_name> <message...>   (-s: hidden input, e.g. for secrets)
+_input() {
+  local __input_silent=""
+  if [[ ${1-} == -s ]]; then
+    __input_silent=1
+    shift
+  fi
+  local __input_style=$1 __input_var=$2 __input_rc=0
+  shift 2
+  printf '%s%s%s ' "$__input_style" "$*" "$C_RESET" >&2
+  # Store User Input in the Variable named by the caller
+  if [[ -n $__input_silent ]]; then
+    IFS= read -rs "${__input_var:?_input: missing variable name}" || __input_rc=$?
+    printf '\n' >&2 # hidden input: the Enter key is not echoed
+  else
+    IFS= read -r "${__input_var:?_input: missing variable name}" || __input_rc=$?
+  fi
+  return "$__input_rc"
+}
+
+# Log Functions (Output)
+log_() { _log "$I_MSG" "$@"; }
+log_ok() { _log "$I_OK" "$@"; }
+log_info() { _log "$I_INFO" "$@"; }
+log_skip() { _log "$I_SKIP" "$@"; }
+log_warn() { _log "$I_WARN" "$@" >&2; }
+log_err() { _log "$I_ERR" "$@" >&2; }
+# Log Functions (Input)
+# Usage: input_ask var_name "Please enter X:"
+input_() { _input "$I_INPUT" "$@"; }
+input_ask() { _input "$I_ASK" "$@"; }
+input_yn() { _input "$I_YN" "$@"; }
+input_secret() { _input -s "$I_ASK" "$@"; }
 
 # [UTIL] Set Script Modes (ONESETUP_DEBUG: 0-4, 4 also traces these scripts)
 function set_modes() {
   set -eo pipefail
   [[ "${ONESETUP_DEBUG:-0}" =~ ^[0-4]$ ]] || {
-    echo -e "${I_ERR}ONESETUP_DEBUG must be a number from 0 to 4 (got: '${ONESETUP_DEBUG}')"
+    log_err "ONESETUP_DEBUG must be a number from 0 to 4 (got: '${ONESETUP_DEBUG}')"
     exit 1
   }
   if [[ "${ONESETUP_DEBUG:-0}" -eq 4 ]]; then
     set -x
-    echo -e "${I_OK}Running Script in Debug Mode"
+    log_ok "Running Script in Debug Mode"
   fi
 }
 
@@ -96,7 +137,7 @@ function install_linux_pkg() {
   elif command -v pacman &>/dev/null; then
     sudo pacman -S --noconfirm "$pkg"
   else
-    echo -e "${I_ERR}Unsupported package manager." >&2
+    log_err "Unsupported package manager."
     return 1
   fi
 }
@@ -108,11 +149,11 @@ function install_pkg() {
   osx) brew install "$pkg" ;;
   linux) install_linux_pkg "$pkg" ;;
   windows) {
-    echo -e "${I_ERR}Windows not supported yet"
+    log_err "Windows not supported yet"
     return 1
   } ;;
   *) {
-    echo -e "${I_ERR}Unsupported Operating System: ${os}"
+    log_err "Unsupported Operating System: ${os}"
     return 1
   } ;;
   esac
@@ -123,12 +164,12 @@ function install_deps() {
   local pkg
   for pkg in "$@"; do
     command -v "$pkg" &>/dev/null && continue
-    echo -e "${I_INFO}Installing missing dependency: ${C_CYAN}${pkg}${C_RESET}"
+    log_info "Installing missing dependency: ${C_CYAN}${pkg}${C_RESET}"
     install_pkg "$pkg" || {
-      echo -e "${I_ERR}Installation failed: ${pkg}"
+      log_err "Installation failed: ${pkg}"
       exit 1
     }
-    echo -e "${I_OK}Installation succeeded: ${pkg}"
+    log_ok "Installation succeeded: ${pkg}"
   done
 }
 
@@ -143,7 +184,7 @@ function is_writable() {
   local test_file
 
   if [[ ! -d "$dir" ]]; then
-    echo -e "${I_ERR}Directory does not exist: $dir"
+    log_err "Directory does not exist: $dir"
     return 2
   fi
 
@@ -205,7 +246,8 @@ function copy_to_clipboard() {
     xclip -selection clipboard 2>/dev/null
   else
     cat
-    echo -e "\n${I_WARN}No clipboard tool found — printed above instead." >&2
+    printf '\n' >&2 # the printed text may not end with a newline
+    log_warn "No clipboard tool found — printed above instead."
   fi
 }
 
@@ -216,7 +258,7 @@ function copy_to_clipboard() {
 # [UTIL] Ensure a command-line option received a value: require_value <option> <value>
 function require_value() {
   if [[ -z "$2" || "$2" == --* ]]; then
-    echo -e "${I_ERR}Option '$1' requires a value."
+    log_err "Option '$1' requires a value."
     exit 1
   fi
 }
@@ -250,7 +292,7 @@ function use_dev_dir() {
   local dir="${1/#\~/$HOME}" # quoted "~/..." is not expanded by the shell
   [[ -n "$dir" ]] || return 0
   [[ -d "$dir" ]] || {
-    echo -e "${I_ERR}Development directory not found: ${C_CYAN}$dir${C_RESET}"
+    log_err "Development directory not found: ${C_CYAN}$dir${C_RESET}"
     exit 1
   }
   ONESETUP_DEV_DIR="$(cd -P "$dir" && pwd)"
@@ -314,35 +356,34 @@ function resolve_secret() {
   field="${path##*/}"
   item="${path%/*}"
   if [[ "$path" != */* || -z "$field" || -z "$item" ]]; then
-    echo -e "${I_ERR}Invalid secret reference: ${ref} (expected <scheme>://<item>/<field>)" >&2
+    log_err "Invalid secret reference: ${ref} (expected <scheme>://<item>/<field>)"
     return 1
   fi
 
   case "$ref" in
   pass://*)
     [[ "$item" == */* ]] || {
-      echo -e "${I_ERR}Invalid Proton Pass reference: ${ref} (expected pass://<vault>/<item>/<field>)" >&2
+      log_err "Invalid Proton Pass reference: ${ref} (expected pass://<vault>/<item>/<field>)"
       return 1
     }
     command -v pass-cli &>/dev/null || {
-      echo -e "${I_ERR}pass-cli not found (needed for ${ref})" >&2
+      log_err "pass-cli not found (needed for ${ref})"
       return 1
     }
     pass-cli item view --vault-name "${item%%/*}" --item-title "${item#*/}" --field "$field"
     ;;
   keepassxc://*)
     [[ -f "$ONESETUP_KEEPASSXC_DB" ]] || {
-      echo -e "${I_ERR}Set ONESETUP_KEEPASSXC_DB to your KeePassXC database (needed for ${ref})" >&2
+      log_err "Set ONESETUP_KEEPASSXC_DB to your KeePassXC database (needed for ${ref})"
       return 1
     }
-    # The password prompt goes to the terminal, only the attribute value to stdout
-    printf '%b' "${I_ASK}KeePassXC password for ${ONESETUP_KEEPASSXC_DB}: " >&2
+    # The password prompt goes to the terminal (stderr), only the attribute value to stdout
+    _log "$I_ASK" "KeePassXC password for ${ONESETUP_KEEPASSXC_DB}:" >&2
     keepassxc-cli show --quiet --show-protected --attributes "$field" "$ONESETUP_KEEPASSXC_DB" "$item"
-    echo >&2
     ;;
   bitwarden://*)
     command -v bw &>/dev/null || {
-      echo -e "${I_ERR}bw (Bitwarden CLI) not found (needed for ${ref})" >&2
+      log_err "bw (Bitwarden CLI) not found (needed for ${ref})"
       return 1
     }
     # Login fields first, then custom fields with that name
@@ -370,20 +411,20 @@ function load_secrets() {
 
   for name in "${names[@]}"; do
     [[ "$name" =~ ^[A-Z_][A-Z0-9_]*$ ]] || {
-      echo -e "${I_ERR}Invalid variable name under 'secrets:' in ${ONESETUP_CONFIG}: ${name}"
+      log_err "Invalid variable name under 'secrets:' in ${ONESETUP_CONFIG}: ${name}"
       exit 1
     }
     value="$(printenv "$name" || true)"
     if [[ -z "$value" && " ${config_names[*]} " == *" ${name} "* ]]; then
       value="$(NAME="$name" yq -r '.secrets[strenv(NAME)]' "$ONESETUP_CONFIG")"
       [[ "$value" =~ ^(pass|keepassxc|bitwarden):// ]] || {
-        echo -e "${I_ERR}secrets.${name} in ${ONESETUP_CONFIG} must be a password manager reference (pass://, keepassxc://, bitwarden://), not a plain secret."
+        log_err "secrets.${name} in ${ONESETUP_CONFIG} must be a password manager reference (pass://, keepassxc://, bitwarden://), not a plain secret."
         exit 1
       }
     fi
     [[ -n "$value" ]] || continue
     value="$(resolve_secret "$value")" && [[ -n "$value" ]] || {
-      echo -e "${I_ERR}Failed to resolve the secret for ${name} (missing or empty)"
+      log_err "Failed to resolve the secret for ${name} (missing or empty)"
       exit 1
     }
     export "${name}=${value}"
@@ -392,4 +433,3 @@ function load_secrets() {
 
 # Call Main Function with Args
 main "$@"
-

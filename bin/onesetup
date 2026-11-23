@@ -31,7 +31,7 @@ function main() {
   if [[ -z "$SUBCMD" ]]; then
     SUBCMD="$(prompt_subcommand)"
     if [[ -z "$SUBCMD" ]]; then
-      echo -e "${I_WARN}Operation cancelled."
+      log_warn "Operation cancelled."
       exit 0
     fi
     validate_args
@@ -71,7 +71,7 @@ function parse_args() {
   "" | --*) ;; # no subcommand → interactive prompt (options still allowed)
   *)
     print_help >&2
-    echo -e "${I_ERR}Unknown command: $1"
+    log_err "Unknown command: $1"
     exit 1
     ;;
   esac
@@ -104,7 +104,7 @@ function parse_args() {
       ;;
     *)
       # shellcheck disable=SC2016 # false positive: expands inside the double quotes
-      echo -e "${I_ERR}Unknown option${SUBCMD:+ for '${SUBCMD}'}: $1"
+      log_err "Unknown option${SUBCMD:+ for '${SUBCMD}'}: $1"
       exit 1
       ;;
     esac
@@ -116,16 +116,16 @@ function parse_args() {
 # Validate option combinations (called again after the interactive prompt)
 function validate_args() {
   if [[ "$SUBCMD" == "run" && "$ARG_DIFF" == "true" ]]; then
-    echo -e "${I_ERR}Flag '--diff' is only valid for 'test'."
+    log_err "Flag '--diff' is only valid for 'test'."
     exit 1
   fi
   if [[ -n "$ARG_INCLUDE" && -n "$ARG_SKIP" ]]; then
-    echo -e "${I_ERR}Use either '--include' or '--skip', not both."
+    log_err "Use either '--include' or '--skip', not both."
     exit 1
   fi
   # Module names are validated by the playbook; only keep the value safe to pass on here
   if [[ ! "${ARG_INCLUDE}${ARG_SKIP}" =~ ^[a-z0-9_.,\ ]*$ ]]; then
-    echo -e "${I_ERR}Invalid module list: '${ARG_INCLUDE}${ARG_SKIP}' (example: --skip apps.autostart,settings)"
+    log_err "Invalid module list: '${ARG_INCLUDE}${ARG_SKIP}' (example: --skip apps.autostart,settings)"
     exit 1
   fi
 }
@@ -192,12 +192,12 @@ function run_playbook() {
   unset ONESETUP_VAULT_PASS # keep it out of the playbook's environment
 
   [[ -f "$playbook" && -r "$playbook" ]] || {
-    echo -e "${I_ERR}No readable Playbook Entrypoint found at: ${C_CYAN}${playbook}${C_RESET}"
+    log_err "No readable Playbook Entrypoint found at: ${C_CYAN}${playbook}${C_RESET}"
     exit 1
   }
   [[ -f "$ONESETUP_CONFIG" && -r "$ONESETUP_CONFIG" ]] || {
-    echo -e "${I_ERR}No readable config file found at: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
-    echo -e "${I_INFO}Run 'onesetup-init' to create it, or point ONESETUP_CONFIG to your config file."
+    log_err "No readable config file found at: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}"
+    log_info "Run 'onesetup-init' to create it, or point ONESETUP_CONFIG to your config file."
     exit 1
   }
 
@@ -217,11 +217,11 @@ function run_playbook() {
   # Module filters (applied to the 'modules' list of the config file)
   args+=("-e" "onesetup_include=${ARG_INCLUDE// /}" "-e" "onesetup_skip=${ARG_SKIP// /}")
 
-  echo -e "${I_OK}onesetup ==> Using Ansible Playbook from: ${C_CYAN}${X_TARGET_DIR}${C_RESET}"
-  echo -e "${I_INFO}onesetup ==> Config file: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}${ONESETUP_PROFILE:+ (profile: ${ONESETUP_PROFILE})}"
-  echo -e "${I_INFO}onesetup ==> Ansible Config file: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}"
-  echo -e "${I_INFO}onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
-  echo -e "${I_INFO}onesetup ==> Mode: ${C_CYAN}${SUBCMD}${C_RESET}"
+  log_ok "onesetup ==> Using Ansible Playbook from: ${C_CYAN}${X_TARGET_DIR}${C_RESET}"
+  log_info "onesetup ==> Config file: ${C_CYAN}${ONESETUP_CONFIG}${C_RESET}${ONESETUP_PROFILE:+ (profile: ${ONESETUP_PROFILE})}"
+  log_info "onesetup ==> Ansible Config file: ${C_CYAN}${ANSIBLE_CONFIG}${C_RESET}"
+  log_info "onesetup ==> Ansible Inventory file: ${C_CYAN}${ANSIBLE_INVENTORY}${C_RESET}"
+  log_info "onesetup ==> Mode: ${C_CYAN}${SUBCMD}${C_RESET}"
 
   # Vault password: ONESETUP_VAULT_PASS through a pipe (/dev/fd/N: not in argv, no temp file), else prompted
   # (the process substitution must be part of the command itself, its fd is closed afterwards)
@@ -230,10 +230,10 @@ function run_playbook() {
   else
     ansible-playbook "$playbook" "${args[@]}"
   fi || {
-    echo -e "${I_ERR}onesetup ==> ansible playbook failed"
+    log_err "onesetup ==> ansible playbook failed"
     exit 1
   }
-  echo -e "${I_OK}onesetup ==> ansible playbook finished"
+  log_ok "onesetup ==> ansible playbook finished"
 }
 
 # Call Main Function with args
